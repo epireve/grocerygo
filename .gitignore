@@ -14,6 +14,7 @@ scripts/*
 !scripts/import-products.sh
 !scripts/run_browser_test.py
 !scripts/add_product_images.py
+!scripts/migrations.sh
 screenshots/
 tasks/
 .env

@@ -94,6 +94,60 @@ We've created helpful scripts to streamline development:
 ./scripts/run-dev.sh stop
 ```
 
+### Database Migrations
+
+The project uses Django's migration system to manage database schema changes. Here's how migrations work in GroceryGo:
+
+#### Applying Migrations
+
+To apply all pending migrations:
+
+```bash
+# Option 1: Apply migrations using the run-dev.sh script
+./scripts/run-dev.sh --migrate
+
+# Option 2: Apply migrations directly with Django's manage.py
+source venv/bin/activate && venv/bin/python manage.py migrate
+```
+
+#### Creating New Migrations
+
+After modifying models (in `models.py` files), create migration files:
+
+```bash
+# Create migrations for a specific app
+source venv/bin/activate && venv/bin/python manage.py makemigrations app_name
+
+# Create migrations for all apps
+source venv/bin/activate && venv/bin/python manage.py makemigrations
+```
+
+#### Migration Commands Reference
+
+```bash
+# Show migration status
+python manage.py showmigrations
+
+# Apply specific migration
+python manage.py migrate app_name 0001_initial
+
+# Roll back to a specific migration
+python manage.py migrate app_name 0001_initial
+
+# Apply migrations for a specific app
+python manage.py migrate app_name
+```
+
+#### Migration Structure
+
+The project maintains migrations in app-specific directories:
+- `accounts/migrations/` - User account models
+- `products/migrations/` - Product and category models
+- `cart/migrations/` - Shopping cart models
+- `orders/migrations/` - Order processing models
+
+> **Important**: Always commit migration files to version control and apply migrations before running the application after pulling new changes from the repository.
+
 ### Admin Access
 
 The application includes a Django admin interface for managing content:

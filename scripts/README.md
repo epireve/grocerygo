@@ -15,6 +15,26 @@ This directory contains useful scripts for development, deployment, and testing 
   - `--migrate`: Run migrations before starting servers
   - `--cleanup`: Kill any existing Django and Tailwind processes before starting
 
+- **migrations.sh**: Helper script for database migration management
+  ```bash
+  # Apply all migrations
+  ./scripts/migrations.sh apply
+  
+  # Create migrations for all apps
+  ./scripts/migrations.sh make
+  
+  # Create migrations for specific app
+  ./scripts/migrations.sh make app_name
+  
+  # Show migration status for all apps
+  ./scripts/migrations.sh status
+  
+  # Revert migrations for an app to a specific version
+  ./scripts/migrations.sh revert app_name 0001
+  ```
+  
+  This script provides a convenient wrapper around Django's migration commands, making it easier to manage database schema changes across the project.
+
 - **task-complete.sh**: Mark a task as done and push changes to GitHub
   ```bash
   ./scripts/task-complete.sh <task-id> "<commit-message>"
