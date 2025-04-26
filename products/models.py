@@ -31,3 +31,49 @@ class Category(models.Model):
 
     def get_absolute_url(self):
         return reverse("products:category_detail", args=[self.slug])
+
+
+class Product(models.Model):
+    name = models.CharField(max_length=200)
+    slug = models.SlugField(max_length=200, unique=True)
+    description = models.TextField(blank=True)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    discount_price = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True
+    )
+    category = models.ForeignKey(
+        Category, on_delete=models.CASCADE, related_name="products"
+    )
+    image = models.ImageField(upload_to="products/", blank=True, null=True)
+    stock = models.IntegerField(default=100)
+    is_active = models.BooleanField(default=True)
+    is_featured = models.BooleanField(default=False)
+    parent = models.ForeignKey(
+        "self", on_delete=models.CASCADE, null=True, blank=True, related_name="variants"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Product"
+        verbose_name_plural = "Products"
+        ordering = ["name"]
+
+    def __str__(self):
+        return self.name
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
+
+    def get_absolute_url(self):
+        return reverse("products:product_detail", args=[self.slug])
+
+    @property
+    def has_variants(self):
+        return self.variants.exists()
+
+    @property
+    def is_variant(self):
+        return self.parent is not None
