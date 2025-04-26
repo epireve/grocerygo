@@ -8,11 +8,146 @@
     <h1 class="text-3xl font-extrabold tracking-tight text-gray-900 mb-6">Your Shopping Cart</h1>
     
     <div id="cart-container">
-        <!-- Cart content will be loaded here via JavaScript -->
-        <div class="text-center p-10">
-            <div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
-            <p class="mt-2 text-gray-600">Loading your cart...</p>
-        </div>
+        {% if cart_empty or not products %}
+            <!-- Empty cart message for server-rendered version -->
+            <div id="empty-cart-message" class="{% if not products %}block{% else %}hidden{% endif %} text-center py-12">
+                <div class="max-w-md mx-auto">
+                    <div class="mb-6">
+                        <svg class="w-24 h-24 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                        </svg>
+                    </div>
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-2">Your cart is empty</h2>
+                    <p class="text-gray-600 mb-6">Looks like you haven't added any products to your cart yet.</p>
+                    <div class="space-y-3">
+                        <a href="{% url 'products:product_list' %}" class="inline-block w-full px-4 py-3 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition duration-200">
+                            Browse All Products
+                        </a>
+                        <div class="grid grid-cols-2 gap-3">
+                            <a href="{% url 'products:category_detail' 'fruits' %}" class="px-4 py-2 bg-blue-100 text-blue-700 font-medium rounded-lg hover:bg-blue-200 transition duration-200">
+                                Shop Fruits
+                            </a>
+                            <a href="{% url 'products:category_detail' 'vegetables' %}" class="px-4 py-2 bg-green-100 text-green-700 font-medium rounded-lg hover:bg-green-200 transition duration-200">
+                                Shop Vegetables
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% elif products %}
+            <!-- Server-rendered cart contents -->
+            <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+                <div class="px-4 py-5 sm:p-6">
+                    <div class="flex flex-col">
+                        <div class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+                            <div class="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
+                                <div class="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
+                                    <table class="min-w-full divide-y divide-gray-200">
+                                        <thead class="bg-gray-50">
+                                            <tr>
+                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Product
+                                                </th>
+                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Price
+                                                </th>
+                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Quantity
+                                                </th>
+                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Subtotal
+                                                </th>
+                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                    Actions
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="bg-white divide-y divide-gray-200">
+                                            {% for item in products %}
+                                            <tr>
+                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                    <div class="flex items-center">
+                                                        <div class="flex-shrink-0 h-10 w-10">
+                                                            {% if item.product.image %}
+                                                                <img class="h-10 w-10 rounded-full object-cover" src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
+                                                            {% else %}
+                                                                <div class="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
+                                                                    <span class="text-xs text-gray-500">No img</span>
+                                                                </div>
+                                                            {% endif %}
+                                                        </div>
+                                                        <div class="ml-4">
+                                                            <div class="text-sm font-medium text-gray-900">
+                                                                <a href="{% url 'products:product_detail' item.product.slug %}">{{ item.product.name }}</a>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                    <div class="text-sm text-gray-900">RM{{ item.product.price }}</div>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                    <form method="post" action="{% url 'cart:update_quantity' item.product.slug %}">
+                                                        {% csrf_token %}
+                                                        <div class="flex items-center">
+                                                            <button type="button" class="quantity-decrease px-2 py-1 bg-gray-200 hover:bg-gray-300 rounded-l-md">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
+                                                                </svg>
+                                                            </button>
+                                                            <input type="number" name="quantity" value="{{ item.quantity }}" min="1" max="99" 
+                                                                class="quantity-input w-12 py-1 px-2 border border-gray-300 text-center focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                                                data-slug="{{ item.product.slug }}">
+                                                            <button type="button" class="quantity-increase px-2 py-1 bg-gray-200 hover:bg-gray-300 rounded-r-md">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                                                </svg>
+                                                            </button>
+                                                        </div>
+                                                    </form>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                    <div class="text-sm text-gray-900">RM{{ item.subtotal }}</div>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                                    <a href="{% url 'cart:remove_from_cart' item.product.slug %}" class="text-red-600 hover:text-red-900 remove-item" data-slug="{{ item.product.slug }}">Remove</a>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-8 border-t border-gray-200 pt-6">
+                        <div class="flex justify-between text-base font-medium text-gray-900">
+                            <p>Subtotal</p>
+                            <p>RM{{ total }}</p>
+                        </div>
+                        <p class="mt-0.5 text-sm text-gray-500">Shipping and taxes calculated at checkout.</p>
+                        <div class="mt-6">
+                            <a href="{% url 'products:product_list' %}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                                Continue Shopping
+                            </a>
+                            <a href="{% url 'orders:checkout' %}" class="ml-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                Proceed to Checkout
+                            </a>
+                            <a href="#" id="clear-cart-server" class="ml-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                                Clear Cart
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <!-- Cart loading indicator for JavaScript-enabled browsers -->
+            <div class="text-center p-10">
+                <div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+                <p class="mt-2 text-gray-600">Loading your cart...</p>
+            </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}
@@ -20,185 +155,65 @@
 {% block extra_js %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        loadCart();
+        // Setup clear cart button for server-rendered version
+        const clearCartServerBtn = document.getElementById('clear-cart-server');
+        if (clearCartServerBtn) {
+            clearCartServerBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Clear localStorage cart
+                if (typeof CART_STORAGE_KEY !== 'undefined') {
+                    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify({}));
+                    if (typeof setCartExpiry === 'function') {
+                        setCartExpiry();
+                    }
+                }
+                
+                // Clear server cart
+                fetch('/cart/clear/', {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Update cart UI
+                    if (typeof updateCartUI === 'function') {
+                        updateCartUI();
+                    }
+                    // Reload the page to show empty cart UI
+                    window.location.reload();
+                })
+                .catch(error => console.error('Error:', error));
+            });
+        }
+
+        // Set up quantity buttons
+        setupQuantityButtons();
         
-        // Setup event delegation for remove buttons
+        // Only load cart via AJAX if no server-rendered cart is present
+        if (!document.querySelector('#cart-container table')) {
+            loadCart();
+        }
+        
+        // Update cart UI on page load
+        if (typeof updateCartUI === 'function') {
+            updateCartUI();
+        }
+        
+        // Setup event delegation for remove buttons and quantity changes
         document.getElementById('cart-container').addEventListener('click', function(e) {
             if (e.target && e.target.classList.contains('remove-item')) {
                 e.preventDefault();
                 const slug = e.target.getAttribute('data-slug');
                 if (slug) {
+                    // Update local UI first for a snappy feel
                     removeFromCart(slug);
-                    loadCart(); // Reload cart UI
+                    loadCart(); 
                     
-                    // Also sync with server
-                    const productId = e.target.getAttribute('data-id');
-                    if (productId) {
-                        fetch(`/cart/remove/${productId}/`, {
-                            headers: {
-                                'X-Requested-With': 'XMLHttpRequest',
-                                'X-CSRFToken': getCookie('csrftoken')
-                            }
-                        })
-                        .then(response => response.json())
-                        .catch(error => console.error('Error:', error));
-                    }
-                }
-            }
-        });
-    });
-    
-    function loadCart() {
-        const cartContainer = document.getElementById('cart-container');
-        const cart = getCart();
-        const productSlugs = Object.keys(cart);
-        
-        if (productSlugs.length === 0) {
-            // Show empty cart message
-            cartContainer.innerHTML = `
-                <div class="text-center py-12 bg-white shadow overflow-hidden sm:rounded-lg">
-                    <h2 class="text-2xl font-bold text-gray-900">Your cart is empty</h2>
-                    <p class="mt-4 text-gray-500">Looks like you haven't added any products to your cart yet.</p>
-                    <div class="mt-6">
-                        <a href="{% url 'products:product_list' %}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-                            Browse Products
-                        </a>
-                    </div>
-                </div>
-            `;
-            return;
-        }
-        
-        // Fetch product details for items in cart
-        fetch('/cart/get-session-cart/', {
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            // Process cart data
-            const cartItems = [];
-            let total = 0;
-            
-            // Process cart items from session
-            for (const item of data.cart_items || []) {
-                cartItems.push(item);
-                total += item.subtotal;
-            }
-            
-            // Generate cart HTML
-            let cartHTML = `
-                <div class="bg-white shadow overflow-hidden sm:rounded-lg">
-                    <div class="px-4 py-5 sm:p-6">
-                        <div class="flex flex-col">
-                            <div class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-                                <div class="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
-                                    <div class="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
-                                        <table class="min-w-full divide-y divide-gray-200">
-                                            <thead class="bg-gray-50">
-                                                <tr>
-                                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                        Product
-                                                    </th>
-                                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                        Price
-                                                    </th>
-                                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                        Quantity
-                                                    </th>
-                                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                        Subtotal
-                                                    </th>
-                                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                        Actions
-                                                    </th>
-                                                </tr>
-                                            </thead>
-                                            <tbody class="bg-white divide-y divide-gray-200">
-            `;
-            
-            for (const item of cartItems) {
-                cartHTML += `
-                    <tr>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="flex items-center">
-                                <div class="flex-shrink-0 h-10 w-10">
-                                    ${item.product.image 
-                                        ? `<img class="h-10 w-10 rounded-full object-cover" src="${item.product.image}" alt="${item.product.name}">`
-                                        : `<div class="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
-                                            <span class="text-xs text-gray-500">No img</span>
-                                           </div>`
-                                    }
-                                </div>
-                                <div class="ml-4">
-                                    <div class="text-sm font-medium text-gray-900">
-                                        <a href="/products/product/${item.product.slug}/">${item.product.name}</a>
-                                    </div>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm text-gray-900">RM${item.product.price}</div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm text-gray-900">${item.quantity}</div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm text-gray-900">RM${item.subtotal}</div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <a href="#" class="text-red-600 hover:text-red-900 remove-item" data-slug="${item.product.slug}" data-id="${item.id}">Remove</a>
-                        </td>
-                    </tr>
-                `;
-            }
-            
-            cartHTML += `
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="mt-8 border-t border-gray-200 pt-6">
-                            <div class="flex justify-between text-base font-medium text-gray-900">
-                                <p>Subtotal</p>
-                                <p>RM${total.toFixed(2)}</p>
-                            </div>
-                            <p class="mt-0.5 text-sm text-gray-500">Shipping and taxes calculated at checkout.</p>
-                            <div class="mt-6">
-                                <a href="{% url 'products:product_list' %}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-                                    Continue Shopping
-                                </a>
-                                <a href="{% url 'orders:checkout' %}" class="ml-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                                    Proceed to Checkout
-                                </a>
-                                <button id="clear-cart" class="ml-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
-                                    Clear Cart
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-            // Update cart container
-            cartContainer.innerHTML = cartHTML;
-            
-            // Add event listener for clear cart button
-            const clearCartBtn = document.getElementById('clear-cart');
-            if (clearCartBtn) {
-                clearCartBtn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    
-                    // Clear localStorage cart
-                    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify({}));
-                    setCartExpiry();
-                    
-                    // Clear server cart
-                    fetch('/cart/clear/', {
+                    // Then sync with server
+                    fetch(`/cart/remove/${slug}/`, {
                         headers: {
                             'X-Requested-With': 'XMLHttpRequest',
                             'X-CSRFToken': getCookie('csrftoken')
@@ -206,21 +221,137 @@
                     })
                     .then(response => response.json())
                     .then(data => {
-                        loadCart(); // Reload cart UI
-                        updateCartUI(); // Update cart count in header
+                        // Cart already refreshed by loadCart above
+                        if (!data.success) {
+                            console.error('Error removing item:', data.message);
+                        }
                     })
                     .catch(error => console.error('Error:', error));
+                }
+            }
+        });
+
+        // Function to handle quantity button clicks and updates
+        function setupQuantityButtons() {
+            // Setup decrease buttons
+            document.querySelectorAll('.quantity-decrease').forEach(button => {
+                button.addEventListener('click', function() {
+                    const input = this.nextElementSibling;
+                    let value = parseInt(input.value, 10);
+                    if (value > 1) {
+                        input.value = value - 1;
+                        updateQuantity(input);
+                    }
+                });
+            });
+            
+            // Setup increase buttons
+            document.querySelectorAll('.quantity-increase').forEach(button => {
+                button.addEventListener('click', function() {
+                    const input = this.previousElementSibling;
+                    let value = parseInt(input.value, 10);
+                    if (value < 99) {
+                        input.value = value + 1;
+                        updateQuantity(input);
+                    }
+                });
+            });
+            
+            // Setup input change events
+            document.querySelectorAll('.quantity-input').forEach(input => {
+                input.addEventListener('change', function() {
+                    updateQuantity(this);
+                });
+                
+                input.addEventListener('keyup', function(e) {
+                    if (e.key === 'Enter') {
+                        updateQuantity(this);
+                    }
+                });
+            });
+        }
+        
+        // Function to update quantity via AJAX
+        function updateQuantity(inputElement) {
+            const productSlug = inputElement.getAttribute('data-slug');
+            const newQuantity = parseInt(inputElement.value, 10);
+            
+            if (!productSlug || isNaN(newQuantity) || newQuantity < 1) {
+                return;
+            }
+            
+            // Cap at 99
+            const quantity = Math.min(99, newQuantity);
+            inputElement.value = quantity;
+            
+            // Find the row and subtotal element
+            const row = inputElement.closest('tr');
+            const subtotalEl = row ? row.querySelector('td:nth-child(4) .text-sm') : null;
+            
+            if (subtotalEl) {
+                const originalText = subtotalEl.textContent;
+                subtotalEl.textContent = 'Updating...';
+                
+                // Update server
+                fetch(`/cart/update-quantity/${productSlug}/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: `quantity=${quantity}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Update subtotal
+                        if (subtotalEl) {
+                            subtotalEl.textContent = data.item_subtotal;
+                        }
+                        
+                        // Update total if provided
+                        if (data.cart_total) {
+                            const totalElement = document.querySelector('.flex.justify-between.text-base p:last-child');
+                            if (totalElement) {
+                                totalElement.textContent = data.cart_total;
+                            }
+                        }
+                        
+                        // Update localStorage cart - simple quantity value
+                        const localCart = JSON.parse(localStorage.getItem(CART_STORAGE_KEY) || '{}');
+                        localCart[productSlug] = quantity;
+                        localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(localCart));
+                        
+                        // Update cart icon counter in header
+                        if (typeof updateCartUI === 'function') {
+                            updateCartUI();
+                        }
+                    } else {
+                        // Revert to original text if there was an error
+                        subtotalEl.textContent = originalText;
+                        alert(data.error || 'Error updating quantity');
+                        // Reset input to match server state
+                        inputElement.value = data.current_quantity || 1;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    subtotalEl.textContent = originalText;
+                    alert('An error occurred while updating the quantity');
                 });
             }
-        })
-        .catch(error => {
-            console.error('Error loading cart:', error);
-            cartContainer.innerHTML = `
-                <div class="bg-red-100 p-4 rounded-md">
-                    <p class="text-red-700">There was an error loading your cart. Please try again later.</p>
-                </div>
-            `;
-        });
-    }
+        }
+
+        // After loading cart via AJAX, set up the quantity buttons
+        const originalLoadCart = window.loadCart;
+        if (originalLoadCart) {
+            window.loadCart = function() {
+                originalLoadCart.apply(this, arguments);
+                // Setup quantity buttons after the cart is loaded
+                setTimeout(setupQuantityButtons, 100);
+            };
+        }
+    });
 </script>
 {% endblock %} 

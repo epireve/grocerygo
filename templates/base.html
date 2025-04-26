@@ -52,7 +52,7 @@
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                         </svg>
-                        <span class="cart-count absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center hidden">0</span>
+                        <span id="cart-counter" class="cart-count absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center hidden">0</span>
                     </a>
                 </div>
                 <!-- Mobile menu button -->
@@ -278,15 +278,22 @@
         
         // Update cart UI (cart count in header)
         function updateCartUI() {
-            const cart = getCart();
-            const itemCount = Object.values(cart).reduce((a, b) => a + b, 0);
-            
-            // Update cart count elements if they exist
-            const cartCountElements = document.querySelectorAll('.cart-count');
-            cartCountElements.forEach(el => {
-                el.textContent = itemCount;
-                el.classList.toggle('hidden', itemCount === 0);
-            });
+            const cartCounter = document.getElementById('cart-counter');
+            if (cartCounter) {
+                // Get cart from localStorage
+                const localCart = JSON.parse(localStorage.getItem(CART_STORAGE_KEY) || '{}');
+                
+                // Calculate total quantity across all items
+                const totalQuantity = Object.values(localCart).reduce((sum, quantity) => sum + Number(quantity), 0);
+                
+                if (totalQuantity > 0) {
+                    cartCounter.textContent = totalQuantity;
+                    cartCounter.classList.remove('hidden');
+                } else {
+                    cartCounter.textContent = '0';
+                    cartCounter.classList.add('hidden');
+                }
+            }
         }
         
         // Helper function to get CSRF token from cookies
@@ -303,6 +310,40 @@
                 }
             }
             return cookieValue;
+        }
+
+        // Function to clear the cart
+        function clearCart() {
+            fetch("{% url 'cart:clear_cart' %}", {
+                method: "POST",
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest",
+                    "X-CSRFToken": getCookie("csrftoken"),
+                },
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Clear localStorage cart
+                localStorage.setItem(CART_STORAGE_KEY, JSON.stringify({}));
+                setCartExpiry();
+
+                // Update UI
+                updateCartUI();
+
+                // Display message if on cart page
+                if(window.location.pathname.includes('/cart/view/')) {
+                    // Reload the cart page to show empty cart
+                    location.reload();
+                }
+            })
+            .catch(error => {
+                console.error('Error clearing cart:', error);
+            });
         }
     </script>
 
