@@ -5,6 +5,15 @@ All notable changes to the GroceryGo project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.5] - 2025-05-01
+
+### Fixed
+
+1. Navigation & UI Improvements
+   - Fixed duplicate cart links in the site navigation
+   - Ensured mobile menu cart link points to the correct URL
+   - Improved overall UI consistency in navigation elements
+
 ## [0.0.4] - 2025-04-30
 
 ### Fixed

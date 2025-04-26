@@ -13,12 +13,12 @@ def home(request):
 
     # Get featured products, limit to 8
     featured_products = Product.objects.filter(
-        is_featured=True, active=True, parent=None
+        is_featured=True, is_active=True, parent=None
     )[:8]
 
     # If we have less than 8 featured products, add some regular products
     if featured_products.count() < 8:
-        regular_products = Product.objects.filter(active=True, parent=None).exclude(
+        regular_products = Product.objects.filter(is_active=True, parent=None).exclude(
             id__in=[p.id for p in featured_products]
         )
         needed = 8 - featured_products.count()

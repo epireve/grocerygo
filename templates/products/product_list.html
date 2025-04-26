@@ -38,8 +38,8 @@
                             {% endif %}
                         </p>
                         <div class="flex justify-between items-center mt-3">
-                            <span class="font-bold text-lg">${{ product.price }}</span>
-                            <a href="{% url 'products:product_detail' product.id %}" class="text-blue-600 hover:text-blue-500">View</a>
+                            <span class="font-bold text-lg">RM{{ product.price }}</span>
+                            <a href="{% url 'products:product_detail' product.slug %}" class="text-blue-600 hover:text-blue-500">View</a>
                         </div>
                     </div>
                 </div>

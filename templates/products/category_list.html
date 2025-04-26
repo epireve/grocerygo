@@ -85,9 +85,9 @@
                             {% endif %}
                         </div>
                         <h3 class="text-lg font-medium text-gray-800 group-hover:text-green-600">{{ product.name }}</h3>
-                        <p class="text-green-600 font-semibold mt-1">${{ product.price }}</p>
+                        <p class="text-green-600 font-semibold mt-1">RM{{ product.price }}</p>
                         {% if product.discount_price %}
-                        <p class="text-sm text-gray-500 line-through">${{ product.regular_price }}</p>
+                        <p class="text-sm text-gray-500 line-through">RM{{ product.regular_price }}</p>
                         {% endif %}
                     </div>
                 </div>

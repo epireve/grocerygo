@@ -8,6 +8,7 @@
     {% tailwind_css %}
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     {% block extra_css %}{% endblock %}
+    {% block extra_head %}{% endblock %}
 </head>
 <body class="bg-gray-50 min-h-screen flex flex-col">
     <header class="bg-white shadow-sm">
@@ -20,34 +21,78 @@
                         </a>
                     </div>
                     <nav class="hidden sm:ml-6 sm:flex sm:space-x-8">
-                        <a href="/" class="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900">
+                        <a href="/" class="inline-flex items-center px-1 pt-1 text-sm font-medium {% if request.path == '/' %}text-emerald-600 border-b-2 border-emerald-600{% else %}text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %}">
                             Home
                         </a>
-                        <a href="{% url 'products:product_list' %}" class="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 hover:text-gray-700">
+                        <a href="{% url 'products:product_list' %}" class="inline-flex items-center px-1 pt-1 text-sm font-medium {% if 'products/' in request.path and 'categories' not in request.path %}text-emerald-600 border-b-2 border-emerald-600{% else %}text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %}">
                             Products
                         </a>
-                        <a href="{% url 'products:category_list' %}" class="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 hover:text-gray-700">
+                        <a href="{% url 'products:category_list' %}" class="inline-flex items-center px-1 pt-1 text-sm font-medium {% if 'categories' in request.path %}text-emerald-600 border-b-2 border-emerald-600{% else %}text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %}">
                             Categories
                         </a>
-                        <a href="#" class="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 hover:text-gray-700">
+                        <a href="#" class="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300">
                             About
                         </a>
                     </nav>
                 </div>
                 <div class="hidden sm:ml-6 sm:flex sm:items-center">
-                    <a href="#" class="inline-flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-500 hover:text-gray-700">
-                        <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'accounts:profile' %}" class="text-base font-medium text-gray-500 hover:text-gray-900">Account</a>
+                        <form method="post" action="{% url 'accounts:logout' %}" class="inline-block">
+                            {% csrf_token %}
+                            <button type="submit" class="ml-8 text-base font-medium text-gray-500 hover:text-gray-900">Logout</button>
+                        </form>
+                    {% else %}
+                        <a href="{% url 'accounts:login' %}" class="text-base font-medium text-gray-500 hover:text-gray-900">Sign in</a>
+                        <a href="{% url 'accounts:register' %}" class="ml-8 inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700">Sign up</a>
+                    {% endif %}
+                    
+                    <!-- Cart indicator -->
+                    <a href="{% url 'cart:view_cart' %}" class="ml-8 relative text-gray-500 hover:text-gray-900">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                         </svg>
-                        <span class="ml-1">Cart</span>
-                    </a>
-                    <a href="{% url 'accounts:login' %}" class="ml-4 inline-flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-500 hover:text-gray-700">
-                        <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                        </svg>
-                        <span class="ml-1">Account</span>
+                        <span class="cart-count absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center hidden">0</span>
                     </a>
                 </div>
+                <!-- Mobile menu button -->
+                <div class="flex items-center sm:hidden">
+                    <button type="button" id="mobile-menu-button" class="inline-flex items-center justify-center p-2 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-emerald-500">
+                        <span class="sr-only">Open main menu</span>
+                        <!-- Menu closed icon -->
+                        <svg id="menu-closed-icon" class="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                        <!-- Menu open icon -->
+                        <svg id="menu-open-icon" class="hidden h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile menu, show/hide based on menu state -->
+        <div id="mobile-menu" class="hidden sm:hidden">
+            <div class="px-2 pt-2 pb-3 space-y-1">
+                <a href="/" class="block px-3 py-2 rounded-md text-base font-medium {% if request.path == '/' %}text-emerald-600 bg-emerald-50{% else %}text-gray-700 hover:bg-gray-100{% endif %}">
+                    Home
+                </a>
+                <a href="{% url 'products:product_list' %}" class="block px-3 py-2 rounded-md text-base font-medium {% if 'products/' in request.path and 'categories' not in request.path %}text-emerald-600 bg-emerald-50{% else %}text-gray-700 hover:bg-gray-100{% endif %}">
+                    Products
+                </a>
+                <a href="{% url 'products:category_list' %}" class="block px-3 py-2 rounded-md text-base font-medium {% if 'categories' in request.path %}text-emerald-600 bg-emerald-50{% else %}text-gray-700 hover:bg-gray-100{% endif %}">
+                    Categories
+                </a>
+                <a href="#" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100">
+                    About
+                </a>
+                <a href="{% url 'cart:view_cart' %}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100">
+                    Cart
+                </a>
+                <a href="{% url 'accounts:login' %}" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100">
+                    Account
+                </a>
             </div>
         </div>
     </header>
@@ -87,6 +132,179 @@
             </div>
         </div>
     </footer>
+
+    <script>
+        // Mobile menu toggle
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const menuClosedIcon = document.getElementById('menu-closed-icon');
+        const menuOpenIcon = document.getElementById('menu-open-icon');
+        
+        mobileMenuButton.addEventListener('click', function() {
+            mobileMenu.classList.toggle('hidden');
+            menuClosedIcon.classList.toggle('hidden');
+            menuOpenIcon.classList.toggle('hidden');
+        });
+
+        // Cart utility functions
+        const CART_STORAGE_KEY = 'grocerygo_cart';
+        const CART_EXPIRY_KEY = 'grocerygo_cart_expiry';
+        const CART_VALIDITY_DAYS = 30;
+        
+        // Initialize cart when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeCart();
+            
+            // Update cart count in UI
+            updateCartUI();
+        });
+        
+        // Get cart from localStorage or initialize if not exists
+        function initializeCart() {
+            if (!localStorage.getItem(CART_STORAGE_KEY)) {
+                // Initialize empty cart and set expiry
+                localStorage.setItem(CART_STORAGE_KEY, JSON.stringify({}));
+                setCartExpiry();
+            } else {
+                // Check if cart is expired
+                const expiryDate = new Date(localStorage.getItem(CART_EXPIRY_KEY));
+                if (expiryDate < new Date()) {
+                    // Reset cart if expired
+                    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify({}));
+                    setCartExpiry();
+                }
+            }
+            
+            // Sync with Django session (if user is logged in)
+            syncCartWithSession();
+        }
+        
+        // Set cart expiry date (30 days from now)
+        function setCartExpiry() {
+            const expiryDate = new Date();
+            expiryDate.setDate(expiryDate.getDate() + CART_VALIDITY_DAYS);
+            localStorage.setItem(CART_EXPIRY_KEY, expiryDate.toISOString());
+        }
+        
+        // Add item to cart
+        function addToCart(slug, quantity = 1) {
+            // Check cart expiry
+            const expiryDate = new Date(localStorage.getItem(CART_EXPIRY_KEY));
+            if (expiryDate < new Date()) {
+                localStorage.setItem(CART_STORAGE_KEY, JSON.stringify({}));
+                setCartExpiry();
+            }
+            
+            // Get current cart
+            const cart = JSON.parse(localStorage.getItem(CART_STORAGE_KEY));
+            
+            // Add or update item
+            if (cart[slug]) {
+                cart[slug] += parseInt(quantity);
+            } else {
+                cart[slug] = parseInt(quantity);
+            }
+            
+            // Save back to localStorage
+            localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+            setCartExpiry(); // Reset expiry on any cart modification
+            
+            // Sync with server (via AJAX call)
+            syncCartWithServer(cart);
+            
+            return cart;
+        }
+        
+        // Remove item from cart
+        function removeFromCart(slug) {
+            const cart = JSON.parse(localStorage.getItem(CART_STORAGE_KEY));
+            if (cart[slug]) {
+                delete cart[slug];
+                localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+                setCartExpiry(); // Reset expiry on any cart modification
+                
+                // Sync with server
+                syncCartWithServer(cart);
+            }
+            return cart;
+        }
+        
+        // Get current cart
+        function getCart() {
+            // Check expiry first
+            const expiryDate = new Date(localStorage.getItem(CART_EXPIRY_KEY));
+            if (expiryDate < new Date()) {
+                localStorage.setItem(CART_STORAGE_KEY, JSON.stringify({}));
+                setCartExpiry();
+                return {};
+            }
+            
+            return JSON.parse(localStorage.getItem(CART_STORAGE_KEY)) || {};
+        }
+        
+        // Sync cart with server session
+        function syncCartWithServer(cart) {
+            fetch('/cart/sync/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({cart: cart})
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Optional: Update cart count in UI
+                updateCartUI();
+            })
+            .catch(error => console.error('Error syncing cart:', error));
+        }
+        
+        // Get cart from server session when page loads
+        function syncCartWithSession() {
+            fetch('/cart/get-session-cart/')
+            .then(response => response.json())
+            .then(data => {
+                // Only update localStorage if session has items and localStorage is empty
+                const localCart = getCart();
+                if (Object.keys(localCart).length === 0 && Object.keys(data.cart).length > 0) {
+                    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(data.cart));
+                    setCartExpiry();
+                    updateCartUI();
+                }
+            })
+            .catch(error => console.error('Error getting session cart:', error));
+        }
+        
+        // Update cart UI (cart count in header)
+        function updateCartUI() {
+            const cart = getCart();
+            const itemCount = Object.values(cart).reduce((a, b) => a + b, 0);
+            
+            // Update cart count elements if they exist
+            const cartCountElements = document.querySelectorAll('.cart-count');
+            cartCountElements.forEach(el => {
+                el.textContent = itemCount;
+                el.classList.toggle('hidden', itemCount === 0);
+            });
+        }
+        
+        // Helper function to get CSRF token from cookies
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    </script>
 
     {% block extra_js %}{% endblock %}
 </body>

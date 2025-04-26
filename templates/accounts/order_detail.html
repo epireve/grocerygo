@@ -101,11 +101,11 @@
                                 <div>
                                     <div class="flex justify-between text-sm font-medium text-gray-900">
                                         <h5>
-                                            <a href="{% url 'products:product_detail' item.product.id %}">
+                                            <a href="{% url 'products:product_detail' item.product.slug %}">
                                                 {{ item.product.name }}
                                             </a>
                                         </h5>
-                                        <p class="ml-4">${{ item.price }}</p>
+                                        <p class="ml-4">RM{{ item.price }}</p>
                                     </div>
                                     <p class="mt-1 text-sm text-gray-500">
                                         {% if item.product.category %}
@@ -115,7 +115,7 @@
                                 </div>
                                 <div class="flex-1 flex items-end justify-between text-sm">
                                     <p class="text-gray-500">Qty {{ item.quantity }}</p>
-                                    <p class="text-gray-500">Subtotal: ${{ item.get_subtotal }}</p>
+                                    <p class="text-gray-500">Subtotal: RM{{ item.get_subtotal }}</p>
                                 </div>
                             </div>
                         </li>
@@ -129,22 +129,22 @@
                 <dl class="space-y-2">
                     <div class="flex justify-between">
                         <dt class="text-sm text-gray-600">Subtotal</dt>
-                        <dd class="text-sm font-medium text-gray-900">${{ order.subtotal }}</dd>
+                        <dd class="text-sm font-medium text-gray-900">RM{{ order.subtotal }}</dd>
                     </div>
                     
                     <div class="flex justify-between">
                         <dt class="text-sm text-gray-600">Shipping</dt>
-                        <dd class="text-sm font-medium text-gray-900">${{ order.shipping_cost|default:"0.00" }}</dd>
+                        <dd class="text-sm font-medium text-gray-900">RM{{ order.shipping_cost|default:"0.00" }}</dd>
                     </div>
                     
                     <div class="flex justify-between">
                         <dt class="text-sm text-gray-600">Tax</dt>
-                        <dd class="text-sm font-medium text-gray-900">${{ order.tax|default:"0.00" }}</dd>
+                        <dd class="text-sm font-medium text-gray-900">RM{{ order.tax|default:"0.00" }}</dd>
                     </div>
                     
                     <div class="border-t border-gray-200 pt-2 flex justify-between">
                         <dt class="text-base font-medium text-gray-900">Total</dt>
-                        <dd class="text-base font-medium text-gray-900">${{ order.total_price }}</dd>
+                        <dd class="text-base font-medium text-gray-900">RM{{ order.total_price }}</dd>
                     </div>
                 </dl>
             </div>
