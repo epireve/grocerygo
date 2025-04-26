@@ -94,16 +94,6 @@ We've created helpful scripts to streamline development:
 ./scripts/run-dev.sh stop
 ```
 
-### Task Management
-
-When completing a task, use:
-
-```bash
-./scripts/task-complete.sh <task-id> "Description of what was done"
-```
-
-This will mark the task as completed and push your changes to GitHub in a single step.
-
 ### Additional Scripts Documentation
 
 For more details about the available scripts and their options, see [scripts/README.md](scripts/README.md).
