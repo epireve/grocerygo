@@ -94,6 +94,19 @@ We've created helpful scripts to streamline development:
 ./scripts/run-dev.sh stop
 ```
 
+### Admin Access
+
+The application includes a Django admin interface for managing content:
+
+- **URL**: http://127.0.0.1:8000/admin/
+- **Username**: grocerygoadmin
+- **Password**: *Use the password you set during setup*
+
+> **Note**: If you need to create a new admin user, run:
+> ```
+> source venv/bin/activate && venv/bin/python manage.py createsuperuser
+> ```
+
 ### Additional Scripts Documentation
 
 For more details about the available scripts and their options, see [scripts/README.md](scripts/README.md).
