@@ -123,8 +123,37 @@ The project follows Django's MVT (Model-View-Template) architecture:
 - `orders/` - App for order processing and management
 - `templates/` - HTML templates
 - `static/` - Static files (CSS, JS, images)
-- `grocery_go/` - Tailwind CSS configuration
+- `theme/` - Tailwind CSS configuration
 - `scripts/` - Development workflow scripts
+
+## Available Pages and Routes
+
+### Core Module
+- `/` - Home page
+
+### Authentication and User Account
+- `/accounts/login/` - User login
+- `/accounts/logout/` - User logout
+- `/accounts/register/` - New user registration
+- `/accounts/profile/` - User profile (requires login)
+- `/accounts/password-reset/` - Request password reset
+- `/accounts/password-reset/done/` - Password reset email sent confirmation
+- `/accounts/password-reset-confirm/<uidb64>/<token>/` - Set new password
+- `/accounts/password-reset-complete/` - Password reset success confirmation
+- `/accounts/password-change/` - Change password form (requires login)
+
+### User Order Management 
+- `/accounts/order-history/` - List of user's past orders
+- `/accounts/order-detail/<order_id>/` - Detailed view of a specific order
+
+### Product Management
+- Coming soon: Product listing, detail, and category pages
+
+### Shopping Cart 
+- Coming soon: Cart management and checkout process
+
+### Admin Interface
+- `/admin/` - Django administration interface for site management
 
 ## License
 
