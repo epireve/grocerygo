@@ -19,12 +19,18 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from products.views import categories_view, category_detail_view, product_detail_view
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", include("core.urls", namespace="core")),
     path("accounts/", include("accounts.urls", namespace="accounts")),
+    # Products app URLs
     path("products/", include("products.urls", namespace="products")),
+    # Top-level URLs with the products namespace
+    path("categories/", categories_view, name="category_list"),
+    path("category/<slug:slug>/", category_detail_view, name="category_detail"),
+    path("product/<slug:slug>/", product_detail_view, name="product_detail"),
     path("cart/", include("cart.urls", namespace="cart")),
     path("orders/", include("orders.urls", namespace="orders")),
     path("__reload__/", include("django_browser_reload.urls")),

@@ -18,6 +18,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
    - Updated the updateCartIcon JavaScript function to target the correct element ID (cart-counter instead of cart-count)
    - Added proper visibility toggling for the cart counter badge based on item count
 
+3. URL Namespace Resolution
+   - Fixed NoReverseMatch errors related to URL namespace issues in templates
+   - Updated product-related URLs in templates to use proper namespace 'products:product_list'
+   - Improved URL structure consistency between namespaced and top-level URL patterns
+   - Ensured home page and navigation elements correctly reference product list views
+
 ## [0.0.9] - 2025-04-26
 
 ### Added

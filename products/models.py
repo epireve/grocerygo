@@ -30,7 +30,7 @@ class Category(models.Model):
         super().save(*args, **kwargs)
 
     def get_absolute_url(self):
-        return reverse("products:category_detail", args=[self.slug])
+        return reverse("category_detail", args=[self.slug])
 
 
 class Product(models.Model):
@@ -68,7 +68,7 @@ class Product(models.Model):
         super().save(*args, **kwargs)
 
     def get_absolute_url(self):
-        return reverse("products:product_detail", args=[self.slug])
+        return reverse("product_detail", args=[self.slug])
 
     @property
     def has_variants(self):

@@ -42,18 +42,11 @@ def product_detail_view(request, slug):
 def categories_view(request):
     """View for displaying all parent categories"""
     categories = Category.objects.filter(active=True, parent=None)
-
-    # Add subcategory count for each parent category
     for category in categories:
         category.subcategory_count = category.children.filter(active=True).count()
-
-    return render(
-        request,
-        "products/categories.html",
-        {
-            "categories": categories,
-        },
-    )
+        # Add the subcategories to each category
+        category.subcategories = category.children.filter(active=True)
+    return render(request, "products/categories.html", {"categories": categories})
 
 
 def category_detail_view(request, slug):
@@ -72,6 +65,9 @@ def category_detail_view(request, slug):
 
         # Get active subcategories
         subcategories = category.children.filter(active=True)
+
+        # Add the subcategories property to the category object for consistency
+        category.subcategories = subcategories
 
         # Get sibling categories if this is a subcategory
         siblings = []

@@ -11,13 +11,13 @@
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mx-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
         </svg>
-        <a href="{% url 'products:category_list' %}" class="hover:text-green-600">Categories</a>
+        <a href="{% url 'category_list' %}" class="hover:text-green-600">Categories</a>
         
         {% if category.parent %}
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mx-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
         </svg>
-        <a href="{% url 'products:category_detail' category.parent.slug %}" class="hover:text-green-600">{{ category.parent.name }}</a>
+        <a href="{% url 'category_detail' category.parent.slug %}" class="hover:text-green-600">{{ category.parent.name }}</a>
         {% endif %}
         
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mx-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -49,7 +49,7 @@
             {% if category.parent %}
             <div class="mb-2">
                 <span class="text-gray-500">Parent Category:</span>
-                <a href="{% url 'products:category_detail' category.parent.slug %}" class="text-green-600 hover:underline">{{ category.parent.name }}</a>
+                <a href="{% url 'category_detail' category.parent.slug %}" class="text-green-600 hover:underline">{{ category.parent.name }}</a>
             </div>
             {% endif %}
         </div>
@@ -61,7 +61,7 @@
         <h2 class="text-2xl font-semibold text-gray-800 mb-4">Main Categories</h2>
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {% for parent_category in parent_categories %}
-            <a href="{% url 'products:category_detail' parent_category.slug %}" class="group">
+            <a href="{% url 'category_detail' parent_category.slug %}" class="group">
                 <div class="bg-white rounded-lg shadow-md overflow-hidden transform transition hover:shadow-xl hover:-translate-y-1">
                     {% if parent_category.image %}
                     <img src="{{ parent_category.image.url }}" alt="{{ parent_category.name }}" class="h-48 w-full object-cover">
@@ -91,7 +91,7 @@
         <h2 class="text-2xl font-semibold text-gray-800 mb-4">Subcategories</h2>
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {% for subcategory in subcategories %}
-            <a href="{% url 'products:category_detail' subcategory.slug %}" class="group">
+            <a href="{% url 'category_detail' subcategory.slug %}" class="group">
                 <div class="bg-white rounded-lg shadow-md overflow-hidden transform transition hover:shadow-xl hover:-translate-y-1">
                     {% if subcategory.image %}
                     <img src="{{ subcategory.image.url }}" alt="{{ subcategory.name }}" class="h-40 w-full object-cover">
@@ -121,7 +121,7 @@
         <h2 class="text-2xl font-semibold text-gray-800 mb-4">Related Categories</h2>
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {% for sibling in siblings %}
-            <a href="{% url 'products:category_detail' sibling.slug %}" class="group">
+            <a href="{% url 'category_detail' sibling.slug %}" class="group">
                 <div class="bg-white rounded-lg shadow-md overflow-hidden transform transition hover:shadow-xl hover:-translate-y-1">
                     {% if sibling.image %}
                     <img src="{{ sibling.image.url }}" alt="{{ sibling.name }}" class="h-40 w-full object-cover">
@@ -151,7 +151,7 @@
         <h2 class="text-2xl font-semibold text-gray-800 mb-4">Products</h2>
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {% for product in products %}
-            <a href="{% url 'products:product_detail' product.slug %}" class="group">
+            <a href="{% url 'product_detail' product.slug %}" class="group">
                 <div class="bg-white rounded-lg shadow-md overflow-hidden transform transition hover:shadow-xl hover:-translate-y-1">
                     {% if product.image %}
                     <img src="{{ product.image.url }}" alt="{{ product.name }}" class="h-48 w-full object-cover">
@@ -164,9 +164,11 @@
                     {% endif %}
                     <div class="p-4">
                         <h3 class="text-lg font-medium text-gray-800 group-hover:text-green-600">{{ product.name }}</h3>
-                        <p class="text-green-600 font-semibold mt-1">RM{{ product.price }}</p>
                         {% if product.discount_price %}
-                        <p class="text-sm text-gray-500 line-through">RM{{ product.regular_price }}</p>
+                        <p class="text-green-600 font-semibold mt-1">RM{{ product.discount_price }}</p>
+                        <p class="text-sm text-gray-500 line-through">RM{{ product.price }}</p>
+                        {% else %}
+                        <p class="text-green-600 font-semibold mt-1">RM{{ product.price }}</p>
                         {% endif %}
                     </div>
                 </div>
