@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Order Confirmation - GroceryGo{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="bg-white shadow-md rounded-lg p-6 mb-8">
+        <div class="flex items-center justify-between border-b pb-4 mb-4">
+            <h1 class="text-2xl font-bold text-gray-800">Order Confirmation</h1>
+            <span class="text-gray-600">Order #{{ order.id }}</span>
+        </div>
+
+        <div class="bg-green-50 border-l-4 border-green-400 p-4 mb-6">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-green-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm text-green-700">
+                        Thank you for your order! We've received your order and will begin processing it soon.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Details -->
+        <div class="mb-8">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">Order Details</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <h3 class="text-gray-600 font-medium mb-2">Order Information</h3>
+                    <div class="bg-gray-50 p-4 rounded">
+                        <p><span class="font-medium">Order Date:</span> {{ order.created_at|date:"F j, Y, g:i a" }}</p>
+                        <p><span class="font-medium">Order Status:</span> {{ order.get_status_display }}</p>
+                        <p><span class="font-medium">Payment Method:</span> {{ order.get_payment_method_display }}</p>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-gray-600 font-medium mb-2">Shipping Address</h3>
+                    <div class="bg-gray-50 p-4 rounded">
+                        <p>{{ order.shipping_address.full_name }}</p>
+                        <p>{{ order.shipping_address.street_address }}</p>
+                        {% if order.shipping_address.apartment_unit %}
+                            <p>{{ order.shipping_address.apartment_unit }}</p>
+                        {% endif %}
+                        <p>{{ order.shipping_address.city }}, {{ order.shipping_address.state }} {{ order.shipping_address.postal_code }}</p>
+                        <p>{{ order.shipping_address.country }}</p>
+                        <p>{{ order.shipping_address.phone }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Items -->
+        <div class="mb-8">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">Order Items</h2>
+            <div class="border rounded-lg overflow-hidden">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Product
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Price
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Quantity
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Total
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for item in order_items %}
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <div class="h-10 w-10 flex-shrink-0">
+                                        {% if item.product.primary_image %}
+                                            <img class="h-10 w-10 rounded-full object-cover" src="{{ item.product.primary_image.url }}" alt="{{ item.product.name }}">
+                                        {% else %}
+                                            <div class="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
+                                                <span class="text-gray-500 text-xs">No img</span>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="ml-4">
+                                        <div class="text-sm font-medium text-gray-900">
+                                            {{ item.product.name }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900">RM{{ item.price }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900">{{ item.quantity }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900">RM{{ item.total }}</div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Order Summary -->
+        <div class="mb-8">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">Order Summary</h2>
+            <div class="bg-gray-50 p-4 rounded">
+                <div class="flex justify-between py-2">
+                    <span class="text-gray-600">Subtotal:</span>
+                    <span class="font-medium">RM{{ order.subtotal }}</span>
+                </div>
+                <div class="flex justify-between py-2">
+                    <span class="text-gray-600">Shipping:</span>
+                    <span class="font-medium">RM{{ order.shipping_cost }}</span>
+                </div>
+                <div class="flex justify-between py-2">
+                    <span class="text-gray-600">Tax:</span>
+                    <span class="font-medium">RM{{ order.tax }}</span>
+                </div>
+                <div class="flex justify-between py-2 border-t border-gray-200 font-bold">
+                    <span class="text-gray-800">Total:</span>
+                    <span class="text-gray-800">RM{{ order.total }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex justify-between mt-8">
+            <a href="{% url 'products:home' %}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                Continue Shopping
+            </a>
+            <a href="#" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                View Order History
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %} 

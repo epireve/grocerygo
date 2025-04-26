@@ -11,7 +11,7 @@ urlpatterns = [
     path("add/<slug:slug>/", views.add_to_cart, name="add_to_cart"),
     path("view/", views.view_cart, name="view_cart"),
     path("remove/<slug:slug>/", views.remove_from_cart, name="remove_from_cart"),
-    path("update-quantity/<slug:slug>/", views.update_quantity, name="update_quantity"),
+    path("update/<slug:slug>/", views.update_quantity, name="update_quantity"),
     path("clear/", views.clear_cart, name="clear_cart"),
     # API endpoints for localStorage sync
     path("sync/", views.sync_cart, name="sync_cart"),
