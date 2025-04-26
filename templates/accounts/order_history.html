@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Order History - GroceryGo{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto my-10 px-4 sm:px-6 lg:px-8">
+    <div class="mb-8">
+        <h1 class="text-2xl font-bold text-gray-900">Order History</h1>
+        <p class="mt-1 text-sm text-gray-500">View and track your past orders</p>
+    </div>
+    
+    {% if orders %}
+        <div class="bg-white shadow overflow-hidden sm:rounded-lg mb-8">
+            <ul role="list" class="divide-y divide-gray-200">
+                {% for order in orders %}
+                    <li>
+                        <div class="px-4 py-4 sm:px-6">
+                            <div class="flex items-center justify-between">
+                                <div class="flex flex-col">
+                                    <p class="text-sm font-medium text-blue-600 truncate">
+                                        Order #{{ order.id }}
+                                    </p>
+                                    <p class="text-sm text-gray-500">
+                                        {{ order.created_at|date:"F j, Y, g:i a" }}
+                                    </p>
+                                </div>
+                                <div class="ml-2 flex-shrink-0 flex">
+                                    <p class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                        {% if order.status == 'completed' %}
+                                            bg-green-100 text-green-800
+                                        {% elif order.status == 'processing' %}
+                                            bg-yellow-100 text-yellow-800
+                                        {% elif order.status == 'shipped' %}
+                                            bg-blue-100 text-blue-800
+                                        {% elif order.status == 'cancelled' %}
+                                            bg-red-100 text-red-800
+                                        {% else %}
+                                            bg-gray-100 text-gray-800
+                                        {% endif %}
+                                    ">
+                                        {{ order.status|title }}
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-2 flex justify-between">
+                                <div>
+                                    <p class="text-sm text-gray-600">
+                                        {{ order.get_item_count }} item{{ order.get_item_count|pluralize }}
+                                    </p>
+                                    <p class="text-sm font-medium text-gray-900">
+                                        Total: ${{ order.total_price }}
+                                    </p>
+                                </div>
+                                <div>
+                                    <a href="{% url 'accounts:order_detail' order.id %}" class="text-sm font-medium text-blue-600 hover:text-blue-500">
+                                        View details<span class="sr-only"> for order #{{ order.id }}</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+        
+        {% if is_paginated %}
+            <nav class="border-t border-gray-200 px-4 flex items-center justify-between sm:px-0">
+                <div class="w-0 flex-1 flex">
+                    {% if page_obj.has_previous %}
+                        <a href="?page={{ page_obj.previous_page_number }}" class="border-t-2 border-transparent pt-4 pr-1 inline-flex items-center text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                            <svg class="mr-3 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                <path fill-rule="evenodd" d="M7.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l2.293 2.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+                            </svg>
+                            Previous
+                        </a>
+                    {% endif %}
+                </div>
+                <div class="hidden md:flex">
+                    {% for i in paginator.page_range %}
+                        <a href="?page={{ i }}" class="{% if page_obj.number == i %}border-blue-500 text-blue-600{% else %}border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} border-t-2 pt-4 px-4 inline-flex items-center text-sm font-medium">
+                            {{ i }}
+                        </a>
+                    {% endfor %}
+                </div>
+                <div class="w-0 flex-1 flex justify-end">
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}" class="border-t-2 border-transparent pt-4 pl-1 inline-flex items-center text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                            Next
+                            <svg class="ml-3 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                <path fill-rule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+                            </svg>
+                        </a>
+                    {% endif %}
+                </div>
+            </nav>
+        {% endif %}
+        
+    {% else %}
+        <div class="bg-white shadow sm:rounded-lg">
+            <div class="px-4 py-5 sm:p-6 text-center">
+                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                </svg>
+                <h3 class="mt-2 text-sm font-medium text-gray-900">No orders found</h3>
+                <p class="mt-1 text-sm text-gray-500">
+                    You haven't placed any orders yet. Start shopping to create your first order.
+                </p>
+                <div class="mt-6">
+                    <a href="{% url 'products:product_list' %}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        Browse products
+                    </a>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+    
+    <div class="mt-6">
+        <a href="{% url 'accounts:profile' %}" class="text-sm font-medium text-blue-600 hover:text-blue-500">
+            &larr; Back to profile
+        </a>
+    </div>
+</div>
+{% endblock %} 

@@ -41,3 +41,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
    - Created run-dev.sh script to start both Django and Tailwind CSS servers
    - Created task-complete.sh script for task completion and GitHub push
    - Added documentation for development workflow 
+
+## [0.0.2] - 2025-04-27
+
+### Added
+
+1. Authentication Templates
+   - Created `register.html` for user registration
+   - Created/enhanced `login.html` for user login
+   - Implemented password reset flow templates:
+     - `password_reset.html` - Form to request password reset
+     - `password_reset_done.html` - Confirmation page after request
+     - `password_reset_confirm.html` - Form to set new password
+     - `password_reset_complete.html` - Reset success page
+     - `password_reset_email.html` - Email template for reset links
+     - `password_reset_subject.txt` - Email subject line
+   - Added `password_change.html` for authenticated users
+
+2. User Account Templates
+   - Implemented `profile.html` for user profile management
+   - Added order management templates:
+     - `order_history.html` - For viewing past orders
+     - `order_detail.html` - For detailed order information
+
+3. Documentation
+   - Updated README with available pages and routes by module
+   - Added comprehensive Tailwind CSS styling to all templates
+   - Ensured consistent design language across authentication flows 
