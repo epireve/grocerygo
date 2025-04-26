@@ -12,6 +12,8 @@ scripts/*
 !scripts/add_produce_products.py
 !scripts/add_all_products.py
 !scripts/import-products.sh
+!scripts/run_browser_test.py
+screenshots/
 tasks/
 .env
 .env.example

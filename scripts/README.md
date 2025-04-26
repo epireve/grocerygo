@@ -1,97 +1,86 @@
-# GroceryGo Development Scripts
+# Development Scripts for GroceryGo
 
-This directory contains helpful scripts for developing the GroceryGo application.
+This directory contains useful scripts for development, deployment, and testing of the GroceryGo application.
 
-## Development Workflow
+## Available Scripts
 
-### Starting the Development Environment
+### Development Workflow
 
-Run the development environment (Django + Tailwind CSS) with one command:
+- **run-dev.sh**: Start both the Django development server and Tailwind CSS watcher
+  ```bash
+  ./scripts/run-dev.sh [--no-tailwind] [--migrate] [--cleanup]
+  ```
+  Options:
+  - `--no-tailwind`: Run only the Django server without Tailwind CSS
+  - `--migrate`: Run migrations before starting servers
+  - `--cleanup`: Kill any existing Django and Tailwind processes before starting
 
-```bash
-./scripts/run-dev.sh
-```
+- **task-complete.sh**: Mark a task as done and push changes to GitHub
+  ```bash
+  ./scripts/task-complete.sh <task-id> "<commit-message>"
+  ```
+  Example:
+  ```bash
+  ./scripts/task-complete.sh 5 "Implement user registration"
+  ```
 
-This will:
-1. Start the Tailwind CSS watcher
-2. Start the Django development server on port 8000
-3. Allow you to stop both with a single Ctrl+C
+### Testing
 
-### Options
+- **run_browser_test.py**: Run automated browser tests using Selenium
+  ```bash
+  # Ensure you have Selenium installed
+  pip install selenium
+  
+  # Run all tests
+  python scripts/run_browser_test.py
+  
+  # Run with custom URL
+  python scripts/run_browser_test.py --url http://example.com
+  
+  # Run specific tests
+  python scripts/run_browser_test.py --tests homepage,cart
+  
+  # Run login test with credentials
+  python scripts/run_browser_test.py --tests login --username admin --password password
+  ```
+  
+  Available test modules:
+  - `homepage`: Tests that the homepage loads with categories and featured products
+  - `login`: Tests the login functionality (requires username and password)
+  - `product`: Tests that product detail pages load correctly
+  - `cart`: Tests adding a product to the cart and viewing the cart
 
-- **Custom port**: `./scripts/run-dev.sh 8001` - Run Django on port 8001
-- **Apply migrations**: `./scripts/run-dev.sh --migrate` - Apply migrations before starting
-- **Stop servers**: `./scripts/run-dev.sh stop` - Stop all running servers
+  The script will save screenshots in a `screenshots` directory as it runs.
 
-### Task Completion
+### Data Management
 
-When you complete a task, use:
+- **add_bakery_products.py**: Add bakery products to the database
+  ```bash
+  python scripts/add_bakery_products.py
+  ```
 
-```bash
-./scripts/task-complete.sh <task-id> "Description of what was done"
-```
+## Usage Notes
 
-For example:
-```bash
-./scripts/task-complete.sh 5 "Implemented Tailwind CSS setup"
-```
-
-This will:
-1. Mark the task as "done" in your task management system
-2. Add all changes to Git
-3. Create a commit with a descriptive message
-4. Push to your GitHub repository
-
-## Product Data Scripts
-
-The `scripts` directory includes several Python scripts to populate the database with product data. These scripts create categories and products with variants for different sections of the store.
-
-### Available Product Scripts
-
-- `add_bakery_products.py` - Adds bakery products (bread, pastries, cakes, etc.)
-- `add_pantry_products.py` - Adds pantry items (rice, pasta, canned goods, oils, etc.)
-- `add_dairy_products.py` - Adds dairy products (milk, cheese, yogurt, butter, etc.)
-- `add_beverage_products.py` - Adds beverages (soft drinks, juices, coffee, tea, water, etc.)
-- `add_produce_products.py` - Adds produce (fruits, vegetables, organic produce, etc.)
-- `add_all_products.py` - Runs all the above scripts in sequence
-
-### Running Product Scripts
-
-The easiest way to import all products is to use the provided shell script:
-
-```bash
-./scripts/import-products.sh
-```
-
-This script will:
-1. Activate the virtual environment
-2. Run all product scripts in sequence
-3. Provide a summary of the import process
-
-Alternatively, you can run individual scripts:
-
-```bash
-# Make sure to activate your virtual environment first
-source venv/bin/activate
-
-# Run a specific product script
-python scripts/add_bakery_products.py
-
-# Or run all product scripts at once
-python scripts/add_all_products.py
-```
-
-Each script will create appropriate categories if they don't exist, then add products with variants to those categories. Some products will be marked as "featured" to appear on the home page.
+- Scripts should be run from the project root directory
+- Shell scripts may need executable permissions:
+  ```bash
+  chmod +x scripts/*.sh
+  ```
+- Python scripts should be run with the project's virtual environment activated:
+  ```bash
+  source venv/bin/activate
+  python scripts/script_name.py
+  ```
 
 ## Troubleshooting
 
-If you're having issues with the development scripts:
+If you encounter issues with the scripts:
 
-1. Make sure the scripts are executable (`chmod +x scripts/*.sh`)
-2. Check if there are any orphaned processes from previous runs
-3. Make sure your virtual environment is properly set up 
+1. Ensure your virtual environment is activated
+2. Check that all dependencies are installed
+3. Verify permissions on shell scripts
+4. For Selenium tests, ensure Chrome is installed and the webdriver is compatible
 
-For the product scripts, ensure:
-1. Your database migrations have been applied
-2. Your virtual environment has all dependencies installed
-3. If you see import errors, make sure Django is configured correctly 
+For browser tests specifically:
+- If tests fail, check the screenshots for visual clues on what went wrong
+- Make sure your CSS selectors in the site match what the tests are looking for 
