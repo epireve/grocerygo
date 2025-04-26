@@ -14,10 +14,10 @@ def add_to_cart(request, slug):
     quantity = int(request.POST.get("quantity", 1))
 
     # If product is already in cart, update quantity
-    if str(product.id) in cart:
-        cart[str(product.id)] += quantity
+    if product.slug in cart:
+        cart[product.slug] += quantity
     else:
-        cart[str(product.id)] = quantity
+        cart[product.slug] = quantity
 
     request.session["cart"] = cart
     messages.success(request, f"{product.name} added to your cart.")
@@ -30,13 +30,13 @@ def view_cart(request):
     cart_items = []
     total = 0
 
-    for product_id, quantity in cart.items():
-        product = get_object_or_404(Product, id=product_id)
+    for product_slug, quantity in cart.items():
+        product = get_object_or_404(Product, slug=product_slug)
         subtotal = product.price * quantity
         total += subtotal
         cart_items.append(
             {
-                "id": product_id,
+                "id": product.id,  # Keep ID for remove function
                 "product": product,
                 "quantity": quantity,
                 "subtotal": subtotal,
@@ -49,11 +49,14 @@ def view_cart(request):
 
 def remove_from_cart(request, item_id):
     """Remove an item from the cart"""
+    # Get the product by ID
+    product = get_object_or_404(Product, id=item_id)
     cart = request.session.get("cart", {})
 
-    if str(item_id) in cart:
-        del cart[str(item_id)]
+    # Remove the product by slug
+    if product.slug in cart:
+        del cart[product.slug]
         request.session["cart"] = cart
-        messages.success(request, "Item removed from your cart.")
+        messages.success(request, f"{product.name} removed from your cart.")
 
     return redirect("cart:view_cart")
