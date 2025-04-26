@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Checkout - GroceryGo{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
+    <h1 class="text-3xl font-extrabold tracking-tight text-gray-900 mb-6">Checkout</h1>
+    
+    <div class="lg:grid lg:grid-cols-2 lg:gap-x-12 xl:gap-x-16">
+        <!-- Cart summary -->
+        <div>
+            <div class="bg-gray-50 p-4 rounded-lg mb-5">
+                <h2 class="text-lg font-medium text-gray-900 mb-4">Order Summary</h2>
+                
+                <div class="flow-root">
+                    <ul role="list" class="-my-6 divide-y divide-gray-200">
+                        {% for item in cart_items %}
+                            <li class="py-6 flex">
+                                <div class="flex-shrink-0 w-16 h-16 border border-gray-200 rounded-md overflow-hidden">
+                                    {% if item.product.image %}
+                                        <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="w-full h-full object-center object-cover">
+                                    {% else %}
+                                        <div class="w-full h-full bg-gray-200 flex items-center justify-center text-gray-500">
+                                            No image
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="ml-4 flex-1 flex flex-col">
+                                    <div>
+                                        <div class="flex justify-between text-base font-medium text-gray-900">
+                                            <h3>{{ item.product.name }}</h3>
+                                            <p class="ml-4">RM{{ item.product.price }}</p>
+                                        </div>
+                                        <p class="mt-1 text-sm text-gray-500">
+                                            {% if item.product.category %}
+                                                {{ item.product.category.name }}
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                    <div class="flex-1 flex items-end justify-between text-sm">
+                                        <p class="text-gray-500">Qty {{ item.quantity }}</p>
+                                        <p class="font-medium text-gray-900">Subtotal: RM{{ item.subtotal }}</p>
+                                    </div>
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                
+                <div class="border-t border-gray-200 pt-4 mt-6">
+                    <div class="flex justify-between text-base font-medium text-gray-900 mb-2">
+                        <p>Subtotal</p>
+                        <p>RM{{ subtotal }}</p>
+                    </div>
+                    <div class="flex justify-between text-base font-medium text-gray-900 mb-2">
+                        <p>Shipping</p>
+                        <p>RM{{ shipping_cost }}</p>
+                    </div>
+                    <div class="flex justify-between text-base font-medium text-gray-900 mb-4">
+                        <p>Tax (6%)</p>
+                        <p>RM{{ tax }}</p>
+                    </div>
+                    <div class="flex justify-between text-lg font-bold text-gray-900">
+                        <p>Total</p>
+                        <p>RM{{ total }}</p>
+                    </div>
+                </div>
+                
+                <div class="mt-6">
+                    <a href="{% url 'cart:view_cart' %}" class="text-blue-600 hover:text-blue-500">
+                        &larr; Back to Cart
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Checkout form -->
+        <div class="mt-10 lg:mt-0">
+            <form action="{% url 'orders:checkout' %}" method="post" class="bg-white p-6 rounded-lg shadow">
+                {% csrf_token %}
+                
+                <h2 class="text-lg font-medium text-gray-900 mb-6">Shipping Information</h2>
+                
+                {% if addresses %}
+                    <div class="mb-6">
+                        <label for="shipping_address" class="block text-sm font-medium text-gray-700 mb-2">Select Shipping Address</label>
+                        <select id="shipping_address" name="shipping_address" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                            {% for address in addresses %}
+                                <option value="{{ address.id }}">
+                                    {{ address.full_name }}, {{ address.address_line1 }}, {{ address.city }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                {% else %}
+                    <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <svg class="h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm text-yellow-700">
+                                    Please add an address to your account before checkout.
+                                    <a href="{% url 'accounts:profile' %}" class="font-medium underline text-yellow-700 hover:text-yellow-600">
+                                        Add address
+                                    </a>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+                
+                <!-- Payment information would go here in a real implementation -->
+                <div class="bg-gray-100 p-4 rounded-md mb-6">
+                    <h3 class="text-sm font-medium text-gray-900 mb-2">Payment Method</h3>
+                    <p class="text-sm text-gray-500">For demo purposes, payment processing is simulated. No actual payment will be processed.</p>
+                    
+                    <div class="mt-4">
+                        <div class="flex items-center">
+                            <input id="credit-card" name="payment_method" type="radio" checked class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300">
+                            <label for="credit-card" class="ml-3 block text-sm font-medium text-gray-700">
+                                Credit Card
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-6">
+                    {% if addresses %}
+                        <button type="submit" class="w-full bg-blue-600 border border-transparent rounded-md shadow-sm py-3 px-4 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            Place Order
+                        </button>
+                    {% else %}
+                        <button type="button" disabled class="w-full bg-gray-300 border border-transparent rounded-md shadow-sm py-3 px-4 text-base font-medium text-gray-500 cursor-not-allowed">
+                            Add an address to continue
+                        </button>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %} 

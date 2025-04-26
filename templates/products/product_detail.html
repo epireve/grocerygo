@@ -80,6 +80,11 @@
                 <!-- Cart notification -->
                 <div id="cart-notification" class="hidden mt-4 p-4 bg-green-100 text-green-800 rounded-md">
                     <p class="text-sm font-medium cart-message"></p>
+                    <div class="mt-2">
+                        <a href="{% url 'cart:view_cart' %}" class="text-sm font-medium text-green-800 hover:text-green-700 underline">
+                            View Cart
+                        </a>
+                    </div>
                 </div>
                 
                 <!-- Additional product details -->
