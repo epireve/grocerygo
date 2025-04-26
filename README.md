@@ -181,8 +181,10 @@ The project follows Django's MVT (Model-View-Template) architecture:
 - `scripts/` - Development workflow scripts
 - `docs/` - Project documentation
   - `models.md` - Complete database models documentation
+  - `cart_debugging.md` - Solutions to common cart-related issues
 
 For comprehensive documentation on all database models, see [docs/models.md](docs/models.md).
+For information about cart implementation and troubleshooting, see [docs/cart_debugging.md](docs/cart_debugging.md).
 
 ## Available Pages and Routes
 

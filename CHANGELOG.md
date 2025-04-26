@@ -5,7 +5,24 @@ All notable changes to the GroceryGo project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.0.6] - 2025-05-02
+## [0.0.7] - 2025-04-26
+
+### Fixed
+
+1. Cart View Runtime Error
+   - Fixed a RuntimeError ("dictionary changed size during iteration") in the cart view
+   - Implemented a safer approach for handling non-existent products in the cart
+   - Added safety checks before removing items from session cart
+   - Created detailed documentation in `docs/cart_debugging.md` explaining the issue and solution
+
+### Added
+
+1. Cart Debugging Documentation
+   - Added comprehensive documentation on cart-related bugs and their solutions
+   - Explained common runtime errors when manipulating cart session data
+   - Provided best practices for cart implementation and session handling
+
+## [0.0.6] - 2025-04-26
 
 ### Added
 
@@ -34,7 +51,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
    - Ensured mobile menu cart link points to the correct URL
    - Improved overall UI consistency in navigation elements
 
-## [0.0.4] - 2025-04-30
+## [0.0.4] - 2025-04-26
 
 ### Fixed
 
@@ -57,7 +74,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
    - Implemented test cases for homepage, login, product pages, and cart functionality
    - Configured screenshot capture for visual debugging
 
-## [0.0.3] - 2025-04-28
+## [0.0.3] - 2025-04-26
 
 ### Added
 
@@ -81,7 +98,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
    - Created and applied migrations for user profiles
    - Applied initial database schema 
 
-## [0.0.2] - 2025-04-27
+## [0.0.2] - 2025-04-26
 
 ### Added
 

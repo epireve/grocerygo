@@ -66,23 +66,36 @@ def view_cart(request):
     cart_items = []
     total = 0
 
-    for product_slug, quantity in cart.items():
+    # Create a copy of the cart to avoid modification during iteration
+    cart_copy = cart.copy()
+
+    for product_slug, quantity in cart_copy.items():
         try:
-            product = get_object_or_404(Product, slug=product_slug)
-            subtotal = product.price * quantity
-            total += subtotal
-            cart_items.append(
-                {
-                    "id": product.id,  # Keep ID for remove function
-                    "product": product,
-                    "quantity": quantity,
-                    "subtotal": subtotal,
-                }
-            )
-        except Product.DoesNotExist:
-            # If product no longer exists, remove from cart
-            del cart[product_slug]
-            request.session["cart"] = cart
+            # Replace get_object_or_404 with direct query to handle non-existent products
+            product = Product.objects.filter(slug=product_slug).first()
+            if product:
+                subtotal = product.price * quantity
+                total += subtotal
+                cart_items.append(
+                    {
+                        "id": product.id,  # Keep ID for remove function
+                        "product": product,
+                        "quantity": quantity,
+                        "subtotal": subtotal,
+                    }
+                )
+            else:
+                # If product no longer exists, remove from cart
+                if product_slug in cart:
+                    del cart[product_slug]
+                    request.session["cart"] = cart
+        except Exception as e:
+            # Log any unexpected errors
+            print(f"Error processing cart item with slug {product_slug}: {str(e)}")
+            # Remove problematic item from cart
+            if product_slug in cart:
+                del cart[product_slug]
+                request.session["cart"] = cart
 
     context = {"cart_items": cart_items, "total": total}
     return render(request, "cart/cart.html", context)
