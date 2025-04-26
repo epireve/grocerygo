@@ -13,6 +13,7 @@ scripts/*
 !scripts/add_all_products.py
 !scripts/import-products.sh
 !scripts/run_browser_test.py
+!scripts/add_product_images.py
 screenshots/
 tasks/
 .env
@@ -60,9 +61,9 @@ wheels/
 
 # Django
 local_settings.py
-db.sqlite3
 db.sqlite3-journal
-media
+# db.sqlite3  # Uncommenting this to allow database to be tracked
+# media  # Removed to allow product images to be tracked
 
 # Virtual Environment
 venv/
