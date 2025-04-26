@@ -1,0 +1,25 @@
+{% comment %}
+Usage:
+{% include "components/card.html" with title="Card Title" content="Card content goes here" %}
+{% endcomment %}
+
+<div class="card {% if hover %}hover:shadow-lg transition-shadow duration-300{% endif %} {% if extra_classes %}{{ extra_classes }}{% endif %}">
+    {% if image_url %}
+    <div class="h-40 bg-gray-200 rounded-t-lg overflow-hidden">
+        <img src="{{ image_url }}" alt="{{ title }}" class="w-full h-full object-cover">
+    </div>
+    {% endif %}
+    <div class="{% if not image_url %}pt-4{% else %}mt-4{% endif %}">
+        {% if title %}
+        <h3 class="text-lg font-medium text-gray-900">{{ title }}</h3>
+        {% endif %}
+        {% if content %}
+        <p class="mt-2 text-sm text-gray-500">{{ content }}</p>
+        {% endif %}
+        {% if footer %}
+        <div class="mt-4 border-t border-gray-200 pt-4">
+            {{ footer }}
+        </div>
+        {% endif %}
+    </div>
+</div> 

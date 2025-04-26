@@ -23,6 +23,7 @@ A simple Django web application for online grocery shopping, allowing customers 
 
 - Python 3.8 or higher
 - pip
+- Node.js and npm (for Tailwind CSS)
 
 ### Installation
 
@@ -55,14 +56,13 @@ pip install -r requirements.txt
 5. Set up environment variables:
 Create a `.env` file in the project root with:
 ```
-ANTHROPIC_API_KEY=your_anthropic_api_key_here
 DEBUG=true
 SECRET_KEY=your-secret-key-here
 ```
 
-6. Apply migrations:
+6. Apply migrations and start the development environment:
 ```
-python manage.py migrate
+./scripts/run-dev.sh --migrate
 ```
 
 7. Create a superuser for admin access:
@@ -70,14 +70,43 @@ python manage.py migrate
 python manage.py createsuperuser
 ```
 
-8. Run the development server:
-```
-python manage.py runserver
-```
-
-9. Access the application:
+8. Access the application:
 - Website: http://127.0.0.1:8000/
 - Admin interface: http://127.0.0.1:8000/admin/
+
+## Development Workflow
+
+### Running the Application
+
+We've created helpful scripts to streamline development:
+
+```bash
+# Start both Django and Tailwind CSS servers with one command
+./scripts/run-dev.sh
+
+# Apply migrations and start development environment
+./scripts/run-dev.sh --migrate
+
+# Use a custom port for the Django server
+./scripts/run-dev.sh 8001
+
+# Stop all development servers
+./scripts/run-dev.sh stop
+```
+
+### Task Management
+
+When completing a task, use:
+
+```bash
+./scripts/task-complete.sh <task-id> "Description of what was done"
+```
+
+This will mark the task as completed and push your changes to GitHub in a single step.
+
+### Additional Scripts Documentation
+
+For more details about the available scripts and their options, see [scripts/README.md](scripts/README.md).
 
 ## Project Structure
 
@@ -91,6 +120,8 @@ The project follows Django's MVT (Model-View-Template) architecture:
 - `orders/` - App for order processing and management
 - `templates/` - HTML templates
 - `static/` - Static files (CSS, JS, images)
+- `grocery_go/` - Tailwind CSS configuration
+- `scripts/` - Development workflow scripts
 
 ## License
 

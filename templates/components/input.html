@@ -1,0 +1,25 @@
+{% comment %}
+Usage:
+{% include "components/input.html" with name="email" type="email" label="Email Address" placeholder="Enter your email" %}
+{% endcomment %}
+
+<div class="mb-4">
+    {% if label %}
+    <label for="{{ id|default:name }}" class="block text-sm font-medium text-gray-700 mb-1">{{ label }}</label>
+    {% endif %}
+    <input
+        type="{{ type|default:'text' }}"
+        name="{{ name }}"
+        id="{{ id|default:name }}"
+        value="{{ value|default:'' }}"
+        placeholder="{{ placeholder|default:'' }}"
+        {% if required %}required{% endif %}
+        class="form-input block w-full rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm {% if error %}border-red-300{% else %}border-gray-300{% endif %} {% if extra_classes %}{{ extra_classes }}{% endif %}"
+    />
+    {% if error %}
+    <p class="mt-1 text-sm text-red-600">{{ error }}</p>
+    {% endif %}
+    {% if help_text %}
+    <p class="mt-1 text-sm text-gray-500">{{ help_text }}</p>
+    {% endif %}
+</div> 
