@@ -1,6 +1,9 @@
 # Project-specific exclusions
 .cursor/
-scripts/
+scripts/*
+!scripts/run-dev.sh
+!scripts/task-complete.sh
+!scripts/README.md
 tasks/
 .env
 .env.example
