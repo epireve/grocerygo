@@ -68,3 +68,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
    - Updated README with available pages and routes by module
    - Added comprehensive Tailwind CSS styling to all templates
    - Ensured consistent design language across authentication flows 
+
+## [0.0.3] - 2025-04-28
+
+### Added
+
+1. Product Browsing Functionality
+   - Created product list, detail, and category views
+   - Implemented product browsing templates:
+     - `product_list.html` - Browse all products with category filters
+     - `product_detail.html` - Detailed product information with add to cart form
+     - `category_detail.html` - Browse products by category with subcategory navigation
+
+2. Order Management
+   - Added proper order history and detail routes
+   - Implemented order cancellation functionality
+   - Connected order templates to views
+
+3. Initial Data
+   - Created script for populating product categories
+   - Fixed script environment setup for database operations
+
+4. Database Migrations
+   - Created and applied migrations for user profiles
+   - Applied initial database schema 

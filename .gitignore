@@ -4,6 +4,7 @@ scripts/*
 !scripts/run-dev.sh
 !scripts/task-complete.sh
 !scripts/README.md
+!scripts/create_categories.py
 tasks/
 .env
 .env.example

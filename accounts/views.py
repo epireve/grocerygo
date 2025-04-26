@@ -88,3 +88,26 @@ class CustomPasswordResetCompleteView(PasswordResetCompleteView):
 def profile_view(request):
     """View for displaying user profile"""
     return render(request, "accounts/profile.html")
+
+
+@login_required
+def order_history_view(request):
+    """View for displaying user's order history"""
+    # This will be enhanced later when we have actual orders
+    return render(request, "accounts/order_history.html", {"orders": []})
+
+
+@login_required
+def order_detail_view(request, order_id):
+    """View for displaying details of a specific order"""
+    # This will be enhanced later when we have actual orders
+    return render(request, "accounts/order_detail.html", {"order": None})
+
+
+@login_required
+def cancel_order_view(request, order_id):
+    """View for canceling an order"""
+    if request.method == "POST":
+        # This will be enhanced later when we have actual orders
+        messages.success(request, "Order cancellation request submitted.")
+    return redirect("accounts:order_detail", order_id=order_id)

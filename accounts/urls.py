@@ -8,6 +8,10 @@ urlpatterns = [
     path("login/", views.CustomLoginView.as_view(), name="login"),
     path("logout/", views.CustomLogoutView.as_view(), name="logout"),
     path("profile/", views.profile_view, name="profile"),
+    # Order management
+    path("order-history/", views.order_history_view, name="order_history"),
+    path("order/<int:order_id>/", views.order_detail_view, name="order_detail"),
+    path("order/<int:order_id>/cancel/", views.cancel_order_view, name="cancel_order"),
     # Password reset URLs
     path(
         "password-reset/",
