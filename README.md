@@ -147,13 +147,54 @@ The project follows Django's MVT (Model-View-Template) architecture:
 - `/accounts/order-detail/<order_id>/` - Detailed view of a specific order
 
 ### Product Management
-- Coming soon: Product listing, detail, and category pages
+- `/products/` - Browse all products
+- `/products/product/<slug>/` - View detailed product information
+- `/products/categories/` - Browse all product categories
+- `/products/category/<slug>/` - View products in a specific category
 
 ### Shopping Cart 
-- Coming soon: Cart management and checkout process
+- `/cart/add/<slug>/` - Add a product to cart
+- `/cart/view/` - View cart contents
+- `/cart/remove/<item_id>/` - Remove a product from cart
 
 ### Admin Interface
 - `/admin/` - Django administration interface for site management
+
+## Testing
+
+### Browser Testing
+The project includes Selenium-based browser testing for automated UI verification:
+
+```bash
+# Run the browser test script
+./scripts/run_browser_test.py
+
+# Run specific test cases (homepage, login, product, cart)
+./scripts/run_browser_test.py --test homepage
+
+# Run with screenshots enabled
+./scripts/run_browser_test.py --screenshots
+```
+
+## Scripts
+
+The project includes several utility scripts:
+
+1. **Development Scripts**
+   - `run-dev.sh` - Start development environment
+   - `import-products.sh` - Import product data into database
+
+2. **Product Data Scripts**
+   - `add_bakery_products.py` - Add bakery products to database
+   - `add_pantry_products.py` - Add pantry products to database
+   - `add_dairy_products.py` - Add dairy products to database
+   - `add_beverage_products.py` - Add beverage products to database
+   - `add_produce_products.py` - Add produce products to database
+   - `add_all_products.py` - Run all product scripts in sequence
+   - `add_product_images.py` - Fetch and add product images
+
+3. **Testing Scripts**
+   - `run_browser_test.py` - Run browser-based UI tests
 
 ## License
 

@@ -42,6 +42,9 @@ This directory contains useful scripts for development, deployment, and testing 
   
   # Run login test with credentials
   python scripts/run_browser_test.py --tests login --username admin --password password
+  
+  # Run with screenshots enabled
+  python scripts/run_browser_test.py --screenshots
   ```
   
   Available test modules:
@@ -54,10 +57,47 @@ This directory contains useful scripts for development, deployment, and testing 
 
 ### Data Management
 
-- **add_bakery_products.py**: Add bakery products to the database
+- **add_all_products.py**: Run all product scripts in sequence
+  ```bash
+  python scripts/add_all_products.py
+  ```
+
+- **import-products.sh**: Shell script to activate the environment and run all product scripts
+  ```bash
+  ./scripts/import-products.sh
+  ```
+
+- **Category-specific Product Scripts**:
+  - **add_bakery_products.py**: Add bakery products to the database
+  - **add_pantry_products.py**: Add pantry products to the database
+  - **add_dairy_products.py**: Add dairy products to the database
+  - **add_beverage_products.py**: Add beverage products to the database
+  - **add_produce_products.py**: Add produce products to the database
+  
+  Each script can be run individually:
   ```bash
   python scripts/add_bakery_products.py
   ```
+
+- **add_product_images.py**: Fetch and add product images using Serper.dev API
+  ```bash
+  # Ensure you have the Serper.dev API key in your .env file
+  # SERPER_API_KEY=your_key_here
+  
+  python scripts/add_product_images.py
+  
+  # Options:
+  # --limit N: Process only N products
+  # --force: Replace existing images
+  # --category SLUG: Process only products in a specific category
+  ```
+  
+  This script:
+  - Connects to Serper.dev API to search for product images
+  - Downloads and optimizes images for products and categories
+  - Respects rate limits and handles errors gracefully
+  - Skips products that already have images (unless --force is used)
+  - Resizes images to fit the website's layout requirements
 
 ## Usage Notes
 
@@ -83,4 +123,9 @@ If you encounter issues with the scripts:
 
 For browser tests specifically:
 - If tests fail, check the screenshots for visual clues on what went wrong
-- Make sure your CSS selectors in the site match what the tests are looking for 
+- Make sure your CSS selectors in the site match what the tests are looking for
+
+For product image scripts:
+- Check your Serper.dev API key is valid and has sufficient quota
+- If images aren't downloaded properly, check your network connection
+- Ensure your media directory is writable by the application 
