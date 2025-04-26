@@ -5,6 +5,25 @@ All notable changes to the GroceryGo project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.9] - 2025-04-26
+
+### Added
+
+1. Enhanced Admin Interface
+   - Implemented custom admin actions for all models with permission checks
+   - Added product discount management with percentage-based discounts
+   - Created custom CSV export functionality for all major models
+   - Added toggle active status for categories
+   - Implemented payment status management for orders
+   - Added order status history tracking for comprehensive order lifecycle management
+
+2. Admin Documentation
+   - Created comprehensive admin management guide in `docs/admin_management_guide.md`
+   - Documented all custom admin actions and their usage
+   - Added best practices for store management
+   - Included CSV export functionality documentation
+   - Provided detailed explanations of product, order, and user management capabilities
+
 ## [0.0.8] - 2025-04-26
 
 ### Added
@@ -182,4 +201,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-### Fixed 
+### Fixed
