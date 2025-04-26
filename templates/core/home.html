@@ -16,7 +16,7 @@
             <a href="{% url 'products:product_list' %}" class="btn btn-primary px-5 py-3">
                 Shop Now
             </a>
-            <a href="{% url 'products:category_list' %}" class="ml-3 btn btn-secondary px-5 py-3">
+            <a href="{% url 'category_list' %}" class="ml-3 btn btn-secondary px-5 py-3">
                 Browse Categories
             </a>
         </div>
@@ -35,7 +35,7 @@
         <div class="mt-10">
             <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {% for category in categories %}
-                <a href="{% url 'products:category_detail' category.slug %}" class="block">
+                <a href="{% url 'category_detail' category.slug %}" class="block">
                     <div class="card transition-transform hover:scale-105 h-full">
                         <div class="h-40 bg-gray-200 rounded-md overflow-hidden">
                             {% if category.image %}
@@ -65,7 +65,7 @@
             </div>
             
             <div class="mt-8 text-center">
-                <a href="{% url 'products:category_list' %}" class="btn btn-outline-primary">
+                <a href="{% url 'category_list' %}" class="btn btn-outline-primary">
                     View All Categories
                 </a>
             </div>
@@ -85,7 +85,7 @@
         
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {% for product in featured_products %}
-            <a href="{% url 'products:product_detail' product.slug %}" class="group">
+            <a href="{% url 'product_detail' product.slug %}" class="group">
                 <div class="bg-white rounded-lg shadow-md overflow-hidden transform transition hover:shadow-xl hover:-translate-y-1">
                     {% if product.image %}
                     <img src="{{ product.image.url }}" alt="{{ product.name }}" class="h-48 w-full object-cover">
