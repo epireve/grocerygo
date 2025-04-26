@@ -1,5 +1,8 @@
 from django.contrib import admin
 from .models import Order, OrderItem, Address, OrderStatusHistory
+from django.core.exceptions import PermissionDenied
+import csv
+from django.http import HttpResponse
 
 
 class OrderItemInline(admin.TabularInline):
@@ -21,6 +24,7 @@ class OrderAdmin(admin.ModelAdmin):
         "user",
         "order_status",
         "payment_status",
+        "payment_method",
         "order_items_count",
         "total",
         "created_at",
@@ -36,9 +40,16 @@ class OrderAdmin(admin.ModelAdmin):
         "mark_as_shipped",
         "mark_as_delivered",
         "mark_as_cancelled",
+        "mark_as_paid",
+        "mark_as_unpaid",
+        "export_orders_as_csv",
     ]
 
     def mark_as_processing(self, request, queryset):
+        """Mark selected orders as processing"""
+        if not request.user.is_staff:
+            raise PermissionDenied("You do not have permission to perform this action")
+
         for order in queryset:
             order.order_status = "processing"
             order.save()
@@ -53,6 +64,10 @@ class OrderAdmin(admin.ModelAdmin):
     mark_as_processing.short_description = "Mark selected orders as processing"
 
     def mark_as_shipped(self, request, queryset):
+        """Mark selected orders as shipped"""
+        if not request.user.is_staff:
+            raise PermissionDenied("You do not have permission to perform this action")
+
         for order in queryset:
             order.order_status = "shipped"
             order.save()
@@ -67,6 +82,10 @@ class OrderAdmin(admin.ModelAdmin):
     mark_as_shipped.short_description = "Mark selected orders as shipped"
 
     def mark_as_delivered(self, request, queryset):
+        """Mark selected orders as delivered"""
+        if not request.user.is_staff:
+            raise PermissionDenied("You do not have permission to perform this action")
+
         for order in queryset:
             order.order_status = "delivered"
             order.save()
@@ -81,6 +100,10 @@ class OrderAdmin(admin.ModelAdmin):
     mark_as_delivered.short_description = "Mark selected orders as delivered"
 
     def mark_as_cancelled(self, request, queryset):
+        """Mark selected orders as cancelled"""
+        if not request.user.is_staff:
+            raise PermissionDenied("You do not have permission to perform this action")
+
         for order in queryset:
             order.order_status = "cancelled"
             order.save()
@@ -93,6 +116,83 @@ class OrderAdmin(admin.ModelAdmin):
         self.message_user(request, f"{queryset.count()} orders marked as cancelled.")
 
     mark_as_cancelled.short_description = "Mark selected orders as cancelled"
+
+    def mark_as_paid(self, request, queryset):
+        """Mark selected orders as paid"""
+        if not request.user.is_staff:
+            raise PermissionDenied("You do not have permission to perform this action")
+
+        updated = queryset.update(payment_status=True)
+
+        # Create status history for each updated order
+        for order in queryset:
+            OrderStatusHistory.objects.create(
+                order=order,
+                status=order.order_status,  # Keep current status
+                created_by=request.user,
+                notes="Payment status set to PAID from admin panel",
+            )
+
+        self.message_user(request, f"{updated} orders marked as paid.")
+
+    mark_as_paid.short_description = "Mark selected orders as paid"
+
+    def mark_as_unpaid(self, request, queryset):
+        """Mark selected orders as unpaid"""
+        if not request.user.is_staff:
+            raise PermissionDenied("You do not have permission to perform this action")
+
+        updated = queryset.update(payment_status=False)
+
+        # Create status history for each updated order
+        for order in queryset:
+            OrderStatusHistory.objects.create(
+                order=order,
+                status=order.order_status,  # Keep current status
+                created_by=request.user,
+                notes="Payment status set to UNPAID from admin panel",
+            )
+
+        self.message_user(request, f"{updated} orders marked as unpaid.")
+
+    mark_as_unpaid.short_description = "Mark selected orders as unpaid"
+
+    def export_orders_as_csv(self, request, queryset):
+        """Export selected orders as CSV file with related items"""
+        if not request.user.is_staff:
+            raise PermissionDenied("You do not have permission to perform this action")
+
+        meta = self.model._meta
+        field_names = [field.name for field in meta.fields]
+
+        # Add custom fields for order items
+        field_names.append("items")
+
+        response = HttpResponse(content_type="text/csv")
+        response["Content-Disposition"] = f"attachment; filename=orders_export.csv"
+        writer = csv.writer(response)
+
+        # Add headers with column names
+        writer.writerow(field_names)
+
+        # Add data rows
+        for obj in queryset:
+            # Get basic order fields
+            row_data = [
+                getattr(obj, field) for field in field_names if field != "items"
+            ]
+
+            # Add order items as a comma-separated string
+            items_str = "; ".join(
+                [f"{item.quantity}x {item.product.name}" for item in obj.items.all()]
+            )
+            row_data.append(items_str)
+
+            writer.writerow(row_data)
+
+        return response
+
+    export_orders_as_csv.short_description = "Export selected orders as CSV"
 
 
 @admin.register(OrderItem)
@@ -109,6 +209,30 @@ class AddressAdmin(admin.ModelAdmin):
     list_filter = ["address_type", "is_default", "city", "state", "country"]
     search_fields = ["user__username", "full_name", "street_address", "city"]
     date_hierarchy = "created_at"
+    actions = ["export_addresses_as_csv"]
+
+    def export_addresses_as_csv(self, request, queryset):
+        """Export selected addresses as CSV file"""
+        if not request.user.is_staff:
+            raise PermissionDenied("You do not have permission to perform this action")
+
+        meta = self.model._meta
+        field_names = [field.name for field in meta.fields]
+
+        response = HttpResponse(content_type="text/csv")
+        response["Content-Disposition"] = f"attachment; filename=addresses_export.csv"
+        writer = csv.writer(response)
+
+        # Add headers with column names
+        writer.writerow(field_names)
+
+        # Add data rows
+        for obj in queryset:
+            writer.writerow([getattr(obj, field) for field in field_names])
+
+        return response
+
+    export_addresses_as_csv.short_description = "Export selected addresses as CSV"
 
 
 @admin.register(OrderStatusHistory)
