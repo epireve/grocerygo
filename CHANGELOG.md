@@ -5,6 +5,19 @@ All notable changes to the GroceryGo project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.0] - 2025-04-26
+
+### Fixed
+
+1. Checkout Address Form Validation Error
+   - Fixed the "on" value must be either True or False validation error that occurred when saving a shipping address during checkout
+   - Added proper checkbox value conversion to boolean when processing the save_address field
+
+2. Cart Count Update in Navbar
+   - Fixed issue where changing quantities in the cart view wasn't updating the cart count in the navbar
+   - Updated the updateCartIcon JavaScript function to target the correct element ID (cart-counter instead of cart-count)
+   - Added proper visibility toggling for the cart counter badge based on item count
+
 ## [0.0.9] - 2025-04-26
 
 ### Added

@@ -7,8 +7,35 @@ import json
 from datetime import datetime, timedelta
 from products.models import Product
 from decimal import Decimal
+from .models import Cart, CartItem
 
 # Create your views here.
+
+
+def sync_session_to_model(request):
+    """
+    Sync the session cart to the Cart model if user is authenticated
+    """
+    if not request.user.is_authenticated:
+        return
+
+    session_cart = request.session.get("cart", {})
+
+    # Get or create Cart model for the user
+    cart, created = Cart.objects.get_or_create(user=request.user)
+
+    # Sync session cart to Cart model
+    # Clear existing cart items first
+    CartItem.objects.filter(cart=cart).delete()
+
+    # Add items from session cart
+    for product_slug, quantity in session_cart.items():
+        try:
+            product = Product.objects.get(slug=product_slug)
+            CartItem.objects.create(cart=cart, product=product, quantity=quantity)
+        except Product.DoesNotExist:
+            # Skip products that don't exist
+            pass
 
 
 # Simple cart implementation using session and localStorage
@@ -42,6 +69,10 @@ def add_to_cart(request, slug=None):
 
     # Set cart expiry to 30 days
     request.session.set_expiry(60 * 60 * 24 * 30)  # 30 days in seconds
+
+    # Also update the cart model if user is authenticated
+    if request.user.is_authenticated:
+        sync_session_to_model(request)
 
     # Add success message
     messages.success(request, f"{product.name} added to your cart.")
@@ -103,45 +134,114 @@ def view_cart(request):
         request.session["cart"] = cart
         request.session.modified = True
 
+    # Calculate shipping, tax, and total
+    shipping_cost = (
+        Decimal("5.99") if total > 0 else Decimal("0.00")
+    )  # Default shipping cost for Malaysia
+    tax_rate = Decimal("0.06")  # 6% GST in Malaysia
+    tax = total * tax_rate
+    final_total = total + shipping_cost + tax
+
     context = {
         "products": products,
         "total": total,
+        "shipping_cost": shipping_cost,
+        "tax": tax,
+        "final_total": final_total,
     }
 
     return render(request, "cart/cart.html", context)
 
 
 def remove_from_cart(request, slug):
-    """Remove an item from the cart"""
-    cart = request.session.get("cart", {})
+    """Remove a product from the cart."""
+    if request.method == "POST":
+        try:
+            # Get the cart from session
+            cart = request.session.get("cart", {})
 
-    # Check if the product exists in the database
-    product = Product.objects.filter(slug=slug).first()
+            # Check if the product exists in the cart
+            if slug in cart:
+                # Remove the product from the cart
+                del cart[slug]
 
-    # Get product name for success message
-    product_name = product.name if product else "Product"
+                # Update the cart in session
+                request.session["cart"] = cart
+                request.session.modified = True
 
-    # Remove the product by slug
-    if slug in cart:
-        del cart[slug]
-        request.session["cart"] = cart
-        request.session.modified = True
-        messages.success(request, f"{product_name} removed from your cart.")
+                # Sync with model cart if user is authenticated
+                if request.user.is_authenticated:
+                    sync_session_to_model(request)
 
-    # Calculate total items count
-    total_items = sum(cart.values())
+                # Calculate the new cart total
+                cart_total = 0
+                # Calculate total items count
+                total_items = 0
 
-    # If AJAX request, return JSON response
-    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
-        return JsonResponse(
-            {
-                "success": True,
-                "message": f"{product_name} removed from your cart.",
-                "cart": cart,
-                "total_items": total_items,
-            }
-        )
+                for product_slug, quantity in cart.items():
+                    try:
+                        product = Product.objects.get(slug=product_slug)
+                        cart_total += float(product.price) * quantity
+                        total_items += quantity
+                    except Product.DoesNotExist:
+                        # Skip products that don't exist
+                        continue
 
+                # Calculate tax and shipping
+                shipping_cost = 5.99 if cart_total > 0 else 0.00
+                tax_rate = 0.06  # 6% GST in Malaysia
+                tax = cart_total * tax_rate
+                final_total = cart_total + shipping_cost + tax
+
+                # Check if this is an AJAX request
+                is_ajax = request.headers.get("X-Requested-With") == "XMLHttpRequest"
+
+                if is_ajax:
+                    return JsonResponse(
+                        {
+                            "success": True,
+                            "cart_total": f"RM{cart_total:.2f}",
+                            "shipping_cost": f"RM{shipping_cost:.2f}",
+                            "tax": f"RM{tax:.2f}",
+                            "final_total": f"RM{final_total:.2f}",
+                            "total_items": total_items,
+                            "message": "Product removed from cart",
+                        }
+                    )
+                else:
+                    messages.success(request, "Product removed from cart")
+                    return redirect("cart:view_cart")
+            else:
+                is_ajax = request.headers.get("X-Requested-With") == "XMLHttpRequest"
+
+                if is_ajax:
+                    return JsonResponse(
+                        {
+                            "success": False,
+                            "message": "Product not found in cart",
+                        },
+                        status=404,
+                    )
+                else:
+                    messages.error(request, "Product not found in cart")
+                    return redirect("cart:view_cart")
+        except Exception as e:
+            # Determine if this is an AJAX request to return appropriate response
+            is_ajax = request.headers.get("X-Requested-With") == "XMLHttpRequest"
+
+            if is_ajax:
+                return JsonResponse(
+                    {
+                        "success": False,
+                        "message": f"Error removing product: {str(e)}",
+                    },
+                    status=400,
+                )
+            else:
+                messages.error(request, f"Error removing product: {str(e)}")
+                return redirect("cart:view_cart")
+
+    # If not a POST request
     return redirect("cart:view_cart")
 
 
@@ -157,6 +257,10 @@ def sync_cart(request):
 
         # Set session expiry
         request.session.set_expiry(60 * 60 * 24 * 30)  # 30 days
+
+        # Also sync with model cart if user is authenticated
+        if request.user.is_authenticated:
+            sync_session_to_model(request)
 
         return JsonResponse(
             {"success": True, "message": "Cart synchronized successfully"}
@@ -229,6 +333,12 @@ def clear_cart(request):
     request.session["cart"] = {}
     request.session.modified = True
 
+    # Also clear the model cart if user is authenticated
+    if request.user.is_authenticated:
+        cart = Cart.objects.filter(user=request.user).first()
+        if cart:
+            CartItem.objects.filter(cart=cart).delete()
+
     # If AJAX request, return JSON response
     if request.headers.get("X-Requested-With") == "XMLHttpRequest":
         return JsonResponse(
@@ -245,97 +355,72 @@ def clear_cart(request):
     return redirect("cart:view_cart")
 
 
+@require_POST
 def update_quantity(request, slug):
-    """Update the quantity of a product in the cart."""
-    if request.method == "POST":
-        try:
-            quantity = int(request.POST.get("quantity", 1))
-            # Ensure quantity is at least 1
-            quantity = max(1, quantity)
+    """Update the quantity of an item in the cart."""
+    quantity = request.POST.get("quantity")
+    if not quantity:
+        return JsonResponse({"error": "No quantity provided"}, status=400)
 
-            # Get the cart from session
-            cart = request.session.get("cart", {})
+    try:
+        quantity = int(quantity)
+        if quantity < 1:
+            return JsonResponse({"error": "Quantity must be at least 1"}, status=400)
+    except ValueError:
+        return JsonResponse({"error": "Invalid quantity provided"}, status=400)
 
-            # Check if the product exists
-            product = get_object_or_404(Product, slug=slug)
+    # Get the product
+    product = get_object_or_404(Product, slug=slug)
 
-            # Check if this is an AJAX request - moved outside the if block
-            is_ajax = request.headers.get("X-Requested-With") == "XMLHttpRequest"
+    # Access the cart from session
+    cart = request.session.get("cart", {})
 
-            # Check if the product exists in the cart
-            if slug in cart:
-                # Update the quantity
-                cart[slug] = quantity
+    # Update the quantity
+    if slug in cart:
+        cart[slug] = quantity
 
-                # Update the cart in session
-                request.session["cart"] = cart
-                request.session.modified = True
+        # Update the session
+        request.session["cart"] = cart
+        request.session.modified = True
 
-                # Calculate the new subtotal for this item
-                item_subtotal = float(product.price) * quantity
+        # Also update the model cart if user is authenticated
+        if request.user.is_authenticated:
+            sync_session_to_model(request)
 
-                # Calculate the new cart total
-                cart_total = 0
-                # Calculate total items count
-                total_items = 0
+        # Calculate the new cart total and item counts
+        cart_total = Decimal("0.00")
+        total_items = 0
 
-                # Create a copy of the cart to avoid modification during iteration
-                cart_copy = cart.copy()
+        for product_slug, qty in cart.items():
+            try:
+                p = Product.objects.get(slug=product_slug)
+                cart_total += p.price * qty
+                total_items += qty
+            except Product.DoesNotExist:
+                # Skip products that don't exist
+                continue
 
-                for product_slug, item_quantity in cart_copy.items():
-                    try:
-                        prod = Product.objects.get(slug=product_slug)
-                        cart_total += float(prod.price) * item_quantity
-                        total_items += item_quantity
-                    except Product.DoesNotExist:
-                        # Skip products that don't exist
-                        # Optionally remove it from the actual cart
-                        if product_slug in cart:
-                            del cart[product_slug]
-                            request.session["cart"] = cart
-                            request.session.modified = True
-                        continue
+        # Calculate shipping, tax, and total using the same rates as view_cart
+        shipping_cost = Decimal("5.99") if cart_total > 0 else Decimal("0.00")
+        tax_rate = Decimal("0.06")  # 6% GST in Malaysia
+        tax = cart_total * tax_rate
+        final_total = cart_total + shipping_cost + tax
 
-                if is_ajax:
-                    return JsonResponse(
-                        {
-                            "success": True,
-                            "item_subtotal": f"RM{item_subtotal:.2f}",
-                            "cart_total": f"RM{cart_total:.2f}",
-                            "total_items": total_items,
-                            "message": f"Quantity updated to {quantity}",
-                        }
-                    )
-                else:
-                    messages.success(request, f"Quantity updated to {quantity}")
-                    return redirect("cart:view_cart")
-            else:
-                if is_ajax:
-                    return JsonResponse(
-                        {
-                            "success": False,
-                            "message": "Product not found in cart",
-                        },
-                        status=404,
-                    )
-                else:
-                    messages.error(request, "Product not found in cart")
-                    return redirect("cart:view_cart")
-        except Exception as e:
-            if "is_ajax" not in locals():
-                is_ajax = request.headers.get("X-Requested-With") == "XMLHttpRequest"
+        # Calculate the subtotal for the specific product being updated
+        item_subtotal = product.price * quantity
 
-            if is_ajax:
-                return JsonResponse(
-                    {
-                        "success": False,
-                        "message": f"Error updating quantity: {str(e)}",
-                    },
-                    status=400,
-                )
-            else:
-                messages.error(request, f"Error updating quantity: {str(e)}")
-                return redirect("cart:view_cart")
+        return JsonResponse(
+            {
+                "success": True,
+                "quantity": quantity,
+                "price": float(product.price),
+                "item_subtotal": f"RM{float(item_subtotal):.2f}",
+                "cart_total": f"RM{float(cart_total):.2f}",
+                "total_items": total_items,
+                "tax": f"RM{float(tax):.2f}",
+                "shipping_cost": f"RM{float(shipping_cost):.2f}",
+                "final_total": f"RM{float(final_total):.2f}",
+            }
+        )
 
-    # If not a POST request
-    return redirect("cart:view_cart")
+    return JsonResponse({"error": "Product not found in cart"}, status=404)

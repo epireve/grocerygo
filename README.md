@@ -15,7 +15,7 @@ A simple Django web application for online grocery shopping, allowing customers 
 
 - Backend: Django
 - Database: SQLite
-- Frontend: Tailwind CSS with Shadcn/ui components
+- Frontend: Tailwind CSS
 
 ## Setup Instructions
 
