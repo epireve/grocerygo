@@ -94,3 +94,6 @@ Desktop.ini
 .coverage
 htmlcov/
 .pytest_cache/ 
+
+.tailwind.pid
+.django.pid
