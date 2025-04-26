@@ -179,6 +179,10 @@ The project follows Django's MVT (Model-View-Template) architecture:
 - `static/` - Static files (CSS, JS, images)
 - `theme/` - Tailwind CSS configuration
 - `scripts/` - Development workflow scripts
+- `docs/` - Project documentation
+  - `models.md` - Complete database models documentation
+
+For comprehensive documentation on all database models, see [docs/models.md](docs/models.md).
 
 ## Available Pages and Routes
 

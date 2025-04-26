@@ -5,6 +5,26 @@ All notable changes to the GroceryGo project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.6] - 2025-05-02
+
+### Added
+
+1. Model Documentation
+   - Added comprehensive documentation for all database models in `docs/models.md`
+   - Documented relationships between models
+   - Included detailed field descriptions, methods, properties, and meta options
+
+2. Database Migration Management
+   - Created `migrations.sh` helper script for streamlined database migration workflow
+   - Updated README.md with detailed migration documentation
+   - Added documentation for migration commands in scripts/README.md
+
+### Fixed
+
+1. Cart Namespace Error
+   - Fixed 'cart' namespace not registered error in URL configuration
+   - Updated URL patterns to properly include the cart app URLs
+
 ## [0.0.5] - 2025-05-01
 
 ### Fixed
