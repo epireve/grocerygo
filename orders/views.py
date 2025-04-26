@@ -42,8 +42,12 @@ def checkout_view(request):
             del cart[product_slug]
 
     # Calculate totals
-    tax = subtotal * tax_rate
-    total = subtotal + shipping_cost + tax
+    tax = (subtotal * tax_rate).quantize(
+        decimal.Decimal("0.01"), rounding=decimal.ROUND_HALF_UP
+    )
+    total = (subtotal + shipping_cost + tax).quantize(
+        decimal.Decimal("0.01"), rounding=decimal.ROUND_HALF_UP
+    )
 
     # Get user's addresses
     addresses = None

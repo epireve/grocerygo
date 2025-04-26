@@ -31,7 +31,7 @@
                                     <div>
                                         <div class="flex justify-between text-base font-medium text-gray-900">
                                             <h3>{{ item.product.name }}</h3>
-                                            <p class="ml-4">RM{{ item.product.price }}</p>
+                                            <p class="ml-4">RM{{ item.product.price|floatformat:2 }}</p>
                                         </div>
                                         <p class="mt-1 text-sm text-gray-500">
                                             {% if item.product.category %}
@@ -41,7 +41,7 @@
                                     </div>
                                     <div class="flex-1 flex items-end justify-between text-sm">
                                         <p class="text-gray-500">Qty {{ item.quantity }}</p>
-                                        <p class="font-medium text-gray-900">Subtotal: RM{{ item.subtotal }}</p>
+                                        <p class="font-medium text-gray-900">Subtotal: RM{{ item.subtotal|floatformat:2 }}</p>
                                     </div>
                                 </div>
                             </li>
@@ -52,19 +52,19 @@
                 <div class="border-t border-gray-200 pt-4 mt-6">
                     <div class="flex justify-between text-base font-medium text-gray-900 mb-2">
                         <p>Subtotal</p>
-                        <p>RM{{ subtotal }}</p>
+                        <p>RM{{ subtotal|floatformat:2 }}</p>
                     </div>
                     <div class="flex justify-between text-base font-medium text-gray-900 mb-2">
                         <p>Shipping</p>
-                        <p>RM{{ shipping_cost }}</p>
+                        <p>RM{{ shipping_cost|floatformat:2 }}</p>
                     </div>
                     <div class="flex justify-between text-base font-medium text-gray-900 mb-4">
                         <p>Tax (6%)</p>
-                        <p>RM{{ tax }}</p>
+                        <p>RM{{ tax|floatformat:2 }}</p>
                     </div>
                     <div class="flex justify-between text-lg font-bold text-gray-900">
                         <p>Total</p>
-                        <p>RM{{ total }}</p>
+                        <p>RM{{ total|floatformat:2 }}</p>
                     </div>
                 </div>
                 
