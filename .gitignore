@@ -5,6 +5,13 @@ scripts/*
 !scripts/task-complete.sh
 !scripts/README.md
 !scripts/create_categories.py
+!scripts/add_bakery_products.py
+!scripts/add_pantry_products.py
+!scripts/add_dairy_products.py
+!scripts/add_beverage_products.py
+!scripts/add_produce_products.py
+!scripts/add_all_products.py
+!scripts/import-products.sh
 tasks/
 .env
 .env.example
