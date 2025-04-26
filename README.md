@@ -100,7 +100,7 @@ The application includes a Django admin interface for managing content:
 
 - **URL**: http://127.0.0.1:8000/admin/
 - **Username**: grocerygoadmin
-- **Password**: *Use the password you set during setup*
+- **Password**: PassWord123!
 
 > **Note**: If you need to create a new admin user, run:
 > ```

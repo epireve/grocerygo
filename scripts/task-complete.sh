@@ -11,6 +11,11 @@ if [ -z "$TASK_ID" ] || [ -z "$COMMIT_MSG" ]; then
     exit 1
 fi
 
+# Remind about the changelog
+echo "Remember to update CHANGELOG.md with your changes before committing!"
+echo "Press Enter to continue or Ctrl+C to cancel..."
+read
+
 # Activate virtual environment
 source venv/bin/activate
 
