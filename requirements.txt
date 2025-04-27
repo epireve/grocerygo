@@ -7,3 +7,7 @@ django-widget-tweaks==1.5.0
 django-compressor==4.4
 django-browser-reload==1.12.1
 # Pillow will be installed separately 
+python-magic==0.4.27
+django-axes==6.1.1  # For more advanced login security
+bleach==6.1.0  # For more advanced HTML sanitization
+pyjwt==2.8.0  # For secure token handling 

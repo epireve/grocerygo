@@ -2,14 +2,40 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
-from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.decorators import login_required
+from django.urls import reverse
 import json
 from datetime import datetime, timedelta
 from products.models import Product
 from decimal import Decimal
 from .models import Cart, CartItem
+import logging
+
+# Set up logger
+logger = logging.getLogger("security")
 
 # Create your views here.
+
+
+def get_session_cart(request):
+    """Get the cart from session or initialize it"""
+    return request.session.get("cart", {})
+
+
+def calculate_cart_total(request):
+    """Calculate the total value of the cart"""
+    cart = get_session_cart(request)
+    total = Decimal("0.00")
+
+    for product_slug, quantity in cart.items():
+        try:
+            product = Product.objects.get(slug=product_slug)
+            total += product.price * quantity
+        except Product.DoesNotExist:
+            # Skip products that don't exist
+            continue
+
+    return total
 
 
 def sync_session_to_model(request):
@@ -41,58 +67,88 @@ def sync_session_to_model(request):
 # Simple cart implementation using session and localStorage
 def add_to_cart(request, slug=None):
     """Add a product to the cart"""
-    # If no slug provided, redirect to products page
+    # Security check: Validate slug parameter
     if not slug:
-        # If AJAX request, return error
-        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
-            return JsonResponse({"error": "Product slug is required"}, status=400)
-        messages.error(request, "Product not found")
+        messages.error(request, "Invalid product specified.")
         return redirect("products:product_list")
 
-    product = get_object_or_404(Product, slug=slug)
-    cart = request.session.get("cart", {})
+    try:
+        product = get_object_or_404(Product, slug=slug)
 
-    # Get quantity from POST if form submission, or query param if direct link
-    if request.method == "POST":
-        quantity = int(request.POST.get("quantity", 1))
-    else:
-        quantity = int(request.GET.get("quantity", 1))
+        # Security check: Ensure product is active and in stock
+        if not product.is_active or product.stock <= 0:
+            messages.error(request, "This product is not available at this time.")
+            return redirect("products:product_detail", slug=slug)
 
-    # If product is already in cart, update quantity
-    if product.slug in cart:
-        cart[product.slug] += quantity
-    else:
-        cart[product.slug] = quantity
+        # Get or initialize the cart
+        session_cart = get_session_cart(request)
 
-    # Update cart session
-    request.session["cart"] = cart
+        # If POST request, validate quantity from form
+        if request.method == "POST":
+            try:
+                quantity = int(request.POST.get("quantity", 1))
+                # Security check: Validate quantity range
+                if quantity <= 0:
+                    quantity = 1
+                elif quantity > 20:  # Set a reasonable maximum
+                    quantity = 20
+                    messages.warning(
+                        request, "Maximum quantity per product is 20 items."
+                    )
+            except (ValueError, TypeError):
+                quantity = 1
+        else:
+            quantity = 1
 
-    # Set cart expiry to 30 days
-    request.session.set_expiry(60 * 60 * 24 * 30)  # 30 days in seconds
+        # Check if product is already in cart
+        if slug in session_cart:
+            # Security check: Validate maximum quantity
+            current_qty = session_cart[slug]
+            updated_qty = current_qty + quantity
+            if updated_qty > 20:
+                updated_qty = 20
+                messages.warning(request, "Maximum quantity per product is 20 items.")
+            session_cart[slug] = updated_qty
+            messages.success(request, f"Updated {product.name} quantity in your cart.")
+        else:
+            # Add product to cart
+            session_cart[slug] = quantity
+            messages.success(request, f"Added {product.name} to your cart.")
 
-    # Also update the cart model if user is authenticated
-    if request.user.is_authenticated:
-        sync_session_to_model(request)
+        # Save the updated cart to session
+        request.session["cart"] = session_cart
+        request.session.modified = True
 
-    # Add success message
-    messages.success(request, f"{product.name} added to your cart.")
+        # Calculate cart total
+        cart_total = calculate_cart_total(request)
 
-    # Calculate total items count
-    total_items = sum(cart.values())
+        # If user is logged in, sync session cart to model
+        if request.user.is_authenticated:
+            sync_session_to_model(request)
 
-    # If AJAX request, return JSON response
-    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
-        return JsonResponse(
-            {
-                "success": True,
-                "message": f"{product.name} added to your cart.",
-                "cart": cart,
-                "total_items": total_items,
-            }
-        )
+        # For AJAX requests, return JSON response
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return JsonResponse(
+                {
+                    "success": True,
+                    "cart_total": cart_total,
+                    "cart_count": sum(session_cart.values()),
+                }
+            )
 
-    # Otherwise redirect to product detail
-    return redirect("products:product_detail", slug=product.slug)
+        # Redirect based on source
+        redirect_url = request.GET.get("next")
+        if redirect_url:
+            return redirect(redirect_url)
+        return redirect("cart:view_cart")
+
+    except Product.DoesNotExist:
+        messages.error(request, "Product not found.")
+        return redirect("products:product_list")
+    except Exception as e:
+        logger.error(f"Error adding to cart: {str(e)}", exc_info=True)
+        messages.error(request, "An error occurred. Please try again.")
+        return redirect("products:product_list")
 
 
 def view_cart(request):
@@ -141,6 +197,23 @@ def view_cart(request):
     tax_rate = Decimal("0.06")  # 6% GST in Malaysia
     tax = total * tax_rate
     final_total = total + shipping_cost + tax
+
+    # Count total items
+    items_count = sum(cart.values())
+
+    # Check if this is an AJAX request
+    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        return JsonResponse(
+            {
+                "success": True,
+                "cart_total": float(total),
+                "shipping": float(shipping_cost),
+                "tax": float(tax),
+                "final_total": float(final_total),
+                "items_count": items_count,
+                "products_count": len(products),
+            }
+        )
 
     context = {
         "products": products,
@@ -245,6 +318,7 @@ def remove_from_cart(request, slug):
     return redirect("cart:view_cart")
 
 
+@login_required
 @require_POST
 def sync_cart(request):
     """Synchronize localStorage cart with session"""
@@ -327,6 +401,7 @@ def get_session_cart(request):
     )
 
 
+@login_required
 def clear_cart(request):
     """Clear the cart"""
     # Clear the cart in session
@@ -357,70 +432,74 @@ def clear_cart(request):
 
 @require_POST
 def update_quantity(request, slug):
-    """Update the quantity of an item in the cart."""
-    quantity = request.POST.get("quantity")
-    if not quantity:
-        return JsonResponse({"error": "No quantity provided"}, status=400)
+    """Update the quantity of a product in the cart"""
+    if not slug:
+        return JsonResponse({"success": False, "error": "Invalid product"})
 
     try:
-        quantity = int(quantity)
-        if quantity < 1:
-            return JsonResponse({"error": "Quantity must be at least 1"}, status=400)
-    except ValueError:
-        return JsonResponse({"error": "Invalid quantity provided"}, status=400)
+        # Security check: Validate product exists
+        product = get_object_or_404(Product, slug=slug)
 
-    # Get the product
-    product = get_object_or_404(Product, slug=slug)
+        # Get quantity from request
+        try:
+            quantity = int(request.POST.get("quantity", 1))
+            # Security check: Validate quantity range
+            if quantity <= 0:
+                quantity = 1
+            elif quantity > 20:  # Set a reasonable maximum
+                quantity = 20
+        except (ValueError, TypeError):
+            quantity = 1
 
-    # Access the cart from session
-    cart = request.session.get("cart", {})
+        # Get the cart from session directly (not using get_session_cart function)
+        session_cart = request.session.get("cart", {})
 
-    # Update the quantity
-    if slug in cart:
-        cart[slug] = quantity
+        # Update quantity in session cart
+        if slug in session_cart:
+            session_cart[slug] = quantity
+            request.session["cart"] = session_cart
+            request.session.modified = True
 
-        # Update the session
-        request.session["cart"] = cart
-        request.session.modified = True
+            # Sync with model if user is authenticated
+            if request.user.is_authenticated:
+                sync_session_to_model(request)
 
-        # Also update the model cart if user is authenticated
-        if request.user.is_authenticated:
-            sync_session_to_model(request)
+            # Calculate updated cart total
+            cart_total = calculate_cart_total(request)
 
-        # Calculate the new cart total and item counts
-        cart_total = Decimal("0.00")
-        total_items = 0
+            # Calculate item subtotal
+            item_subtotal = product.price * quantity
 
-        for product_slug, qty in cart.items():
-            try:
-                p = Product.objects.get(slug=product_slug)
-                cart_total += p.price * qty
-                total_items += qty
-            except Product.DoesNotExist:
-                # Skip products that don't exist
-                continue
+            # Calculate tax (6%)
+            tax = cart_total * Decimal("0.06")
 
-        # Calculate shipping, tax, and total using the same rates as view_cart
-        shipping_cost = Decimal("5.99") if cart_total > 0 else Decimal("0.00")
-        tax_rate = Decimal("0.06")  # 6% GST in Malaysia
-        tax = cart_total * tax_rate
-        final_total = cart_total + shipping_cost + tax
+            # Calculate shipping cost
+            shipping_cost = Decimal("5.99")
 
-        # Calculate the subtotal for the specific product being updated
-        item_subtotal = product.price * quantity
+            # Calculate final total
+            final_total = cart_total + tax + shipping_cost
 
-        return JsonResponse(
-            {
-                "success": True,
-                "quantity": quantity,
-                "price": float(product.price),
-                "item_subtotal": f"RM{float(item_subtotal):.2f}",
-                "cart_total": f"RM{float(cart_total):.2f}",
-                "total_items": total_items,
-                "tax": f"RM{float(tax):.2f}",
-                "shipping_cost": f"RM{float(shipping_cost):.2f}",
-                "final_total": f"RM{float(final_total):.2f}",
-            }
-        )
+            # Count total items
+            items_count = sum(session_cart.values())
 
-    return JsonResponse({"error": "Product not found in cart"}, status=404)
+            return JsonResponse(
+                {
+                    "success": True,
+                    "cart_total": float(cart_total),
+                    "item_subtotal": float(item_subtotal),
+                    "tax": float(tax),
+                    "shipping": float(shipping_cost),
+                    "final_total": float(final_total),
+                    "items_count": items_count,
+                }
+            )
+        else:
+            return JsonResponse(
+                {"success": False, "error": "Product not found in cart"}
+            )
+
+    except Product.DoesNotExist:
+        return JsonResponse({"success": False, "error": "Product not found"})
+    except Exception as e:
+        logger.error(f"Error updating cart quantity: {str(e)}", exc_info=True)
+        return JsonResponse({"success": False, "error": "An error occurred"})

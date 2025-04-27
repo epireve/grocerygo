@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 {% load static tailwind_tags %}
+{% load custom_filters %}
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -7,6 +8,10 @@
     <title>{% block title %}GroceryGo{% endblock %}</title>
     {% tailwind_css %}
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        // Store CSRF token as a global variable
+        window.CSRF_TOKEN = "{% csrf_token_value request %}";
+    </script>
     {% block extra_css %}{% endblock %}
     {% block extra_head %}{% endblock %}
 </head>
@@ -298,6 +303,11 @@
         
         // Helper function to get CSRF token from cookies
         function getCookie(name) {
+            // If getting CSRF token, use our global variable instead of cookies
+            if (name === 'csrftoken' && window.CSRF_TOKEN) {
+                return window.CSRF_TOKEN;
+            }
+            
             let cookieValue = null;
             if (document.cookie && document.cookie !== '') {
                 const cookies = document.cookie.split(';');

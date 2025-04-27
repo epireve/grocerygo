@@ -11,6 +11,11 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 from pathlib import Path
+import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,12 +25,24 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-tzk$@(v7xc&-+mwkfoe)gn1c(@c3ehpbg*hra@#%du%npom6%&"
+SECRET_KEY = os.environ.get(
+    "SECRET_KEY", "django-insecure-tzk$@(v7xc&-+mwkfoe)gn1c(@c3ehpbg*hra@#%du%npom6%&"
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get("DEBUG", "True") == "True"
 
-ALLOWED_HOSTS = []
+# For development
+if DEBUG:
+    ALLOWED_HOSTS = ["127.0.0.1", "localhost", "[::1]"]
+else:
+    # For production - customize as needed
+    ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "").split(",")
+    if not ALLOWED_HOSTS:
+        ALLOWED_HOSTS = ["example.com"]  # Default fallback
+
+# Production check - used to enable/disable production security features
+IS_PRODUCTION = os.environ.get("ENVIRONMENT", "development") == "production"
 
 
 # Application definition
@@ -58,6 +75,10 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "django_browser_reload.middleware.BrowserReloadMiddleware",
+    # Custom security middleware
+    "accounts.middleware.UserActivityMiddleware",
+    "accounts.middleware.SecurityHeadersMiddleware",
+    "accounts.middleware.CSPNonceMiddleware",
 ]
 
 ROOT_URLCONF = "grocerygo.urls"
@@ -101,6 +122,9 @@ AUTH_PASSWORD_VALIDATORS = [
     },
     {
         "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+        "OPTIONS": {
+            "min_length": 10,  # Increased from the default of 8
+        },
     },
     {
         "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
@@ -140,3 +164,156 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Tailwind configuration
 TAILWIND_APP_NAME = "grocery_go"
+
+# Email Configuration - Google SMTP
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
+DEFAULT_FROM_EMAIL = os.environ.get(
+    "DEFAULT_FROM_EMAIL", f"GroceryGo <{os.environ.get('EMAIL_HOST_USER')}>"
+)
+
+# For development/testing, you can use the console backend instead
+# Uncomment the line below to use console backend during development
+# EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
+# Security Settings
+# Session settings
+SESSION_COOKIE_SECURE = IS_PRODUCTION
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = "Lax"
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+SESSION_COOKIE_AGE = int(
+    os.environ.get("SESSION_COOKIE_AGE", 86400)
+)  # 1 day in seconds
+
+# CSRF settings
+CSRF_COOKIE_SECURE = IS_PRODUCTION
+CSRF_COOKIE_HTTPONLY = True
+CSRF_COOKIE_SAMESITE = "Lax"
+CSRF_TRUSTED_ORIGINS = (
+    os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",")
+    if os.environ.get("CSRF_TRUSTED_ORIGINS")
+    else []
+)
+
+# Security middleware settings
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_BROWSER_XSS_FILTER = True
+X_FRAME_OPTIONS = "DENY"
+SECURE_HSTS_SECONDS = 31536000 if IS_PRODUCTION else 0  # 1 year in production
+SECURE_HSTS_INCLUDE_SUBDOMAINS = IS_PRODUCTION
+SECURE_HSTS_PRELOAD = IS_PRODUCTION
+SECURE_SSL_REDIRECT = IS_PRODUCTION
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https") if IS_PRODUCTION else None
+
+# Authentication settings
+AUTHENTICATION_BACKENDS = [
+    "accounts.backends.RateLimitedAuthenticationBackend",
+    "django.contrib.auth.backends.ModelBackend",  # Keep as fallback
+]
+
+# Login rate limiting
+MAX_LOGIN_ATTEMPTS = int(
+    os.environ.get("MAX_LOGIN_ATTEMPTS", 5)
+)  # Maximum number of failed login attempts before lockout
+LOGIN_LOCKOUT_TIME = int(
+    os.environ.get("LOGIN_LOCKOUT_TIME", 30)
+)  # Lockout duration in minutes
+
+# User session timeout - will auto-logout after this many minutes of inactivity
+USER_INACTIVITY_TIMEOUT = int(
+    os.environ.get("USER_INACTIVITY_TIMEOUT", 30)
+)  # 30 minutes
+
+# File Upload Restrictions
+FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10 MB
+DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10 MB
+FILE_UPLOAD_PERMISSIONS = 0o644
+
+# Logging Configuration
+LOGS_DIR = BASE_DIR / "logs"
+LOGS_DIR.mkdir(exist_ok=True)
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "{asctime} {levelname} {module} {message}",
+            "style": "{",
+        },
+        "security": {
+            "format": "{asctime} {levelname} {message}",
+            "style": "{",
+        },
+    },
+    "filters": {
+        "require_debug_false": {
+            "()": "django.utils.log.RequireDebugFalse",
+        },
+        "require_debug_true": {
+            "()": "django.utils.log.RequireDebugTrue",
+        },
+    },
+    "handlers": {
+        "console": {
+            "level": "INFO",
+            "filters": ["require_debug_true"],
+            "class": "logging.StreamHandler",
+            "formatter": "verbose",
+        },
+        "file": {
+            "level": "INFO",
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": LOGS_DIR / "django.log",
+            "maxBytes": 1024 * 1024 * 5,  # 5 MB
+            "backupCount": 5,
+            "formatter": "verbose",
+        },
+        "security_file": {
+            "level": "INFO",
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": LOGS_DIR / "security.log",
+            "maxBytes": 1024 * 1024 * 5,  # 5 MB
+            "backupCount": 5,
+            "formatter": "security",
+        },
+        "mail_admins": {
+            "level": "ERROR",
+            "filters": ["require_debug_false"],
+            "class": "django.utils.log.AdminEmailHandler",
+            "formatter": "verbose",
+        },
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["console", "file", "mail_admins"],
+            "level": "INFO",
+            "propagate": True,
+        },
+        "django.request": {
+            "handlers": ["console", "file", "mail_admins"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "security": {
+            "handlers": ["console", "security_file", "mail_admins"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "accounts": {
+            "handlers": ["console", "file", "security_file"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "orders": {
+            "handlers": ["console", "file"],
+            "level": "INFO",
+            "propagate": False,
+        },
+    },
+}

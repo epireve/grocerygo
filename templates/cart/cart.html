@@ -1,7 +1,8 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load custom_filters %}
 
-{% block title %}Your Shopping Cart - GroceryGo{% endblock %}
+{% block title %}Shopping Cart - GroceryGo{% endblock %}
 
 {% block content %}
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -38,7 +39,7 @@
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
                             {% for item in products %}
-                            <tr id="cart-item-{{ item.product.id }}" class="cart-item">
+                            <tr id="cart-item-{{ item.product.id }}" class="cart-item" data-product-slug="{{ item.product.slug }}">
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="flex items-center">
                                         <div class="h-16 w-16 flex-shrink-0">
@@ -108,21 +109,21 @@
                 <div class="p-6">
                     <div class="space-y-4">
                         <div class="flex justify-between">
-                            <span class="text-gray-600">Items ({{ products|length }}):</span>
-                            <span id="cart-total" class="font-medium">RM{{ total|floatformat:2 }}</span>
+                            <span class="text-gray-600">Items (<span class="items-count">{{ products|length }}</span>):</span>
+                            <span id="cart-total" class="cart-total font-medium">RM{{ total|floatformat:2 }}</span>
                         </div>
                         <div class="flex justify-between">
                             <span class="text-gray-600">Shipping:</span>
-                            <span class="font-medium">RM{{ shipping_cost|floatformat:2 }}</span>
+                            <span class="shipping-cost font-medium">RM{{ shipping_cost|floatformat:2 }}</span>
                         </div>
                         <div class="flex justify-between">
                             <span class="text-gray-600">Tax (6%):</span>
-                            <span class="font-medium">RM{{ tax|floatformat:2 }}</span>
+                            <span class="tax-amount font-medium">RM{{ tax|floatformat:2 }}</span>
                         </div>
                         <div class="border-t border-gray-200 pt-4">
                             <div class="flex justify-between">
                                 <span class="text-lg font-semibold">Total:</span>
-                                <span class="text-lg font-semibold">RM{{ final_total|floatformat:2 }}</span>
+                                <span class="final-total text-lg font-semibold">RM{{ final_total|floatformat:2 }}</span>
                             </div>
                         </div>
                     </div>
@@ -193,7 +194,7 @@
                     this.value = 1;
                     qty = 1;
                 }
-                updateQuantity(productSlug, qty);
+                updateQuantity(productSlug, this);
             });
         });
         
@@ -216,62 +217,208 @@
             });
         }
         
+        // Event delegation for quantity inputs
+        document.addEventListener('change', function(event) {
+            const quantityInput = event.target;
+            if (quantityInput.classList.contains('quantity-input')) {
+                const productSlug = quantityInput.dataset.productSlug;
+                if (productSlug) {
+                    updateQuantity(productSlug, quantityInput);
+                }
+            }
+        });
+        
+        // Remove item click events
+        document.querySelectorAll('.remove-item').forEach(button => {
+            button.addEventListener('click', function() {
+                const productSlug = this.dataset.productSlug;
+                removeFromCart(productSlug);
+            });
+        });
+        
         // Function to update quantity
-        function updateQuantity(productSlug, quantity) {
-            const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        function updateQuantity(productSlug, quantityOrInput) {
+            // Handle both cases: either directly passed number or the input element
+            let newQuantity;
+            let inputElement;
             
+            if (typeof quantityOrInput === 'number') {
+                newQuantity = quantityOrInput;
+                // Find the input element for this product
+                inputElement = document.querySelector(`.quantity-input[data-product-slug="${productSlug}"]`);
+            } else if (quantityOrInput instanceof HTMLElement) {
+                inputElement = quantityOrInput;
+                newQuantity = parseInt(inputElement.value);
+            } else {
+                console.error('Invalid quantity parameter', quantityOrInput);
+                return;
+            }
+            
+            // Validate quantity
+            if (isNaN(newQuantity) || newQuantity < 1) {
+                alert('Please enter a valid quantity (minimum 1)');
+                if (inputElement) inputElement.value = 1; // Reset to 1
+                return;
+            }
+            
+            // Get the CSRF token from the form, not the cookie
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            
+            // Send AJAX request to update quantity
             fetch(`/cart/update/${productSlug}/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRFToken': csrftoken
+                    'X-CSRFToken': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest'
                 },
-                body: `quantity=${quantity}`
+                body: `quantity=${newQuantity}`
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
             .then(data => {
                 if (data.success) {
-                    // Update subtotal for this item
+                    // Find the item container - search from the input element if available
+                    const itemRow = inputElement 
+                        ? inputElement.closest('.cart-item')
+                        : document.querySelector(`.cart-item[data-product-slug="${productSlug}"]`);
+                    
+                    // Update the subtotal for this item
                     const subtotalElement = document.querySelector(`.subtotal[data-product-slug="${productSlug}"]`);
                     if (subtotalElement) {
-                        subtotalElement.textContent = data.item_subtotal;
+                        subtotalElement.textContent = `RM${data.item_subtotal.toFixed(2)}`;
                     }
                     
-                    // Update cart total
-                    const cartTotalElement = document.getElementById('cart-total');
-                    if (cartTotalElement && data.cart_total) {
-                        cartTotalElement.textContent = data.cart_total;
-                        
-                        // Update tax
-                        const taxElement = document.querySelector('.space-y-4 .flex:nth-child(3) .font-medium');
-                        if (taxElement && data.tax) {
-                            taxElement.textContent = data.tax;
-                        }
-                        
-                        // Update final total
-                        const finalTotalElement = document.querySelector('.border-t .flex.justify-between .text-lg.font-semibold:last-child');
-                        if (finalTotalElement && data.final_total) {
-                            finalTotalElement.textContent = data.final_total;
-                        }
+                    // Update order summary
+                    const cartTotalElement = document.querySelector('#cart-total, .cart-total');
+                    if (cartTotalElement) {
+                        cartTotalElement.textContent = `RM${data.cart_total.toFixed(2)}`;
+                    }
+                    
+                    const taxElement = document.querySelector('.tax-amount');
+                    if (taxElement) {
+                        taxElement.textContent = `RM${data.tax.toFixed(2)}`;
+                    }
+                    
+                    const shippingElement = document.querySelector('.shipping-cost');
+                    if (shippingElement) {
+                        shippingElement.textContent = `RM${data.shipping.toFixed(2)}`;
+                    }
+                    
+                    const finalTotalElement = document.querySelector('.final-total');
+                    if (finalTotalElement) {
+                        finalTotalElement.textContent = `RM${data.final_total.toFixed(2)}`;
+                    }
+                    
+                    // Update items count in Order Summary
+                    const itemsCountElements = document.querySelectorAll('.items-count');
+                    itemsCountElements.forEach(el => {
+                        el.textContent = data.items_count;
+                    });
+                    
+                    // Update cart UI (count in navigation)
+                    updateCartUI();
+                    
+                    // Visual feedback
+                    if (itemRow) {
+                        itemRow.classList.add('bg-green-50');
+                        setTimeout(() => {
+                            itemRow.classList.remove('bg-green-50');
+                        }, 1000);
+                    }
+                } else {
+                    // Don't show the "Product not found" error, just handle it gracefully
+                    console.error('Error updating quantity:', data.error);
+                    
+                    // If the product doesn't exist in the cart, add it first
+                    if (data.error && data.error.includes('not found in cart')) {
+                        // Add the product to cart with current quantity
+                        fetch(`/cart/add/${productSlug}/`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                                'X-CSRFToken': csrfToken,
+                                'X-Requested-With': 'XMLHttpRequest'
+                            },
+                            body: `quantity=${newQuantity}`
+                        })
+                        .then(response => response.json())
+                        .then(addData => {
+                            if (addData.success) {
+                                // Reload page to show the new item
+                                window.location.reload();
+                            } else {
+                                alert('Could not add product to cart. Please try again.');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error adding product:', error);
+                        });
                     } else {
-                        // If there was a problem updating the totals, reload the page
-                        window.location.reload();
+                        // Reset the input to previous value if provided
+                        if (data.current_quantity && inputElement) {
+                            inputElement.value = data.current_quantity;
+                        }
                     }
-                    
-                    // Maybe update the cart icon in the header
-                    updateCartIcon(data.total_items);
                 }
             })
             .catch(error => {
                 console.error('Error updating quantity:', error);
+                // Don't show error to user, just log it and handle gracefully
+                if (inputElement) {
+                    // Flash the input to indicate an issue
+                    inputElement.classList.add('border-red-500');
+                    setTimeout(() => {
+                        inputElement.classList.remove('border-red-500');
+                    }, 1000);
+                }
+            });
+        }
+        
+        // Function to update cart UI 
+        function updateCartUI() {
+            // Update cart counter in nav bar based on data attributes
+            fetch('/cart/', {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                const cartCountElements = document.querySelectorAll('.cart-count, #cart-count');
+                cartCountElements.forEach(element => {
+                    if (element) {
+                        element.textContent = data.items_count || 0;
+                        // Make sure the element is visible if there are items
+                        if (data.items_count > 0) {
+                            element.classList.remove('hidden');
+                        } else {
+                            element.classList.add('hidden');
+                        }
+                    }
+                });
+            })
+            .catch(error => {
+                console.error('Error updating cart UI:', error);
+                // Don't alert the user on UI updates
             });
         }
         
         // Function to remove item
         function removeItem(productSlug) {
+            // Get the CSRF token from the form
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            
             fetch(`/cart/remove/${productSlug}/`, {
+                method: 'POST', // Change to POST for better CSRF handling
                 headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': csrfToken,
                     'X-Requested-With': 'XMLHttpRequest'
                 }
             })
@@ -279,58 +426,65 @@
             .then(data => {
                 if (data.success) {
                     // Remove the item from DOM
-                    const itemElement = document.querySelector(`#cart-item-${productSlug}`);
+                    // First try to find rows that have the data-product-slug attribute
+                    let itemElement = document.querySelector(`tr.cart-item[data-product-slug="${productSlug}"]`);
+                    
+                    // If not found, try to find the row by looking for elements with data-product-slug inside
+                    if (!itemElement) {
+                        const elements = document.querySelectorAll(`[data-product-slug="${productSlug}"]`);
+                        for (const element of elements) {
+                            const row = element.closest('.cart-item');
+                            if (row) {
+                                itemElement = row;
+                                break;
+                            }
+                        }
+                    }
+                    
                     if (itemElement) {
                         itemElement.remove();
                     }
                     
-                    // Update cart total
-                    const cartTotalElement = document.getElementById('cart-total');
-                    if (cartTotalElement) {
-                        // We might need to recalculate the total here
-                        // For now, reload the page to get the correct total
-                        window.location.reload();
-                    }
+                    // Update cart UI
+                    updateCartUI();
                     
-                    // Update cart icon
-                    updateCartIcon(data.total_items);
+                    // Reload the page to get the correct totals
+                    window.location.reload();
                 }
             })
             .catch(error => {
                 console.error('Error removing item:', error);
+                // Don't show error message to user
             });
         }
         
         // Function to clear cart
         function clearCart() {
+            // Get the CSRF token from the form
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            
             fetch('/cart/clear/', {
+                method: 'POST',
                 headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': csrfToken,
                     'X-Requested-With': 'XMLHttpRequest'
                 }
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
+                    // Update cart UI
+                    updateCartUI();
+                    
                     // Reload the page
                     window.location.reload();
                 }
             })
             .catch(error => {
                 console.error('Error clearing cart:', error);
+                // Don't show error message to user
             });
-        }
-        
-        // Function to update cart icon in header
-        function updateCartIcon(count) {
-            const cartCountElement = document.getElementById('cart-counter');
-            if (cartCountElement) {
-                cartCountElement.textContent = count;
-                if (count > 0) {
-                    cartCountElement.classList.remove('hidden');
-                } else {
-                    cartCountElement.classList.add('hidden');
-                }
-            }
         }
     });
 </script>
