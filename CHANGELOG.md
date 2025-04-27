@@ -5,6 +5,28 @@ All notable changes to the GroceryGo project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.1] - 2025-04-26
+
+### Fixed
+
+1. Database Migration Issues
+   - Fixed migration conflict with Address model's phone field
+   - Resolved SQLite database compatibility issues with NOT NULL constraints
+   - Implemented proper migration for converting ShippingAddress records to Address model
+   - Added proper relationship handling between Checkout and Address models
+   - Fixed integrity errors during migration process
+   - Created manual migration fixes using Django shell for data consistency
+
+### Enhanced
+
+1. Checkout UI Improvements
+   - Fixed UI inconsistencies in the shipping address form
+   - Standardized form field heights for a more professional appearance
+   - Applied consistent height (h-10) to all input fields and select elements
+   - Added uniform horizontal padding (px-3) to improve text alignment
+   - Removed variable padding that was causing height inconsistencies
+   - Enhanced overall visual consistency in the checkout process
+
 ## [0.1.0] - 2025-04-26
 
 ### Fixed

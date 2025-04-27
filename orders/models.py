@@ -13,19 +13,28 @@ class Address(models.Model):
         ("billing", "Billing"),
     ]
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="addresses")
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="addresses"
+    )
     address_type = models.CharField(max_length=10, choices=ADDRESS_TYPE_CHOICES)
-    full_name = models.CharField(max_length=100)
+    full_name = models.CharField(max_length=255)
     street_address = models.CharField(max_length=255)
     apartment_address = models.CharField(max_length=255, blank=True, null=True)
     city = models.CharField(max_length=100)
     state = models.CharField(max_length=100)
     postal_code = models.CharField(max_length=20)
     country = models.CharField(max_length=100, default="Malaysia")
-    phone_number = models.CharField(max_length=20)
+    phone = models.CharField(
+        max_length=50, blank=True, null=True
+    )  # Changed from phone_number and made nullable
     is_default = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Address"
+        verbose_name_plural = "Addresses"
+        ordering = ["-is_default", "-created_at"]
 
     def __str__(self):
         return f"{self.full_name} - {self.street_address}, {self.city}"
@@ -217,7 +226,7 @@ class Checkout(models.Model):
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="checkouts"
     )
     shipping_address = models.ForeignKey(
-        ShippingAddress, on_delete=models.PROTECT, related_name="checkouts"
+        Address, on_delete=models.PROTECT, related_name="checkout_shipping_orders"
     )
     payment_method = models.CharField(
         max_length=50, choices=PAYMENT_METHOD_CHOICES, default="credit_card"

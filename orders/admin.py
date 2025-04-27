@@ -178,7 +178,7 @@ class OrderItemAdmin(admin.ModelAdmin):
 class AddressAdmin(admin.ModelAdmin):
     list_display = ["id", "user", "full_name", "address_type", "city", "is_default"]
     list_filter = ["address_type", "is_default", "city", "state", "country"]
-    search_fields = ["user__username", "full_name", "street_address", "city"]
+    search_fields = ["user__username", "full_name", "street_address", "city", "phone"]
     date_hierarchy = "created_at"
     actions = ["export_addresses_as_csv"]
 

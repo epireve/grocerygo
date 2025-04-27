@@ -65,8 +65,8 @@
                                                         <label for="address-{{ address.id }}" class="font-medium text-gray-700">{{ address.full_name }}</label>
                                                         <div class="text-gray-500">
                                                             <p>{{ address.street_address }}</p>
-                                                            {% if address.apartment_unit %}
-                                                                <p>{{ address.apartment_unit }}</p>
+                                                            {% if address.apartment_address %}
+                                                                <p>{{ address.apartment_address }}</p>
                                                             {% endif %}
                                                             <p>{{ address.city }}, {{ address.state }} {{ address.postal_code }}</p>
                                                             <p>{{ address.country }}</p>
@@ -90,27 +90,27 @@
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div class="col-span-2">
                                     <label for="full_name" class="block text-sm font-medium text-gray-700">Full Name</label>
-                                    <input type="text" name="full_name" id="full_name" class="mt-1 focus:ring-green-500 focus:border-green-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                                    <input type="text" name="full_name" id="full_name" class="mt-1 focus:ring-green-500 focus:border-green-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md h-10 px-3">
                                 </div>
 
                                 <div class="col-span-2">
                                     <label for="street_address" class="block text-sm font-medium text-gray-700">Street Address</label>
-                                    <input type="text" name="street_address" id="street_address" class="mt-1 focus:ring-green-500 focus:border-green-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                                    <input type="text" name="street_address" id="street_address" class="mt-1 focus:ring-green-500 focus:border-green-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md h-10 px-3">
                                 </div>
 
                                 <div class="col-span-2">
-                                    <label for="apartment_unit" class="block text-sm font-medium text-gray-700">Apartment, suite, etc. (optional)</label>
-                                    <input type="text" name="apartment_unit" id="apartment_unit" class="mt-1 focus:ring-green-500 focus:border-green-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                                    <label for="apartment_address" class="block text-sm font-medium text-gray-700">Apartment, suite, etc. (optional)</label>
+                                    <input type="text" name="apartment_address" id="apartment_address" class="mt-1 focus:ring-green-500 focus:border-green-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md h-10 px-3">
                                 </div>
 
                                 <div>
                                     <label for="city" class="block text-sm font-medium text-gray-700">City</label>
-                                    <input type="text" name="city" id="city" class="mt-1 focus:ring-green-500 focus:border-green-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                                    <input type="text" name="city" id="city" class="mt-1 focus:ring-green-500 focus:border-green-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md h-10 px-3">
                                 </div>
 
                                 <div>
                                     <label for="state" class="block text-sm font-medium text-gray-700">State / Province</label>
-                                    <select id="state" name="state" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm">
+                                    <select id="state" name="state" class="mt-1 block w-full border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm h-10 px-3">
                                         <option value="Johor">Johor</option>
                                         <option value="Kedah">Kedah</option>
                                         <option value="Kelantan">Kelantan</option>
@@ -132,12 +132,12 @@
 
                                 <div>
                                     <label for="postal_code" class="block text-sm font-medium text-gray-700">Postal Code</label>
-                                    <input type="text" name="postal_code" id="postal_code" class="mt-1 focus:ring-green-500 focus:border-green-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                                    <input type="text" name="postal_code" id="postal_code" class="mt-1 focus:ring-green-500 focus:border-green-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md h-10 px-3">
                                 </div>
                                 
                                 <div>
                                     <label for="country" class="block text-sm font-medium text-gray-700">Country</label>
-                                    <select id="country" name="country" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm">
+                                    <select id="country" name="country" class="mt-1 block w-full border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm h-10 px-3">
                                         <option value="Malaysia" selected>Malaysia</option>
                                         <option value="Singapore">Singapore</option>
                                         <option value="Indonesia">Indonesia</option>
@@ -149,7 +149,7 @@
 
                                 <div class="col-span-2">
                                     <label for="phone" class="block text-sm font-medium text-gray-700">Phone Number</label>
-                                    <input type="tel" name="phone" id="phone" class="mt-1 focus:ring-green-500 focus:border-green-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                                    <input type="tel" name="phone" id="phone" class="mt-1 focus:ring-green-500 focus:border-green-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md h-10 px-3">
                                 </div>
 
                                 <div class="col-span-2">
@@ -216,8 +216,8 @@
                                 <div class="bg-gray-50 p-4 rounded-md">
                                     <p class="font-medium">{{ shipping_address.full_name }}</p>
                                     <p>{{ shipping_address.street_address }}</p>
-                                    {% if shipping_address.apartment_unit %}
-                                        <p>{{ shipping_address.apartment_unit }}</p>
+                                    {% if shipping_address.apartment_address %}
+                                        <p>{{ shipping_address.apartment_address }}</p>
                                     {% endif %}
                                     <p>{{ shipping_address.city }}, {{ shipping_address.state }} {{ shipping_address.postal_code }}</p>
                                     <p>{{ shipping_address.country }}</p>

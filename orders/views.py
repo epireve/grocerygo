@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.urls import reverse
 from django.views.decorators.http import require_POST
-from .models import Order, OrderItem, ShippingAddress, Checkout, CheckoutItem
+from .models import Order, OrderItem, Address, Checkout, CheckoutItem
 from cart.models import Cart, CartItem
 from products.models import Product
 from decimal import Decimal
@@ -72,7 +72,7 @@ def checkout_view(request):
     total = subtotal + shipping_cost + tax
 
     # Get or initialize the user's saved addresses
-    saved_addresses = ShippingAddress.objects.filter(user=request.user)
+    saved_addresses = Address.objects.filter(user=request.user, address_type="shipping")
 
     # Handle form submission
     if request.method == "POST":
@@ -88,14 +88,14 @@ def checkout_view(request):
                 # User selected a saved address
                 try:
                     address_id = int(use_saved_address)
-                    address = ShippingAddress.objects.get(
-                        id=address_id, user=request.user
+                    address = Address.objects.get(
+                        id=address_id, user=request.user, address_type="shipping"
                     )
                     # Store the selected address ID in session for the next step
                     request.session["shipping_address_id"] = address_id
                     # Move to payment step
                     return redirect(reverse("orders:checkout") + "?step=payment")
-                except (ValueError, ShippingAddress.DoesNotExist):
+                except (ValueError, Address.DoesNotExist):
                     messages.error(
                         request, "Selected address not found. Please try again."
                     )
@@ -121,11 +121,12 @@ def checkout_view(request):
 
                 if is_valid:
                     # Create new address
-                    address = ShippingAddress(
+                    address = Address(
                         user=request.user,
+                        address_type="shipping",
                         full_name=form_data.get("full_name"),
                         street_address=form_data.get("street_address"),
-                        apartment_unit=form_data.get("apartment_unit", ""),
+                        apartment_address=form_data.get("apartment_unit", ""),
                         city=form_data.get("city"),
                         state=form_data.get("state"),
                         postal_code=form_data.get("postal_code"),
@@ -165,8 +166,8 @@ def checkout_view(request):
 
             try:
                 # Get the shipping address
-                shipping_address = ShippingAddress.objects.get(
-                    id=address_id, user=request.user
+                shipping_address = Address.objects.get(
+                    id=address_id, user=request.user, address_type="shipping"
                 )
 
                 # Create the checkout/order
@@ -216,7 +217,7 @@ def checkout_view(request):
                 # Redirect to order confirmation
                 return redirect("orders:order_confirmation", checkout_id=checkout.id)
 
-            except ShippingAddress.DoesNotExist:
+            except Address.DoesNotExist:
                 messages.error(request, "Shipping address not found. Please try again.")
             except Exception as e:
                 messages.error(request, f"An error occurred: {str(e)}")
@@ -245,11 +246,11 @@ def checkout_view(request):
             return redirect("orders:checkout")
 
         try:
-            shipping_address = ShippingAddress.objects.get(
-                id=address_id, user=request.user
+            shipping_address = Address.objects.get(
+                id=address_id, user=request.user, address_type="shipping"
             )
             context["shipping_address"] = shipping_address
-        except ShippingAddress.DoesNotExist:
+        except Address.DoesNotExist:
             messages.error(
                 request, "Selected shipping address not found. Please try again."
             )
@@ -264,12 +265,12 @@ def checkout_view(request):
             return redirect("orders:checkout")
 
         try:
-            shipping_address = ShippingAddress.objects.get(
-                id=address_id, user=request.user
+            shipping_address = Address.objects.get(
+                id=address_id, user=request.user, address_type="shipping"
             )
             context["shipping_address"] = shipping_address
             context["payment_method"] = payment_method
-        except ShippingAddress.DoesNotExist:
+        except Address.DoesNotExist:
             messages.error(
                 request, "Selected shipping address not found. Please try again."
             )
