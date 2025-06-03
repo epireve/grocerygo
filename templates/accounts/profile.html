@@ -8,7 +8,7 @@
     <div class="bg-white shadow overflow-hidden sm:rounded-lg">
         <div class="px-4 py-5 sm:px-6 border-b border-gray-200">
             <h2 class="text-xl font-semibold text-gray-800">My Profile</h2>
-            <p class="mt-1 text-sm text-gray-500">Personal details and preferences</p>
+            <p class="mt-1 text-sm text-gray-500">Personal details and account information</p>
         </div>
         
         {% if messages %}
@@ -22,119 +22,39 @@
         {% endif %}
         
         <div class="px-4 py-5 sm:p-6">
-            <form method="post" class="space-y-8">
+            <form method="post" class="space-y-6">
                 {% csrf_token %}
-                
-                {% if form.errors %}
-                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4" role="alert">
-                        <p class="font-bold">Please correct the errors below:</p>
-                        <ul class="list-disc pl-5">
-                            {% for field in form %}
-                                {% for error in field.errors %}
-                                    <li>{{ error }}</li>
-                                {% endfor %}
-                            {% endfor %}
-                            {% for error in form.non_field_errors %}
-                                <li>{{ error }}</li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-                {% endif %}
                 
                 <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
                     <div class="sm:col-span-3">
-                        <label for="{{ form.first_name.id_for_label }}" class="block text-sm font-medium text-gray-700">First name</label>
-                        {{ form.first_name }}
-                        {% if form.first_name.errors %}
-                            <p class="text-red-500 text-xs mt-1">{{ form.first_name.errors.0 }}</p>
-                        {% endif %}
+                        <label for="first_name" class="block text-sm font-medium text-gray-700">First name</label>
+                        <input type="text" name="first_name" id="first_name" value="{{ user.first_name|default:'' }}" 
+                               class="mt-1 focus:ring-green-500 focus:border-green-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
                     </div>
                     
                     <div class="sm:col-span-3">
-                        <label for="{{ form.last_name.id_for_label }}" class="block text-sm font-medium text-gray-700">Last name</label>
-                        {{ form.last_name }}
-                        {% if form.last_name.errors %}
-                            <p class="text-red-500 text-xs mt-1">{{ form.last_name.errors.0 }}</p>
-                        {% endif %}
+                        <label for="last_name" class="block text-sm font-medium text-gray-700">Last name</label>
+                        <input type="text" name="last_name" id="last_name" value="{{ user.last_name|default:'' }}" 
+                               class="mt-1 focus:ring-green-500 focus:border-green-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
                     </div>
                     
                     <div class="sm:col-span-6">
-                        <label for="{{ form.email.id_for_label }}" class="block text-sm font-medium text-gray-700">Email address</label>
-                        {{ form.email }}
-                        {% if form.email.errors %}
-                            <p class="text-red-500 text-xs mt-1">{{ form.email.errors.0 }}</p>
-                        {% endif %}
+                        <label for="email" class="block text-sm font-medium text-gray-700">Email address</label>
+                        <input type="email" name="email" id="email" value="{{ user.email|default:'' }}" 
+                               class="mt-1 focus:ring-green-500 focus:border-green-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
                     </div>
-                </div>
-                
-                <div class="pt-5 border-t border-gray-200">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4">Address Information</h3>
                     
-                    <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
-                        <div class="sm:col-span-6">
-                            <label for="{{ form.address_line1.id_for_label }}" class="block text-sm font-medium text-gray-700">Address line 1</label>
-                            {{ form.address_line1 }}
-                            {% if form.address_line1.errors %}
-                                <p class="text-red-500 text-xs mt-1">{{ form.address_line1.errors.0 }}</p>
-                            {% endif %}
-                        </div>
-                        
-                        <div class="sm:col-span-6">
-                            <label for="{{ form.address_line2.id_for_label }}" class="block text-sm font-medium text-gray-700">Address line 2</label>
-                            {{ form.address_line2 }}
-                            {% if form.address_line2.errors %}
-                                <p class="text-red-500 text-xs mt-1">{{ form.address_line2.errors.0 }}</p>
-                            {% endif %}
-                        </div>
-                        
-                        <div class="sm:col-span-2">
-                            <label for="{{ form.city.id_for_label }}" class="block text-sm font-medium text-gray-700">City</label>
-                            {{ form.city }}
-                            {% if form.city.errors %}
-                                <p class="text-red-500 text-xs mt-1">{{ form.city.errors.0 }}</p>
-                            {% endif %}
-                        </div>
-                        
-                        <div class="sm:col-span-2">
-                            <label for="{{ form.state.id_for_label }}" class="block text-sm font-medium text-gray-700">State / Province</label>
-                            {{ form.state }}
-                            {% if form.state.errors %}
-                                <p class="text-red-500 text-xs mt-1">{{ form.state.errors.0 }}</p>
-                            {% endif %}
-                        </div>
-                        
-                        <div class="sm:col-span-2">
-                            <label for="{{ form.postal_code.id_for_label }}" class="block text-sm font-medium text-gray-700">ZIP / Postal code</label>
-                            {{ form.postal_code }}
-                            {% if form.postal_code.errors %}
-                                <p class="text-red-500 text-xs mt-1">{{ form.postal_code.errors.0 }}</p>
-                            {% endif %}
-                        </div>
-                        
-                        <div class="sm:col-span-3">
-                            <label for="{{ form.country.id_for_label }}" class="block text-sm font-medium text-gray-700">Country</label>
-                            {{ form.country }}
-                            {% if form.country.errors %}
-                                <p class="text-red-500 text-xs mt-1">{{ form.country.errors.0 }}</p>
-                            {% endif %}
-                        </div>
-                        
-                        <div class="sm:col-span-3">
-                            <label for="{{ form.phone.id_for_label }}" class="block text-sm font-medium text-gray-700">Phone number</label>
-                            {{ form.phone }}
-                            {% if form.phone.errors %}
-                                <p class="text-red-500 text-xs mt-1">{{ form.phone.errors.0 }}</p>
-                            {% endif %}
-                        </div>
+                    <div class="sm:col-span-6">
+                        <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
+                        <input type="text" name="username" id="username" value="{{ user.username }}" readonly
+                               class="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md bg-gray-50 text-gray-500">
+                        <p class="mt-1 text-sm text-gray-500">Username cannot be changed</p>
                     </div>
                 </div>
                 
                 <div class="pt-5 border-t border-gray-200">
-                    <div class="flex justify-end">
-                        <a href="{% url 'accounts:password_change' %}" class="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
-                            Change Password
-                        </a>
-                        <button type="submit" class="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    <div class="flex justify-end space-x-3">
+                        <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
                             Save Changes
                         </button>
                     </div>
@@ -143,13 +63,17 @@
         </div>
         
         <div class="px-4 py-4 sm:px-6 bg-gray-50">
-            <div class="flex justify-between items-center">
-                <span class="text-sm font-medium text-gray-500">Member since: {{ user.date_joined|date:"F j, Y" }}</span>
-                <a href="{% url 'accounts:order_history' %}" class="text-sm font-medium text-blue-600 hover:text-blue-500">
-                    View Order History
-                </a>
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                    <span class="text-sm font-medium text-gray-500">Member since: {{ user.date_joined|date:"F j, Y" }}</span>
+                </div>
+                <div class="flex justify-end space-x-4">
+                    <a href="{% url 'orders:order_history' %}" class="text-sm font-medium text-green-600 hover:text-green-500">
+                        View Order History
+                    </a>
+                </div>
             </div>
         </div>
     </div>
 </div>
-{% endblock %} 
+{% endblock %}

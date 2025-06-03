@@ -87,7 +87,28 @@ class CustomPasswordResetCompleteView(PasswordResetCompleteView):
 @login_required
 def profile_view(request):
     """View for displaying user profile"""
-    return render(request, "accounts/profile.html")
+    user = request.user
+
+    # Create a simple context with user data
+    context = {
+        "user": user,
+        "profile_data": {
+            "first_name": user.first_name,
+            "last_name": user.last_name,
+            "email": user.email,
+        },
+    }
+
+    if request.method == "POST":
+        # Handle profile updates
+        user.first_name = request.POST.get("first_name", user.first_name)
+        user.last_name = request.POST.get("last_name", user.last_name)
+        user.email = request.POST.get("email", user.email)
+        user.save()
+        messages.success(request, "Profile updated successfully!")
+        return redirect("accounts:profile")
+
+    return render(request, "accounts/profile.html", context)
 
 
 @login_required
