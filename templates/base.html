@@ -8,9 +8,10 @@
     <title>{% block title %}GroceryGo{% endblock %}</title>
     {% tailwind_css %}
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="{% static 'css/dist/styles.css' %}?v={{ request.META.HTTP_HOST|slugify }}{{ request.path|slugify }}{{ request.GET.urlencode|default:'0'|slugify }}" rel="stylesheet">
     <script>
-        // Store CSRF token as a global variable
-        window.CSRF_TOKEN = "{% csrf_token_value request %}";
+        // Set CSRF token as a global variable for AJAX requests
+        window.CSRF_TOKEN = "{{ csrf_token }}";
     </script>
     {% block extra_css %}{% endblock %}
     {% block extra_head %}{% endblock %}

@@ -1,54 +1,55 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Order Confirmation - GroceryGo{% endblock %}
+{% block title %}Order Details - GroceryGo{% endblock %}
 
 {% block content %}
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <div class="bg-white shadow-md rounded-lg p-6 mb-8">
         <div class="flex items-center justify-between border-b pb-4 mb-4">
-            <h1 class="text-2xl font-bold text-gray-800">Order Confirmation</h1>
-            <span class="text-gray-600">Order #{{ order.id }}</span>
+            <h1 class="text-2xl font-bold text-gray-800">Order Details</h1>
+            <span class="text-gray-600">Order #{{ checkout.id }}</span>
         </div>
 
-        <div class="bg-green-50 border-l-4 border-green-400 p-4 mb-6">
-            <div class="flex">
-                <div class="flex-shrink-0">
-                    <svg class="h-5 w-5 text-green-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                    </svg>
-                </div>
-                <div class="ml-3">
-                    <p class="text-sm text-green-700">
-                        Thank you for your order! We've received your order and will begin processing it soon.
-                    </p>
-                </div>
+        <!-- Order Status -->
+        <div class="mb-6">
+            <div class="flex items-center">
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium mr-4
+                {% if checkout.status == 'pending' %}bg-yellow-100 text-yellow-800
+                {% elif checkout.status == 'processing' %}bg-blue-100 text-blue-800
+                {% elif checkout.status == 'shipped' %}bg-indigo-100 text-indigo-800
+                {% elif checkout.status == 'delivered' %}bg-green-100 text-green-800
+                {% elif checkout.status == 'cancelled' %}bg-red-100 text-red-800
+                {% else %}bg-gray-100 text-gray-800
+                {% endif %}">
+                    {{ checkout.get_status_display }}
+                </span>
+                <span class="text-sm text-gray-500">Order placed on {{ checkout.created_at|date:"F j, Y, g:i a" }}</span>
             </div>
         </div>
 
         <!-- Order Details -->
         <div class="mb-8">
-            <h2 class="text-xl font-semibold text-gray-800 mb-4">Order Details</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                     <h3 class="text-gray-600 font-medium mb-2">Order Information</h3>
                     <div class="bg-gray-50 p-4 rounded">
-                        <p><span class="font-medium">Order Date:</span> {{ order.created_at|date:"F j, Y, g:i a" }}</p>
-                        <p><span class="font-medium">Order Status:</span> {{ order.get_status_display }}</p>
-                        <p><span class="font-medium">Payment Method:</span> {{ order.get_payment_method_display }}</p>
+                        <p><span class="font-medium">Order Date:</span> {{ checkout.created_at|date:"F j, Y, g:i a" }}</p>
+                        <p><span class="font-medium">Order Status:</span> {{ checkout.get_status_display }}</p>
+                        <p><span class="font-medium">Payment Method:</span> {{ checkout.get_payment_method_display }}</p>
                     </div>
                 </div>
                 <div>
                     <h3 class="text-gray-600 font-medium mb-2">Shipping Address</h3>
                     <div class="bg-gray-50 p-4 rounded">
-                        <p>{{ order.shipping_address.full_name }}</p>
-                        <p>{{ order.shipping_address.street_address }}</p>
-                        {% if order.shipping_address.apartment_address %}
-                            <p>{{ order.shipping_address.apartment_address }}</p>
+                        <p>{{ checkout.shipping_address.full_name }}</p>
+                        <p>{{ checkout.shipping_address.street_address }}</p>
+                        {% if checkout.shipping_address.apartment_address %}
+                            <p>{{ checkout.shipping_address.apartment_address }}</p>
                         {% endif %}
-                        <p>{{ order.shipping_address.city }}, {{ order.shipping_address.state }} {{ order.shipping_address.postal_code }}</p>
-                        <p>{{ order.shipping_address.country }}</p>
-                        <p>{{ order.shipping_address.phone }}</p>
+                        <p>{{ checkout.shipping_address.city }}, {{ checkout.shipping_address.state }} {{ checkout.shipping_address.postal_code }}</p>
+                        <p>{{ checkout.shipping_address.country }}</p>
+                        <p>{{ checkout.shipping_address.phone }}</p>
                     </div>
                 </div>
             </div>
@@ -76,7 +77,7 @@
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
-                        {% for item in order_items %}
+                        {% for item in checkout_items %}
                         <tr>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="flex items-center">
@@ -118,40 +119,46 @@
             <div class="bg-gray-50 p-4 rounded">
                 <div class="flex justify-between py-2">
                     <span class="text-gray-600">Subtotal:</span>
-                    <span class="font-medium">RM{{ order.subtotal }}</span>
+                    <span class="font-medium">RM{{ checkout.subtotal }}</span>
                 </div>
                 <div class="flex justify-between py-2">
                     <span class="text-gray-600">Shipping:</span>
-                    <span class="font-medium">RM{{ order.shipping_cost }}</span>
+                    <span class="font-medium">RM{{ checkout.shipping_cost }}</span>
                 </div>
                 <div class="flex justify-between py-2">
                     <span class="text-gray-600">Tax:</span>
-                    <span class="font-medium">RM{{ order.tax }}</span>
+                    <span class="font-medium">RM{{ checkout.tax }}</span>
                 </div>
                 <div class="flex justify-between py-2 border-t border-gray-200 font-bold">
                     <span class="text-gray-800">Total:</span>
-                    <span class="text-gray-800">RM{{ order.total }}</span>
+                    <span class="text-gray-800">RM{{ checkout.total }}</span>
                 </div>
             </div>
         </div>
 
-        <!-- Processing Time and Refund Policy -->
-        <div class="mt-8 bg-blue-50 border-l-4 border-blue-400 p-4 rounded">
-            <h3 class="font-semibold text-blue-800 mb-2">Order Processing & Refund Policy</h3>
-            <p class="text-sm text-blue-700">
-                Orders are typically processed within 1-2 business days. You will receive an email notification when your order ships.<br>
-                <strong>Refund Policy:</strong> If you are not satisfied with your order, you may request a refund within 14 days of delivery. Please see our <a href="#" class="underline text-blue-600 hover:text-blue-800">Refund Policy</a> for details.
-            </p>
-        </div>
-
+        <!-- Action Buttons -->
         <div class="flex justify-between mt-8">
-            <a href="{% url 'core:home' %}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-                Continue Shopping
-            </a>
             <a href="{% url 'orders:order_history' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-                View Order History
+                ← Back to Order History
             </a>
+            
+            <div class="flex space-x-4">
+                {% if checkout.status == 'pending' or checkout.status == 'processing' %}
+                <form method="post" action="{% url 'orders:cancel_order' pk=checkout.id %}" class="inline">
+                    {% csrf_token %}
+                    <button type="submit" 
+                            onclick="return confirm('Are you sure you want to cancel this order?')"
+                            class="inline-flex items-center px-4 py-2 border border-red-300 text-sm font-medium rounded-md text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                        Cancel Order
+                    </button>
+                </form>
+                {% endif %}
+                
+                <a href="{% url 'core:home' %}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                    Continue Shopping
+                </a>
+            </div>
         </div>
     </div>
 </div>
-{% endblock %} 
+{% endblock %}

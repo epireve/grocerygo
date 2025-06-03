@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Cart, CartItem
+from .models import Cart, CartItem, Coupon
 
 
 class CartItemInline(admin.TabularInline):
@@ -32,3 +32,20 @@ class CartItemAdmin(admin.ModelAdmin):
     search_fields = ["cart__user__username", "product__name"]
     readonly_fields = ["total_price"]
     date_hierarchy = "added_at"
+
+
+@admin.register(Coupon)
+class CouponAdmin(admin.ModelAdmin):
+    list_display = [
+        "code",
+        "discount_type",
+        "value",
+        "min_purchase",
+        "valid_from",
+        "valid_to",
+        "is_active",
+    ]
+    list_filter = ["discount_type", "is_active", "valid_from", "valid_to"]
+    search_fields = ["code"]
+    readonly_fields = ["created_at", "updated_at"]
+    date_hierarchy = "valid_to"

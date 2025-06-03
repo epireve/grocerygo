@@ -107,11 +107,60 @@
                     <h2 class="text-xl font-semibold text-gray-800">Order Summary</h2>
                 </div>
                 <div class="p-6">
+                    <!-- Coupon Form -->
+                    <div class="mb-6 border-b pb-6 border-gray-200">
+                        <h3 class="text-md font-medium text-gray-700 mb-2">Discount Code</h3>
+                        <div class="mt-2">
+                            {% if coupon %}
+                            <div class="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-md mb-2">
+                                <div>
+                                    <span class="font-medium text-green-700">{{ coupon.code }}</span>
+                                    <span class="text-sm text-green-600 block">
+                                        {% if coupon.discount_type == 'percentage' %}
+                                            {{ coupon.value }}% off
+                                        {% else %}
+                                            RM{{ coupon.value|floatformat:2 }} off
+                                        {% endif %}
+                                    </span>
+                                </div>
+                                <form method="post" action="{% url 'cart:remove_coupon' %}" id="remove-coupon-form">
+                                    {% csrf_token %}
+                                    <button type="submit" class="text-red-600 hover:text-red-800">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                        </svg>
+                                    </button>
+                                </form>
+                            </div>
+                            {% else %}
+                            <form method="post" action="{% url 'cart:apply_coupon' %}" id="coupon-form" class="flex gap-2">
+                                {% csrf_token %}
+                                <input type="text" name="coupon_code" id="coupon_code" class="flex-1 shadow-sm focus:ring-green-500 focus:border-green-500 block w-full sm:text-sm border-gray-300 rounded-md" placeholder="Enter coupon code">
+                                <button type="submit" class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                                    Apply
+                                </button>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
                     <div class="space-y-4">
                         <div class="flex justify-between">
                             <span class="text-gray-600">Items (<span class="items-count">{{ products|length }}</span>):</span>
                             <span id="cart-total" class="cart-total font-medium">RM{{ total|floatformat:2 }}</span>
                         </div>
+                        
+                        {% if discount > 0 %}
+                        <div class="flex justify-between text-green-600">
+                            <span>Discount:</span>
+                            <span class="discount-amount font-medium">-RM{{ discount|floatformat:2 }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Subtotal:</span>
+                            <span class="subtotal font-medium">RM{{ subtotal|floatformat:2 }}</span>
+                        </div>
+                        {% endif %}
+                        
                         <div class="flex justify-between">
                             <span class="text-gray-600">Shipping:</span>
                             <span class="shipping-cost font-medium">RM{{ shipping_cost|floatformat:2 }}</span>
@@ -236,7 +285,89 @@
             });
         });
         
-        // Function to update quantity
+        // Handle coupon form submission
+        const couponForm = document.getElementById('coupon-form');
+        if (couponForm) {
+            couponForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const couponCode = document.getElementById('coupon_code').value.trim();
+                
+                if (!couponCode) {
+                    alert('Please enter a coupon code');
+                    return;
+                }
+                
+                // Get the CSRF token
+                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                
+                // Send AJAX request to apply coupon
+                fetch('/cart/apply-coupon/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': csrfToken,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: `coupon_code=${encodeURIComponent(couponCode)}`
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(data => {
+                            throw new Error(data.message || 'Failed to apply coupon');
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        // Reload the page to show updated UI with coupon
+                        window.location.reload();
+                    } else {
+                        alert(data.message || 'Failed to apply coupon');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error applying coupon:', error);
+                    alert(error.message || 'An error occurred. Please try again.');
+                });
+            });
+        }
+        
+        // Handle remove coupon form submission
+        const removeCouponForm = document.getElementById('remove-coupon-form');
+        if (removeCouponForm) {
+            removeCouponForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Get the CSRF token
+                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                
+                // Send AJAX request to remove coupon
+                fetch('/cart/remove-coupon/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': csrfToken,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Reload the page to show updated UI without coupon
+                        window.location.reload();
+                    } else {
+                        alert(data.message || 'Failed to remove coupon');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error removing coupon:', error);
+                    alert('An error occurred. Please try again.');
+                });
+            });
+        }
+        
+        // Function to update quantity with modified handling for coupons
         function updateQuantity(productSlug, quantityOrInput) {
             // Handle both cases: either directly passed number or the input element
             let newQuantity;
@@ -269,7 +400,7 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
-                    'X-CSRFToken': csrfToken,
+                    'X-CSRFToken': window.CSRF_TOKEN || csrfToken, // Use global token if available
                     'X-Requested-With': 'XMLHttpRequest'
                 },
                 body: `quantity=${newQuantity}`
@@ -282,87 +413,79 @@
             })
             .then(data => {
                 if (data.success) {
-                    // Find the item container - search from the input element if available
-                    const itemRow = inputElement 
-                        ? inputElement.closest('.cart-item')
-                        : document.querySelector(`.cart-item[data-product-slug="${productSlug}"]`);
-                    
-                    // Update the subtotal for this item
-                    const subtotalElement = document.querySelector(`.subtotal[data-product-slug="${productSlug}"]`);
-                    if (subtotalElement) {
-                        subtotalElement.textContent = `RM${data.item_subtotal.toFixed(2)}`;
+                    // Update the item-specific subtotal (this one has the data-product-slug attribute)
+                    const itemSubtotalElement = document.querySelector(`.subtotal[data-product-slug="${productSlug}"]`);
+                    if (itemSubtotalElement) {
+                        itemSubtotalElement.textContent = `RM${data.item_subtotal.toFixed(2)}`;
                     }
                     
-                    // Update order summary
-                    const cartTotalElement = document.querySelector('#cart-total, .cart-total');
-                    if (cartTotalElement) {
-                        cartTotalElement.textContent = `RM${data.cart_total.toFixed(2)}`;
-                    }
-                    
-                    const taxElement = document.querySelector('.tax-amount');
-                    if (taxElement) {
-                        taxElement.textContent = `RM${data.tax.toFixed(2)}`;
-                    }
-                    
-                    const shippingElement = document.querySelector('.shipping-cost');
-                    if (shippingElement) {
-                        shippingElement.textContent = `RM${data.shipping.toFixed(2)}`;
-                    }
-                    
-                    const finalTotalElement = document.querySelector('.final-total');
-                    if (finalTotalElement) {
-                        finalTotalElement.textContent = `RM${data.final_total.toFixed(2)}`;
-                    }
-                    
-                    // Update items count in Order Summary
-                    const itemsCountElements = document.querySelectorAll('.items-count');
-                    itemsCountElements.forEach(el => {
-                        el.textContent = data.items_count;
+                    // Update cart total (this one doesn't have the data-product-slug attribute)
+                    const cartTotalElements = document.querySelectorAll('#cart-total, .cart-total');
+                    cartTotalElements.forEach(element => {
+                        element.textContent = `RM${data.cart_total.toFixed(2)}`;
                     });
                     
-                    // Update cart UI (count in navigation)
-                    updateCartUI();
+                    // Update discount amount if present
+                    if (data.discount > 0) {
+                        const discountElements = document.querySelectorAll('.discount-amount');
+                        discountElements.forEach(element => {
+                            element.textContent = `-RM${data.discount.toFixed(2)}`;
+                        });
+                    }
                     
-                    // Visual feedback
-                    if (itemRow) {
-                        itemRow.classList.add('bg-green-50');
-                        setTimeout(() => {
-                            itemRow.classList.remove('bg-green-50');
-                        }, 1000);
+                    // Update cart subtotal (after discount)
+                    const subtotalElements = document.querySelectorAll('.subtotal:not([data-product-slug])');
+                    subtotalElements.forEach(element => {
+                        element.textContent = `RM${data.subtotal.toFixed(2)}`;
+                    });
+                    
+                    // Update tax
+                    const taxElements = document.querySelectorAll('.tax-amount');
+                    taxElements.forEach(element => {
+                        element.textContent = `RM${data.tax.toFixed(2)}`;
+                    });
+                    
+                    // Update shipping cost
+                    const shippingElements = document.querySelectorAll('.shipping-cost');
+                    shippingElements.forEach(element => {
+                        element.textContent = `RM${data.shipping.toFixed(2)}`;
+                    });
+                    
+                    // Update final total
+                    const finalTotalElements = document.querySelectorAll('.final-total');
+                    finalTotalElements.forEach(element => {
+                        element.textContent = `RM${data.final_total.toFixed(2)}`;
+                    });
+                    
+                    // Update cart count in order summary
+                    const itemsCountElements = document.querySelectorAll('.items-count');
+                    itemsCountElements.forEach(element => {
+                        element.textContent = data.items_count;
+                    });
+                    
+                    // Update localStorage with the new cart state
+                    updateCartLocalStorage(productSlug, newQuantity);
+                    
+                    // Update cart count in navigation bar
+                    updateCartNavCount(data.items_count);
+                    
+                    // Show success indication
+                    if (inputElement) {
+                        const form = inputElement.closest('form');
+                        if (form) {
+                            form.classList.add('border-green-500');
+                            setTimeout(() => {
+                                form.classList.remove('border-green-500');
+                            }, 1000);
+                        }
                     }
                 } else {
-                    // Don't show the "Product not found" error, just handle it gracefully
-                    console.error('Error updating quantity:', data.error);
+                    console.error('Failed to update quantity:', data.error);
+                    alert(data.error || 'Failed to update quantity');
                     
-                    // If the product doesn't exist in the cart, add it first
-                    if (data.error && data.error.includes('not found in cart')) {
-                        // Add the product to cart with current quantity
-                        fetch(`/cart/add/${productSlug}/`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/x-www-form-urlencoded',
-                                'X-CSRFToken': csrfToken,
-                                'X-Requested-With': 'XMLHttpRequest'
-                            },
-                            body: `quantity=${newQuantity}`
-                        })
-                        .then(response => response.json())
-                        .then(addData => {
-                            if (addData.success) {
-                                // Reload page to show the new item
-                                window.location.reload();
-                            } else {
-                                alert('Could not add product to cart. Please try again.');
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error adding product:', error);
-                        });
-                    } else {
-                        // Reset the input to previous value if provided
-                        if (data.current_quantity && inputElement) {
-                            inputElement.value = data.current_quantity;
-                        }
+                    // Reset the input to the previous value
+                    if (inputElement && data.current_quantity) {
+                        inputElement.value = data.current_quantity;
                     }
                 }
             })
@@ -376,6 +499,71 @@
                         inputElement.classList.remove('border-red-500');
                     }, 1000);
                 }
+            });
+        }
+        
+        // Helper function to update cart count in navigation bar
+        function updateCartNavCount(count) {
+            // Update cart counter in header
+            const cartCounters = document.querySelectorAll('#cart-counter, .cart-count');
+            cartCounters.forEach(counter => {
+                counter.textContent = count;
+                if (count > 0) {
+                    counter.classList.remove('hidden');
+                } else {
+                    counter.classList.add('hidden');
+                }
+            });
+        }
+        
+        // Function to update local storage cart
+        function updateCartLocalStorage(productSlug, quantity) {
+            try {
+                // Get current cart from localStorage
+                const CART_STORAGE_KEY = 'grocerygo_cart';
+                const CART_EXPIRY_KEY = 'grocerygo_cart_expiry';
+                
+                let cart = JSON.parse(localStorage.getItem(CART_STORAGE_KEY) || '{}');
+                
+                // Update quantity for this product
+                cart[productSlug] = parseInt(quantity);
+                
+                // Save back to localStorage
+                localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+                
+                // Reset expiry (if it exists)
+                if (localStorage.getItem(CART_EXPIRY_KEY)) {
+                    const expiryDate = new Date();
+                    expiryDate.setDate(expiryDate.getDate() + 30); // 30 days
+                    localStorage.setItem(CART_EXPIRY_KEY, expiryDate.toISOString());
+                }
+                
+                // Sync with server
+                syncCartWithServer(cart);
+            } catch (error) {
+                console.error('Error updating localStorage cart:', error);
+            }
+        }
+        
+        // Function to sync cart with server
+        function syncCartWithServer(cart) {
+            fetch('/cart/sync/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': window.CSRF_TOKEN || document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({cart: cart})
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .catch(error => {
+                console.error('Error syncing cart with server:', error);
             });
         }
         
@@ -411,8 +599,8 @@
         
         // Function to remove item
         function removeItem(productSlug) {
-            // Get the CSRF token from the form
-            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            // Get the CSRF token from global variable or form
+            const csrfToken = window.CSRF_TOKEN || document.querySelector('[name=csrfmiddlewaretoken]').value;
             
             fetch(`/cart/remove/${productSlug}/`, {
                 method: 'POST', // Change to POST for better CSRF handling
@@ -448,7 +636,10 @@
                     // Update cart UI
                     updateCartUI();
                     
-                    // Reload the page to get the correct totals
+                    // Also remove from localStorage
+                    removeFromLocalStorageCart(productSlug);
+                    
+                    // Reload the page to get the correct totals if needed
                     window.location.reload();
                 }
             })
@@ -458,10 +649,32 @@
             });
         }
         
+        // Function to remove from localStorage cart
+        function removeFromLocalStorageCart(productSlug) {
+            try {
+                // Get current cart from localStorage
+                const CART_STORAGE_KEY = 'grocerygo_cart';
+                let cart = JSON.parse(localStorage.getItem(CART_STORAGE_KEY) || '{}');
+                
+                // Remove the product
+                if (cart[productSlug]) {
+                    delete cart[productSlug];
+                    
+                    // Save back to localStorage
+                    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+                    
+                    // Sync with server
+                    syncCartWithServer(cart);
+                }
+            } catch (error) {
+                console.error('Error removing from localStorage cart:', error);
+            }
+        }
+        
         // Function to clear cart
         function clearCart() {
-            // Get the CSRF token from the form
-            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            // Get the CSRF token from global variable or form
+            const csrfToken = window.CSRF_TOKEN || document.querySelector('[name=csrfmiddlewaretoken]').value;
             
             fetch('/cart/clear/', {
                 method: 'POST',
@@ -474,6 +687,10 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
+                    // Clear localStorage cart
+                    const CART_STORAGE_KEY = 'grocerygo_cart';
+                    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify({}));
+                    
                     // Update cart UI
                     updateCartUI();
                     

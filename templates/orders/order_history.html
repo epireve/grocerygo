@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Order History - GroceryGo{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="bg-white shadow-md rounded-lg p-6">
+        <div class="flex items-center justify-between border-b pb-4 mb-6">
+            <h1 class="text-2xl font-bold text-gray-800">Order History</h1>
+        </div>
+
+        {% if checkouts %}
+            <div class="space-y-6">
+                {% for checkout in checkouts %}
+                <div class="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-800">Order #{{ checkout.id }}</h3>
+                            <p class="text-sm text-gray-600">{{ checkout.created_at|date:"F j, Y, g:i a" }}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-lg font-bold text-gray-800">RM{{ checkout.total }}</p>
+                            <p class="text-sm">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                {% if checkout.status == 'pending' %}bg-yellow-100 text-yellow-800
+                                {% elif checkout.status == 'processing' %}bg-blue-100 text-blue-800
+                                {% elif checkout.status == 'shipped' %}bg-indigo-100 text-indigo-800
+                                {% elif checkout.status == 'delivered' %}bg-green-100 text-green-800
+                                {% elif checkout.status == 'cancelled' %}bg-red-100 text-red-800
+                                {% else %}bg-gray-100 text-gray-800
+                                {% endif %}">
+                                    {{ checkout.get_status_display }}
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-600 mb-1">Shipping Address</h4>
+                            <p class="text-sm text-gray-800">{{ checkout.shipping_address.full_name }}</p>
+                            <p class="text-sm text-gray-600">{{ checkout.shipping_address.street_address }}</p>
+                            <p class="text-sm text-gray-600">{{ checkout.shipping_address.city }}, {{ checkout.shipping_address.state }} {{ checkout.shipping_address.postal_code }}</p>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-600 mb-1">Payment Method</h4>
+                            <p class="text-sm text-gray-800">{{ checkout.get_payment_method_display }}</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between pt-4 border-t">
+                        <div class="flex space-x-4">
+                            <a href="{% url 'orders:order_detail' pk=checkout.id %}"
+                               class="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                                View Details
+                            </a>
+                            {% if checkout.status == 'pending' or checkout.status == 'processing' %}
+                            <form method="post" action="{% url 'orders:cancel_order' pk=checkout.id %}" class="inline">
+                                {% csrf_token %}
+                                <button type="submit" 
+                                        onclick="return confirm('Are you sure you want to cancel this order?')"
+                                        class="inline-flex items-center px-3 py-2 border border-red-300 text-sm font-medium rounded-md text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                                    Cancel Order
+                                </button>
+                            </form>
+                            {% endif %}
+                        </div>
+                        <div class="text-sm text-gray-500">
+                            {{ checkout.items.count }} item{{ checkout.items.count|pluralize }}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Pagination could be added here if needed -->
+        {% else %}
+            <div class="text-center py-12">
+                <div class="mx-auto h-12 w-12 text-gray-400">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                    </svg>
+                </div>
+                <h3 class="mt-2 text-sm font-medium text-gray-900">No orders yet</h3>
+                <p class="mt-1 text-sm text-gray-500">You haven't placed any orders yet.</p>
+                <div class="mt-6">
+                    <a href="{% url 'core:home' %}" 
+                       class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                        Start Shopping
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

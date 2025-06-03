@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseBadRequest
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
@@ -8,8 +8,9 @@ import json
 from datetime import datetime, timedelta
 from products.models import Product
 from decimal import Decimal
-from .models import Cart, CartItem
+from .models import Cart, CartItem, Coupon
 import logging
+from django.utils import timezone
 
 # Set up logger
 logger = logging.getLogger("security")
@@ -151,6 +152,31 @@ def add_to_cart(request, slug=None):
         return redirect("products:product_list")
 
 
+def get_applied_coupon(request):
+    """Get any applied coupon from the session"""
+    coupon_id = request.session.get("coupon_id")
+    if coupon_id:
+        try:
+            return Coupon.objects.get(pk=coupon_id, is_active=True)
+        except Coupon.DoesNotExist:
+            # If coupon doesn't exist or is inactive, remove it from session
+            if "coupon_id" in request.session:
+                del request.session["coupon_id"]
+                request.session.modified = True
+    return None
+
+
+def calculate_discount(total, coupon):
+    """Calculate discount amount based on coupon"""
+    if not coupon or total < coupon.min_purchase:
+        return Decimal("0.00")
+
+    if coupon.discount_type == "percentage":
+        return Decimal(total) * (coupon.value / Decimal("100"))
+    else:  # fixed amount
+        return min(coupon.value, total)  # Don't allow discount greater than total
+
+
 def view_cart(request):
     """
     View to display the cart contents
@@ -190,13 +216,22 @@ def view_cart(request):
         request.session["cart"] = cart
         request.session.modified = True
 
+    # Get any applied coupon
+    coupon = get_applied_coupon(request)
+
+    # Calculate discount
+    discount = calculate_discount(total, coupon)
+
+    # Calculate subtotal (after discount)
+    subtotal = total - discount
+
     # Calculate shipping, tax, and total
     shipping_cost = (
         Decimal("5.99") if total > 0 else Decimal("0.00")
     )  # Default shipping cost for Malaysia
     tax_rate = Decimal("0.06")  # 6% GST in Malaysia
-    tax = total * tax_rate
-    final_total = total + shipping_cost + tax
+    tax = subtotal * tax_rate
+    final_total = subtotal + shipping_cost + tax
 
     # Count total items
     items_count = sum(cart.values())
@@ -207,17 +242,32 @@ def view_cart(request):
             {
                 "success": True,
                 "cart_total": float(total),
+                "discount": float(discount),
+                "subtotal": float(subtotal),
                 "shipping": float(shipping_cost),
                 "tax": float(tax),
                 "final_total": float(final_total),
                 "items_count": items_count,
                 "products_count": len(products),
+                "coupon": (
+                    {
+                        "code": coupon.code,
+                        "value": float(coupon.value),
+                        "discount_type": coupon.discount_type,
+                    }
+                    if coupon
+                    else None
+                ),
             }
         )
 
     context = {
         "products": products,
         "total": total,
+        "items_count": items_count,
+        "coupon": coupon,
+        "discount": discount,
+        "subtotal": subtotal,
         "shipping_cost": shipping_cost,
         "tax": tax,
         "final_total": final_total,
@@ -260,11 +310,25 @@ def remove_from_cart(request, slug):
                         # Skip products that don't exist
                         continue
 
+                # Get coupon and calculate discount
+                coupon = get_applied_coupon(request)
+                discount = 0
+                if coupon:
+                    if coupon.discount_type == "percentage":
+                        discount = cart_total * (float(coupon.value) / 100)
+                    else:  # fixed amount
+                        discount = min(
+                            float(coupon.value), cart_total
+                        )  # Don't exceed cart total
+
+                # Calculate subtotal after discount
+                subtotal = cart_total - discount
+
                 # Calculate tax and shipping
                 shipping_cost = 5.99 if cart_total > 0 else 0.00
                 tax_rate = 0.06  # 6% GST in Malaysia
-                tax = cart_total * tax_rate
-                final_total = cart_total + shipping_cost + tax
+                tax = subtotal * tax_rate
+                final_total = subtotal + shipping_cost + tax
 
                 # Check if this is an AJAX request
                 is_ajax = request.headers.get("X-Requested-With") == "XMLHttpRequest"
@@ -273,12 +337,23 @@ def remove_from_cart(request, slug):
                     return JsonResponse(
                         {
                             "success": True,
-                            "cart_total": f"RM{cart_total:.2f}",
-                            "shipping_cost": f"RM{shipping_cost:.2f}",
-                            "tax": f"RM{tax:.2f}",
-                            "final_total": f"RM{final_total:.2f}",
+                            "cart_total": cart_total,
+                            "subtotal": subtotal,
+                            "discount": discount,
+                            "shipping_cost": shipping_cost,
+                            "tax": tax,
+                            "final_total": final_total,
                             "total_items": total_items,
                             "message": "Product removed from cart",
+                            "coupon": (
+                                {
+                                    "code": coupon.code,
+                                    "value": float(coupon.value),
+                                    "discount_type": coupon.discount_type,
+                                }
+                                if coupon
+                                else None
+                            ),
                         }
                     )
                 else:
@@ -406,6 +481,11 @@ def clear_cart(request):
     """Clear the cart"""
     # Clear the cart in session
     request.session["cart"] = {}
+
+    # Clear any applied coupon
+    if "coupon_id" in request.session:
+        del request.session["coupon_id"]
+
     request.session.modified = True
 
     # Also clear the model cart if user is authenticated
@@ -413,6 +493,9 @@ def clear_cart(request):
         cart = Cart.objects.filter(user=request.user).first()
         if cart:
             CartItem.objects.filter(cart=cart).delete()
+            # Clear the coupon from the cart model as well
+            cart.coupon = None
+            cart.save()
 
     # If AJAX request, return JSON response
     if request.headers.get("X-Requested-With") == "XMLHttpRequest":
@@ -422,7 +505,12 @@ def clear_cart(request):
                 "message": "Cart cleared successfully",
                 "cart": {},
                 "total_items": 0,
-                "cart_total": "RM0.00",
+                "cart_total": 0,
+                "discount": 0,
+                "subtotal": 0,
+                "shipping": 0,
+                "tax": 0,
+                "final_total": 0,
             }
         )
 
@@ -467,17 +555,24 @@ def update_quantity(request, slug):
             # Calculate updated cart total
             cart_total = calculate_cart_total(request)
 
+            # Get coupon and calculate discount
+            coupon = get_applied_coupon(request)
+            discount = calculate_discount(cart_total, coupon)
+
+            # Calculate subtotal (after discount)
+            subtotal = cart_total - discount
+
             # Calculate item subtotal
             item_subtotal = product.price * quantity
 
             # Calculate tax (6%)
-            tax = cart_total * Decimal("0.06")
+            tax = subtotal * Decimal("0.06")
 
             # Calculate shipping cost
-            shipping_cost = Decimal("5.99")
+            shipping_cost = Decimal("5.99") if cart_total > 0 else Decimal("0.00")
 
             # Calculate final total
-            final_total = cart_total + tax + shipping_cost
+            final_total = subtotal + tax + shipping_cost
 
             # Count total items
             items_count = sum(session_cart.values())
@@ -487,10 +582,21 @@ def update_quantity(request, slug):
                     "success": True,
                     "cart_total": float(cart_total),
                     "item_subtotal": float(item_subtotal),
+                    "discount": float(discount),
+                    "subtotal": float(subtotal),
                     "tax": float(tax),
                     "shipping": float(shipping_cost),
                     "final_total": float(final_total),
                     "items_count": items_count,
+                    "coupon": (
+                        {
+                            "code": coupon.code,
+                            "value": float(coupon.value),
+                            "discount_type": coupon.discount_type,
+                        }
+                        if coupon
+                        else None
+                    ),
                 }
             )
         else:
@@ -503,3 +609,141 @@ def update_quantity(request, slug):
     except Exception as e:
         logger.error(f"Error updating cart quantity: {str(e)}", exc_info=True)
         return JsonResponse({"success": False, "error": "An error occurred"})
+
+
+@require_POST
+def apply_coupon(request):
+    """Apply a coupon code to the cart"""
+    code = request.POST.get("coupon_code")
+    if not code:
+        messages.error(request, "Please enter a coupon code.")
+        return redirect("cart:view_cart")
+
+    try:
+        # Get the coupon, ensuring it's active and valid date range
+        coupon = Coupon.objects.get(
+            code__iexact=code,
+            is_active=True,
+            valid_from__lte=timezone.now(),
+            valid_to__gte=timezone.now(),
+        )
+
+        # Calculate cart total to check against minimum purchase
+        cart_total = calculate_cart_total(request)
+
+        if cart_total < coupon.min_purchase:
+            messages.error(
+                request,
+                f"This coupon requires a minimum purchase of RM{coupon.min_purchase}.",
+            )
+            return redirect("cart:view_cart")
+
+        # Store coupon ID in session
+        request.session["coupon_id"] = coupon.id
+        request.session.modified = True
+
+        # If user is authenticated, also store in their cart model
+        if request.user.is_authenticated:
+            cart, _ = Cart.objects.get_or_create(user=request.user)
+            cart.coupon = coupon
+            cart.save()
+
+        # Format message based on discount type
+        if coupon.discount_type == "percentage":
+            message = f"Coupon applied: {coupon.value}% off your order."
+        else:
+            message = f"Coupon applied: RM{coupon.value} off your order."
+
+        messages.success(request, message)
+
+        # Check if AJAX request
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            # Calculate discount
+            discount = calculate_discount(cart_total, coupon)
+
+            return JsonResponse(
+                {
+                    "success": True,
+                    "message": message,
+                    "discount": float(discount),
+                    "discount_formatted": f"RM{discount:.2f}",
+                    "coupon": {
+                        "code": coupon.code,
+                        "value": float(coupon.value),
+                        "discount_type": coupon.discount_type,
+                    },
+                }
+            )
+
+        return redirect("cart:view_cart")
+
+    except Coupon.DoesNotExist:
+        messages.error(request, "This coupon code is invalid or expired.")
+
+        # Check if AJAX request
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": "This coupon code is invalid or expired.",
+                },
+                status=400,
+            )
+
+        return redirect("cart:view_cart")
+    except Exception as e:
+        logger.error(f"Error applying coupon: {str(e)}", exc_info=True)
+        messages.error(request, "An error occurred. Please try again.")
+
+        # Check if AJAX request
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return JsonResponse(
+                {"success": False, "message": "An error occurred. Please try again."},
+                status=500,
+            )
+
+        return redirect("cart:view_cart")
+
+
+@require_POST
+def remove_coupon(request):
+    """Remove the applied coupon from the cart"""
+    # Remove coupon from session
+    if "coupon_id" in request.session:
+        del request.session["coupon_id"]
+        request.session.modified = True
+
+    # If user is authenticated, also remove from their cart model
+    if request.user.is_authenticated:
+        try:
+            cart = Cart.objects.get(user=request.user)
+            if cart.coupon:
+                cart.coupon = None
+                cart.save()
+        except Cart.DoesNotExist:
+            pass
+
+    messages.success(request, "Coupon has been removed.")
+
+    # Check if AJAX request
+    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        # Recalculate cart totals
+        cart_total = calculate_cart_total(request)
+        shipping_cost = Decimal("5.99") if cart_total > 0 else Decimal("0.00")
+        tax = cart_total * Decimal("0.06")
+        final_total = cart_total + shipping_cost + tax
+
+        return JsonResponse(
+            {
+                "success": True,
+                "message": "Coupon has been removed.",
+                "cart_total": float(cart_total),
+                "subtotal": float(cart_total),
+                "discount": 0,
+                "shipping": float(shipping_cost),
+                "tax": float(tax),
+                "final_total": float(final_total),
+            }
+        )
+
+    return redirect("cart:view_cart")

@@ -87,10 +87,12 @@ def checkout_view(request):
             # Get form data
             form_data = request.POST
             checkout_step = form_data.get("checkout_step", "shipping")
+            logger.info(f"Processing checkout step: {checkout_step}")
 
             if checkout_step == "shipping":
                 # Process shipping information
                 use_saved_address = form_data.get("use_saved_address")
+                logger.info(f"Using saved address: {use_saved_address}")
 
                 if use_saved_address:
                     # User selected a saved address
@@ -101,9 +103,13 @@ def checkout_view(request):
                         )
                         # Store the selected address ID in session for the next step
                         request.session["shipping_address_id"] = address_id
+                        logger.info(
+                            f"Saved address {address_id} selected and stored in session"
+                        )
                         # Move to payment step
                         return redirect(reverse("orders:checkout") + "?step=payment")
-                    except (ValueError, Address.DoesNotExist):
+                    except (ValueError, Address.DoesNotExist) as e:
+                        logger.error(f"Error selecting saved address: {str(e)}")
                         messages.error(
                             request, "Selected address not found. Please try again."
                         )
@@ -120,52 +126,76 @@ def checkout_view(request):
                         "phone",
                     ]
                     is_valid = True
+                    missing_fields = []
                     for field in required_fields:
                         if not form_data.get(field):
                             is_valid = False
+                            missing_fields.append(field)
                             messages.error(
                                 request,
                                 f"{field.replace('_', ' ').title()} is required.",
                             )
 
+                    if not is_valid:
+                        logger.error(
+                            f"Missing required fields: {', '.join(missing_fields)}"
+                        )
+
                     if is_valid:
                         # Create new address with sanitized input
-                        address = Address(
-                            user=request.user,
-                            address_type="shipping",
-                            full_name=sanitize_user_input(form_data.get("full_name")),
-                            street_address=sanitize_user_input(
-                                form_data.get("street_address")
-                            ),
-                            apartment_address=sanitize_user_input(
-                                form_data.get("apartment_unit", "")
-                            ),
-                            city=sanitize_user_input(form_data.get("city")),
-                            state=sanitize_user_input(form_data.get("state")),
-                            postal_code=sanitize_user_input(
-                                form_data.get("postal_code")
-                            ),
-                            country=sanitize_user_input(form_data.get("country")),
-                            phone=sanitize_user_input(form_data.get("phone")),
-                            is_default=form_data.get("save_address") == "on",
-                        )
-                        address.save()
+                        try:
+                            address = Address(
+                                user=request.user,
+                                address_type="shipping",
+                                full_name=sanitize_user_input(
+                                    form_data.get("full_name")
+                                ),
+                                street_address=sanitize_user_input(
+                                    form_data.get("street_address")
+                                ),
+                                apartment_address=sanitize_user_input(
+                                    form_data.get("apartment_unit", "")
+                                ),
+                                city=sanitize_user_input(form_data.get("city")),
+                                state=sanitize_user_input(form_data.get("state")),
+                                postal_code=sanitize_user_input(
+                                    form_data.get("postal_code")
+                                ),
+                                country=sanitize_user_input(form_data.get("country")),
+                                phone=sanitize_user_input(form_data.get("phone")),
+                                is_default=form_data.get("save_address") == "on",
+                            )
+                            address.save()
+                            logger.info(f"New address created with ID: {address.id}")
 
-                        # Store the new address ID in session
-                        request.session["shipping_address_id"] = address.id
+                            # Store the new address ID in session
+                            request.session["shipping_address_id"] = address.id
+                            logger.info(
+                                f"New address ID {address.id} stored in session"
+                            )
 
-                        # Move to payment step
-                        return redirect(reverse("orders:checkout") + "?step=payment")
+                            # Move to payment step
+                            return redirect(
+                                reverse("orders:checkout") + "?step=payment"
+                            )
+                        except Exception as e:
+                            logger.error(f"Error creating new address: {str(e)}")
+                            messages.error(
+                                request, "Error saving address. Please try again."
+                            )
 
             elif checkout_step == "payment":
                 # Process payment information
                 payment_method = form_data.get("payment_method")
+                logger.info(f"Selected payment method: {payment_method}")
 
                 if not payment_method:
+                    logger.error("No payment method selected")
                     messages.error(request, "Please select a payment method.")
                 else:
                     # Store payment method in session
                     request.session["payment_method"] = payment_method
+                    logger.info(f"Payment method {payment_method} stored in session")
 
                     # Move to review step
                     return redirect(reverse("orders:checkout") + "?step=review")
@@ -174,16 +204,35 @@ def checkout_view(request):
                 # Process order submission
                 address_id = request.session.get("shipping_address_id")
                 payment_method = request.session.get("payment_method")
+                logger.info(
+                    f"Processing order with address_id: {address_id}, payment_method: {payment_method}"
+                )
 
-                if not address_id or not payment_method:
-                    messages.error(request, "Please complete all checkout steps.")
-                    return redirect("orders:checkout")
+                if not address_id:
+                    logger.error(
+                        "Missing shipping address in session during order review."
+                    )
+                    messages.error(
+                        request,
+                        "Shipping address is missing. Please complete the shipping step.",
+                    )
+                    return redirect(reverse("orders:checkout") + "?step=shipping")
+                if not payment_method:
+                    logger.error(
+                        "Missing payment method in session during order review."
+                    )
+                    messages.error(
+                        request,
+                        "Payment method is missing. Please complete the payment step.",
+                    )
+                    return redirect(reverse("orders:checkout") + "?step=payment")
 
                 try:
                     # Get the shipping address
                     shipping_address = Address.objects.get(
                         id=address_id, user=request.user, address_type="shipping"
                     )
+                    logger.info(f"Found shipping address: {shipping_address}")
 
                     # Create the checkout/order
                     checkout = Checkout(
@@ -197,10 +246,7 @@ def checkout_view(request):
                         status="pending",  # Initial status
                     )
                     checkout.save()
-
-                    logger.info(
-                        f"New checkout created: ID={checkout.id}, User={request.user.username}, Total={total}"
-                    )
+                    logger.info(f"Created new checkout with ID: {checkout.id}")
 
                     # Create checkout items
                     for cart_item in cart_items:
@@ -211,6 +257,9 @@ def checkout_view(request):
                             quantity=cart_item.quantity,
                         )
                         checkout_item.save()
+                        logger.info(
+                            f"Created checkout item for product: {cart_item.product.name}, quantity: {cart_item.quantity}"
+                        )
 
                         # Update product inventory (decrement)
                         product = cart_item.product
@@ -218,19 +267,25 @@ def checkout_view(request):
                         if product.stock < 0:
                             product.stock = 0
                         product.save()
+                        logger.info(
+                            f"Updated stock for product {product.name} to {product.stock}"
+                        )
 
                     # Clear the cart model items
                     cart_items.delete()
+                    logger.info("Cleared cart items")
 
                     # Also clear the session cart
                     request.session["cart"] = {}
                     request.session.modified = True
+                    logger.info("Cleared session cart")
 
                     # Clear checkout session data
                     if "shipping_address_id" in request.session:
                         del request.session["shipping_address_id"]
                     if "payment_method" in request.session:
                         del request.session["payment_method"]
+                    logger.info("Cleared checkout session data")
 
                     # Show success message
                     messages.success(
@@ -238,23 +293,28 @@ def checkout_view(request):
                     )
 
                     # Redirect to order confirmation
-                    return redirect(
-                        "orders:order_confirmation", checkout_id=checkout.id
+                    logger.info(
+                        f"Redirecting to order confirmation for checkout ID: {checkout.id}"
                     )
+                    return redirect("orders:order_confirmation", pk=checkout.id)
 
                 except Address.DoesNotExist:
+                    logger.error(f"Shipping address not found for ID: {address_id}")
                     messages.error(
                         request, "Shipping address not found. Please try again."
                     )
+                    return redirect(reverse("orders:checkout") + "?step=shipping")
                 except Exception as e:
                     logger.error(f"Order creation failed: {str(e)}", exc_info=True)
                     messages.error(
                         request,
                         f"An error occurred while processing your order. Please try again.",
                     )
+                    return redirect(reverse("orders:checkout") + "?step=review")
 
         # Get the current checkout step
         current_step = request.GET.get("step", "shipping")
+        logger.info(f"Current checkout step: {current_step}")
 
         # Prepare context based on current step
         context = {
@@ -273,6 +333,9 @@ def checkout_view(request):
             # Ensure shipping step is completed
             address_id = request.session.get("shipping_address_id")
             if not address_id:
+                logger.warning(
+                    "Attempting to access payment step without shipping address"
+                )
                 messages.warning(
                     request, "Please complete the shipping information first."
                 )
@@ -284,14 +347,21 @@ def checkout_view(request):
                 )
                 context["shipping_address"] = shipping_address
             except Address.DoesNotExist:
+                logger.error(
+                    f"Selected shipping address not found for ID: {address_id}"
+                )
                 messages.error(request, "Selected shipping address not found.")
                 return redirect("orders:checkout")
         elif current_step == "review":
             # Ensure shipping and payment steps are completed
             address_id = request.session.get("shipping_address_id")
             payment_method = request.session.get("payment_method")
+            logger.info(
+                f"Review step - address_id: {address_id}, payment_method: {payment_method}"
+            )
 
             if not address_id or not payment_method:
+                logger.warning("Attempting to access review step without required data")
                 messages.warning(request, "Please complete all checkout steps.")
                 return redirect("orders:checkout")
 
@@ -302,6 +372,9 @@ def checkout_view(request):
                 context["shipping_address"] = shipping_address
                 context["payment_method"] = payment_method
             except Address.DoesNotExist:
+                logger.error(
+                    f"Selected shipping address not found for ID: {address_id}"
+                )
                 messages.error(request, "Selected shipping address not found.")
                 return redirect("orders:checkout")
 
@@ -315,17 +388,20 @@ def checkout_view(request):
 
 @login_required
 @owner_required(Checkout)
-def order_confirmation_view(request, checkout_id):
+def order_confirmation_view(request, pk):
     """
     View for order confirmation page after checkout is complete.
     """
     try:
-        checkout = get_object_or_404(Checkout, id=checkout_id, user=request.user)
+        logger.info(f"Accessing order confirmation for checkout ID: {pk}")
+        checkout = get_object_or_404(Checkout, id=pk, user=request.user)
+        logger.info(f"Found checkout: {checkout}")
         checkout_items = checkout.items.all()
+        logger.info(f"Found {checkout_items.count()} checkout items")
 
         context = {
-            "checkout": checkout,
-            "checkout_items": checkout_items,
+            "order": checkout,
+            "order_items": checkout_items,
         }
 
         return render(request, "orders/order_confirmation.html", context)
@@ -360,12 +436,12 @@ def order_history_view(request):
 
 @login_required
 @owner_required(Checkout)
-def order_detail_view(request, checkout_id):
+def order_detail_view(request, pk):
     """
     View for displaying details of a specific order.
     """
     try:
-        checkout = get_object_or_404(Checkout, id=checkout_id, user=request.user)
+        checkout = get_object_or_404(Checkout, id=pk, user=request.user)
         checkout_items = checkout.items.all()
 
         context = {
@@ -385,17 +461,17 @@ def order_detail_view(request, checkout_id):
 @login_required
 @owner_required(Checkout)
 @require_POST
-def cancel_order_view(request, checkout_id):
+def cancel_order_view(request, pk):
     """
     View for cancelling an order.
     """
     try:
-        checkout = get_object_or_404(Checkout, id=checkout_id, user=request.user)
+        checkout = get_object_or_404(Checkout, id=pk, user=request.user)
 
         # Only allow cancellation if order is in pending or processing state
         if checkout.status not in ["pending", "processing"]:
             messages.error(request, "This order cannot be cancelled at this time.")
-            return redirect("orders:order_detail", checkout_id=checkout_id)
+            return redirect("orders:order_detail", pk=pk)
 
         # Update order status
         checkout.status = "cancelled"
@@ -410,8 +486,8 @@ def cancel_order_view(request, checkout_id):
         logger.info(f"Order cancelled: ID={checkout.id}, User={request.user.username}")
 
         messages.success(request, "Your order has been cancelled successfully.")
-        return redirect("orders:order_detail", checkout_id=checkout_id)
+        return redirect("orders:order_detail", pk=pk)
     except Exception as e:
         logger.error(f"Error cancelling order: {str(e)}", exc_info=True)
         messages.error(request, "An error occurred while cancelling your order.")
-        return redirect("orders:order_detail", checkout_id=checkout_id)
+        return redirect("orders:order_detail", pk=pk)

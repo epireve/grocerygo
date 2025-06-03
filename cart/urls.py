@@ -13,6 +13,9 @@ urlpatterns = [
     path("remove/<slug:slug>/", views.remove_from_cart, name="remove_from_cart"),
     path("update/<slug:slug>/", views.update_quantity, name="update_quantity"),
     path("clear/", views.clear_cart, name="clear_cart"),
+    # Coupon management
+    path("apply-coupon/", views.apply_coupon, name="apply_coupon"),
+    path("remove-coupon/", views.remove_coupon, name="remove_coupon"),
     # API endpoints for localStorage sync
     path("sync/", views.sync_cart, name="sync_cart"),
     path("get-session-cart/", views.get_session_cart, name="get_session_cart"),

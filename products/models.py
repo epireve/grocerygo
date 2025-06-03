@@ -70,6 +70,14 @@ class Product(models.Model):
     def get_absolute_url(self):
         return reverse("product_detail", args=[self.slug])
 
+    def get_effective_price(self):
+        """
+        Returns the effective price of the product. If a discount price is set, use it; otherwise, use the regular price.
+        """
+        if self.discount_price:
+            return self.discount_price
+        return self.price
+
     @property
     def has_variants(self):
         return self.variants.exists()
