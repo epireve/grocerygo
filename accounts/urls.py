@@ -8,6 +8,21 @@ urlpatterns = [
     path("login/", views.CustomLoginView.as_view(), name="login"),
     path("logout/", views.CustomLogoutView.as_view(), name="logout"),
     path("profile/", views.profile_view, name="profile"),
+    # Address management
+    path("address/add/", views.add_address_view, name="add_address"),
+    path(
+        "address/<int:address_id>/edit/", views.edit_address_view, name="edit_address"
+    ),
+    path(
+        "address/<int:address_id>/delete/",
+        views.delete_address_view,
+        name="delete_address",
+    ),
+    path(
+        "address/<int:address_id>/set-default/",
+        views.set_default_address_view,
+        name="set_default_address",
+    ),
     # Order management
     path("order-history/", views.order_history_view, name="order_history"),
     path("order/<int:order_id>/", views.order_detail_view, name="order_detail"),

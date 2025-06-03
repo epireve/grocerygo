@@ -98,3 +98,4 @@ htmlcov/
 
 .tailwind.pid
 .django.pid
+.kilocode/mcp.json
