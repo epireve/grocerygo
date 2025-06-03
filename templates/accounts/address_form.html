@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }} - GroceryGo{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="max-w-2xl mx-auto">
+        <div class="bg-white shadow-md rounded-lg p-6">
+            <div class="flex items-center justify-between border-b pb-4 mb-6">
+                <h1 class="text-2xl font-bold text-gray-800">{{ title }}</h1>
+                <a href="{% url 'accounts:profile' %}" class="text-gray-600 hover:text-gray-800">
+                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </a>
+            </div>
+
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                <!-- Full Name -->
+                <div>
+                    <label for="{{ form.full_name.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        Full Name *
+                    </label>
+                    {{ form.full_name }}
+                    {% if form.full_name.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {{ form.full_name.errors.0 }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Street Address -->
+                <div>
+                    <label for="{{ form.street_address.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        Street Address *
+                    </label>
+                    {{ form.street_address }}
+                    {% if form.street_address.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {{ form.street_address.errors.0 }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Apartment/Unit -->
+                <div>
+                    <label for="{{ form.apartment_address.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        Apartment, Suite, Unit (Optional)
+                    </label>
+                    {{ form.apartment_address }}
+                    {% if form.apartment_address.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {{ form.apartment_address.errors.0 }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- City and State -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="{{ form.city.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            City *
+                        </label>
+                        {{ form.city }}
+                        {% if form.city.errors %}
+                            <div class="mt-1 text-sm text-red-600">
+                                {{ form.city.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label for="{{ form.state.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            State *
+                        </label>
+                        {{ form.state }}
+                        {% if form.state.errors %}
+                            <div class="mt-1 text-sm text-red-600">
+                                {{ form.state.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Postal Code and Country -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="{{ form.postal_code.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            Postal Code *
+                        </label>
+                        {{ form.postal_code }}
+                        {% if form.postal_code.errors %}
+                            <div class="mt-1 text-sm text-red-600">
+                                {{ form.postal_code.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label for="{{ form.country.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            Country *
+                        </label>
+                        {{ form.country }}
+                        {% if form.country.errors %}
+                            <div class="mt-1 text-sm text-red-600">
+                                {{ form.country.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Phone -->
+                <div>
+                    <label for="{{ form.phone.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        Phone Number (Optional)
+                    </label>
+                    {{ form.phone }}
+                    {% if form.phone.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {{ form.phone.errors.0 }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Default Address Checkbox -->
+                <div class="flex items-center">
+                    {{ form.is_default }}
+                    <label for="{{ form.is_default.id_for_label }}" class="ml-2 block text-sm text-gray-700">
+                        Set as default shipping address
+                    </label>
+                </div>
+
+                <!-- Buttons -->
+                <div class="flex justify-between pt-6">
+                    <a href="{% url 'accounts:profile' %}" 
+                       class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                        Cancel
+                    </a>
+                    <button type="submit" 
+                            class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                        {% if address %}Update Address{% else %}Add Address{% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

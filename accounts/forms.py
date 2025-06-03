@@ -8,6 +8,7 @@ from django.contrib.auth.forms import (
 )
 from django.core.exceptions import ValidationError
 from .models import UserProfile
+from orders.models import Address
 import re
 
 
@@ -228,3 +229,122 @@ class CustomSetPasswordForm(SetPasswordForm):
                 raise ValidationError("Password must contain at least one number.")
 
         return password
+
+
+class AddressForm(forms.ModelForm):
+    """Form for adding and editing shipping addresses"""
+
+    class Meta:
+        model = Address
+        fields = [
+            "full_name",
+            "street_address",
+            "apartment_address",
+            "city",
+            "state",
+            "postal_code",
+            "country",
+            "phone",
+            "is_default",
+        ]
+        widgets = {
+            "full_name": forms.TextInput(
+                attrs={
+                    "class": "appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm",
+                    "placeholder": "Full Name",
+                    "autocomplete": "name",
+                }
+            ),
+            "street_address": forms.TextInput(
+                attrs={
+                    "class": "appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm",
+                    "placeholder": "Street Address",
+                    "autocomplete": "street-address",
+                }
+            ),
+            "apartment_address": forms.TextInput(
+                attrs={
+                    "class": "appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm",
+                    "placeholder": "Apartment, suite, etc. (optional)",
+                    "autocomplete": "address-line2",
+                }
+            ),
+            "city": forms.TextInput(
+                attrs={
+                    "class": "appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm",
+                    "placeholder": "City",
+                    "autocomplete": "address-level2",
+                }
+            ),
+            "state": forms.TextInput(
+                attrs={
+                    "class": "appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm",
+                    "placeholder": "State",
+                    "autocomplete": "address-level1",
+                }
+            ),
+            "postal_code": forms.TextInput(
+                attrs={
+                    "class": "appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm",
+                    "placeholder": "Postal Code",
+                    "autocomplete": "postal-code",
+                }
+            ),
+            "country": forms.TextInput(
+                attrs={
+                    "class": "appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm",
+                    "placeholder": "Country",
+                    "autocomplete": "country",
+                }
+            ),
+            "phone": forms.TextInput(
+                attrs={
+                    "class": "appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm",
+                    "placeholder": "Phone Number (optional)",
+                    "autocomplete": "tel",
+                }
+            ),
+            "is_default": forms.CheckboxInput(
+                attrs={
+                    "class": "h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+                }
+            ),
+        }
+
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop("user", None)
+        super().__init__(*args, **kwargs)
+
+    def save(self, commit=True):
+        address = super().save(commit=False)
+        if self.user:
+            address.user = self.user
+            address.address_type = "shipping"  # Always shipping for profile management
+        if commit:
+            address.save()
+        return address
+
+    def clean_postal_code(self):
+        postal_code = self.cleaned_data.get("postal_code")
+        if postal_code:
+            # Remove any spaces and ensure it's 5 digits for Malaysian postal codes
+            postal_code = postal_code.replace(" ", "")
+            if not postal_code.isdigit() or len(postal_code) != 5:
+                raise forms.ValidationError("Please enter a valid 5-digit postal code.")
+        return postal_code
+
+    def clean_phone(self):
+        phone = self.cleaned_data.get("phone")
+        if phone:
+            # Remove spaces and dashes for validation
+            phone_clean = phone.replace(" ", "").replace("-", "")
+            # Check if it starts with Malaysia country code or is a local number
+            if not (
+                phone_clean.startswith("+60")
+                or phone_clean.startswith("60")
+                or phone_clean.startswith("0")
+            ):
+                raise forms.ValidationError(
+                    "Please enter a valid Malaysian phone number."
+                )
+        return phone
