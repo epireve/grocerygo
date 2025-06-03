@@ -44,8 +44,24 @@ def categories_view(request):
     categories = Category.objects.filter(active=True, parent=None)
     for category in categories:
         category.subcategory_count = category.children.filter(active=True).count()
-        # Add the subcategories to each category
-        category.subcategories = category.children.filter(active=True)
+        # Add product count for the main category (including all subcategories)
+        # Get all subcategory IDs for this category
+        subcategory_ids = list(
+            category.children.filter(active=True).values_list("id", flat=True)
+        )
+        # Include the main category ID as well
+        all_category_ids = [category.id] + subcategory_ids
+        # Count products from main category and all its subcategories
+        category.product_count = Product.objects.filter(
+            category__id__in=all_category_ids, is_active=True, parent=None
+        ).count()
+        # Add the subcategories to each category with product counts
+        subcategories = category.children.filter(active=True)
+        for subcategory in subcategories:
+            subcategory.product_count = Product.objects.filter(
+                category=subcategory, is_active=True, parent=None
+            ).count()
+        category.subcategories = subcategories
     return render(request, "products/categories.html", {"categories": categories})
 
 

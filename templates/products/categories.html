@@ -3,58 +3,171 @@
 
 {% block title %}Product Categories - GroceryGo{% endblock %}
 
+{% block extra_head %}
+<style>
+    .scrollbar-hide {
+        -ms-overflow-style: none;  /* Internet Explorer 10+ */
+        scrollbar-width: none;  /* Firefox */
+    }
+    .scrollbar-hide::-webkit-scrollbar {
+        display: none;  /* Safari and Chrome */
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container mx-auto py-8 px-4">
-    <h1 class="text-3xl font-bold text-gray-800 mb-8">Product Categories</h1>
+    <!-- Enhanced Header Section -->
+    <div class="text-center mb-12">
+        <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            </svg>
+        </div>
+        <h1 class="text-4xl font-bold text-gray-800 mb-4">Product Categories</h1>
+        <p class="text-lg text-gray-600 max-w-2xl mx-auto">Discover our wide range of fresh groceries and products organized by category. Find exactly what you need for your kitchen and home.</p>
+    </div>
     
     {% if categories %}
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {% for category in categories %}
-        <div class="border rounded-lg shadow overflow-hidden hover:shadow-md transition">
-            <a href="{% url 'category_detail' category.slug %}" class="block">
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 border border-gray-100">
+            <a href="{% url 'category_detail' category.slug %}" class="block group">
                 {% if category.image %}
-                <div class="h-48 bg-gray-100">
-                    <img src="{{ category.image.url }}" alt="{{ category.name }}" class="w-full h-full object-cover">
+                <div class="h-48 bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden relative">
+                    <img src="{{ category.image.url }}" alt="{{ category.name }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                    <!-- Overlay badge on top-right of image -->
+                    <div class="absolute top-3 right-3">
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-600 text-white shadow-lg">
+                            {{ category.product_count }} products
+                        </span>
+                    </div>
                 </div>
                 {% else %}
-                <div class="h-48 bg-gray-100 flex items-center justify-center">
-                    <img src="{% static 'images/category-placeholder.jpg' %}" alt="Category placeholder" class="w-full h-full object-cover">
+                <div class="h-48 bg-gradient-to-br from-green-100 to-emerald-200 flex items-center justify-center relative">
+                    <div class="text-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-green-600 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                        </svg>
+                        <span class="text-green-700 font-medium">{{ category.name }}</span>
+                    </div>
+                    <!-- Overlay badge on top-right for placeholder too -->
+                    <div class="absolute top-3 right-3">
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-600 text-white shadow-lg">
+                            {{ category.product_count }} products
+                        </span>
+                    </div>
                 </div>
                 {% endif %}
-                <div class="p-4">
-                    <h2 class="text-xl font-semibold text-gray-800">{{ category.name }}</h2>
-                    {% if category.description %}
-                    <p class="text-gray-600 mt-2">{{ category.description|truncatechars:100 }}</p>
-                    {% endif %}
+                <div class="p-6">
+                    <div class="flex items-center justify-between mb-2">
+                        <h2 class="text-xl font-bold text-gray-800 group-hover:text-green-600 transition-colors">{{ category.name }}</h2>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 group-hover:text-green-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </div>
+                    <!-- Fixed height description area for consistency -->
+                    <div class="h-12">
+                        {% if category.description %}
+                        <p class="text-gray-600 text-sm leading-relaxed">{{ category.description|truncatechars:100 }}</p>
+                        {% endif %}
+                    </div>
                 </div>
             </a>
             
-            <!-- Subcategories section -->
+            <!-- Enhanced Subcategories section with consistent background -->
             {% if category.subcategories.exists %}
-                <div class="px-4 py-3 bg-gray-50 border-t border-gray-100">
-                    <h3 class="text-md font-medium text-gray-700 mb-2">Subcategories:</h3>
-                    <ul class="grid grid-cols-2 gap-2">
-                        {% for subcategory in category.subcategories %}
-                            <li>
-                                <a href="{% url 'category_detail' subcategory.slug %}" 
-                                   class="text-sm text-blue-600 hover:underline">
-                                    {{ subcategory.name }}
+                <div class="bg-gradient-to-r from-green-50 to-emerald-50 border-t border-green-100 h-52 relative">
+                    <div class="px-4 pt-4 pb-2">
+                        <div class="flex items-center mb-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-600 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                            </svg>
+                            <h3 class="text-sm font-semibold text-green-800">Subcategories</h3>
+                            <span class="ml-auto text-xs text-green-600 bg-green-100 px-2 py-1 rounded-full">{{ category.subcategories.count }}</span>
+                        </div>
+                    </div>
+                    <div class="px-4 pb-4 h-40 overflow-y-auto scrollbar-hide relative" id="subcategories-{{ category.id }}">
+                        <div class="space-y-2 min-h-full">
+                            {% for subcategory in category.subcategories %}
+                                <a href="{% url 'category_detail' subcategory.slug %}"
+                                   class="flex items-center justify-between p-2 bg-white rounded-lg border border-green-100 hover:border-green-300 hover:shadow-sm transition-all duration-200 group">
+                                    <div class="flex items-center">
+                                        <div class="w-2 h-2 bg-green-400 rounded-full mr-3 group-hover:bg-green-500 transition-colors"></div>
+                                        <span class="text-sm font-medium text-gray-700 group-hover:text-green-700">{{ subcategory.name }}</span>
+                                        <span class="ml-2 text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">({{ subcategory.product_count }})</span>
+                                    </div>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400 group-hover:text-green-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                    </svg>
                                 </a>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                </div>
-            {% elif category.subcategory_count %}
-                <div class="px-4 py-2 bg-gray-50 border-t border-gray-100">
-                    <span class="text-sm text-gray-600">{{ category.subcategory_count }} subcategories</span>
+                            {% endfor %}
+                            <!-- Fill remaining space with gradient background for shorter lists -->
+                            {% if category.subcategories.count <= 4 %}
+                                <div class="absolute inset-0 bg-gradient-to-r from-green-50 to-emerald-50 -z-10"></div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <!-- Add extra padding at the bottom for subcategories -->
+                    <div class="pb-4"></div>
+                    <!-- Subtle scroll indicator -->
+                    <div class="scroll-indicator-{{ category.id }} hidden absolute bottom-1 right-4 pointer-events-none">
+                        <div class="flex items-center space-x-1 text-green-600 opacity-40">
+                            <div class="w-1 h-1 bg-current rounded-full"></div>
+                            <div class="w-1 h-1 bg-current rounded-full"></div>
+                            <div class="w-1 h-1 bg-current rounded-full"></div>
+                        </div>
+                    </div>
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            const container = document.getElementById('subcategories-{{ category.id }}');
+                            const indicator = document.querySelector('.scroll-indicator-{{ category.id }}');
+                            
+                            if (container && indicator) {
+                                function checkScrollable() {
+                                    const isScrollable = container.scrollHeight > container.clientHeight;
+                                    const isAtBottom = container.scrollTop + container.clientHeight >= container.scrollHeight - 5;
+                                    
+                                    if (isScrollable && !isAtBottom) {
+                                        indicator.classList.remove('hidden');
+                                    } else {
+                                        indicator.classList.add('hidden');
+                                    }
+                                }
+                                
+                                // Check initially
+                                checkScrollable();
+                                
+                                // Check on scroll
+                                container.addEventListener('scroll', checkScrollable);
+                                
+                                // Check on resize
+                                window.addEventListener('resize', checkScrollable);
+                            }
+                        });
+                    </script>
                 </div>
             {% endif %}
         </div>
         {% endfor %}
     </div>
     {% else %}
-    <div class="text-center py-8">
-        <p class="text-xl text-gray-600">No categories available.</p>
+    <div class="text-center py-16">
+        <div class="inline-flex items-center justify-center w-20 h-20 bg-gray-100 rounded-full mb-6">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            </svg>
+        </div>
+        <h3 class="text-2xl font-semibold text-gray-600 mb-2">No Categories Available</h3>
+        <p class="text-gray-500 max-w-md mx-auto">We're currently updating our product categories. Please check back soon for our fresh selection of groceries!</p>
+        <div class="mt-8">
+            <a href="{% url 'products:home' %}" class="inline-flex items-center px-6 py-3 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+                Go to Homepage
+            </a>
+        </div>
     </div>
     {% endif %}
 </div>
