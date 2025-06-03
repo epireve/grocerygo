@@ -12,12 +12,33 @@ def product_list_view(request):
     """View for displaying all products, optionally filtered"""
     categories = Category.objects.filter(active=True, parent=None)
     products = Product.objects.filter(is_active=True, parent=None)
+
+    # Get category filter from URL parameters
+    category_filter = request.GET.get("category")
+    selected_category = None
+
+    if category_filter:
+        try:
+            selected_category = Category.objects.get(slug=category_filter, active=True)
+            # Filter products by the selected category and its subcategories
+            subcategory_ids = list(
+                selected_category.children.filter(active=True).values_list(
+                    "id", flat=True
+                )
+            )
+            all_category_ids = [selected_category.id] + subcategory_ids
+            products = products.filter(category__id__in=all_category_ids)
+        except Category.DoesNotExist:
+            # If category doesn't exist, show all products
+            pass
+
     return render(
         request,
         "products/product_list.html",
         {
             "categories": categories,
             "products": products,
+            "selected_category": selected_category,
         },
     )
 
