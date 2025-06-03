@@ -18,8 +18,10 @@ from .forms import (
     CustomLoginForm,
     CustomPasswordResetForm,
     CustomSetPasswordForm,
+    AddressForm,
 )
 from .models import UserProfile
+from orders.models import Address
 
 # Create your views here.
 
@@ -89,6 +91,11 @@ def profile_view(request):
     """View for displaying user profile"""
     user = request.user
 
+    # Get user's saved addresses
+    shipping_addresses = Address.objects.filter(
+        user=user, address_type="shipping"
+    ).order_by("-is_default", "-created_at")
+
     # Create a simple context with user data
     context = {
         "user": user,
@@ -97,6 +104,7 @@ def profile_view(request):
             "last_name": user.last_name,
             "email": user.email,
         },
+        "shipping_addresses": shipping_addresses,
     }
 
     if request.method == "POST":
@@ -132,3 +140,82 @@ def cancel_order_view(request, order_id):
         # This will be enhanced later when we have actual orders
         messages.success(request, "Order cancellation request submitted.")
     return redirect("accounts:order_detail", order_id=order_id)
+
+
+# Address Management Views
+
+
+@login_required
+def add_address_view(request):
+    """View for adding a new shipping address"""
+    if request.method == "POST":
+        form = AddressForm(request.POST, user=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Address added successfully!")
+            return redirect("accounts:profile")
+    else:
+        form = AddressForm(user=request.user)
+
+    context = {"form": form, "title": "Add New Address"}
+    return render(request, "accounts/address_form.html", context)
+
+
+@login_required
+def edit_address_view(request, address_id):
+    """View for editing an existing shipping address"""
+    try:
+        address = Address.objects.get(
+            id=address_id, user=request.user, address_type="shipping"
+        )
+    except Address.DoesNotExist:
+        messages.error(request, "Address not found.")
+        return redirect("accounts:profile")
+
+    if request.method == "POST":
+        form = AddressForm(request.POST, instance=address, user=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Address updated successfully!")
+            return redirect("accounts:profile")
+    else:
+        form = AddressForm(instance=address, user=request.user)
+
+    context = {"form": form, "address": address, "title": "Edit Address"}
+    return render(request, "accounts/address_form.html", context)
+
+
+@login_required
+def delete_address_view(request, address_id):
+    """View for deleting a shipping address"""
+    try:
+        address = Address.objects.get(
+            id=address_id, user=request.user, address_type="shipping"
+        )
+        address.delete()
+        messages.success(request, "Address deleted successfully!")
+    except Address.DoesNotExist:
+        messages.error(request, "Address not found.")
+
+    return redirect("accounts:profile")
+
+
+@login_required
+def set_default_address_view(request, address_id):
+    """View for setting an address as default"""
+    try:
+        address = Address.objects.get(
+            id=address_id, user=request.user, address_type="shipping"
+        )
+        # Remove default status from other addresses
+        Address.objects.filter(
+            user=request.user, address_type="shipping", is_default=True
+        ).update(is_default=False)
+        # Set this address as default
+        address.is_default = True
+        address.save()
+        messages.success(request, "Default address updated successfully!")
+    except Address.DoesNotExist:
+        messages.error(request, "Address not found.")
+
+    return redirect("accounts:profile")
