@@ -3,10 +3,8 @@ import os
 import sys
 import django
 import requests
-import urllib.parse
 import http.client
 import json
-import random
 from io import BytesIO
 from pathlib import Path
 from django.core.files.base import ContentFile
