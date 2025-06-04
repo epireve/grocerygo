@@ -1,10 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Category, Product
 from django.contrib import messages
-from django.urls import reverse
-from django.urls import reverse_lazy
-from django.urls import reverse
-from django.urls import reverse_lazy
 
 
 # Create your views here.

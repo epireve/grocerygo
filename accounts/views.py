@@ -1,9 +1,8 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth import login, authenticate, logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse_lazy
-from django.views.generic.edit import CreateView, FormView, UpdateView
+from django.views.generic.edit import CreateView
 from django.contrib.auth.views import (
     LoginView,
     LogoutView,
@@ -20,7 +19,6 @@ from .forms import (
     CustomSetPasswordForm,
     AddressForm,
 )
-from .models import UserProfile
 from orders.models import Address
 
 # Create your views here.

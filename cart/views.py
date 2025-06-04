@@ -1,11 +1,9 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.http import JsonResponse, HttpResponseBadRequest
+from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
-from django.urls import reverse
 import json
-from datetime import datetime, timedelta
 from products.models import Product
 from decimal import Decimal
 from .models import Cart, CartItem, Coupon

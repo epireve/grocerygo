@@ -7,7 +7,6 @@ from django.contrib.auth.forms import (
     SetPasswordForm,
 )
 from django.core.exceptions import ValidationError
-from .models import UserProfile
 from orders.models import Address
 import re
 
