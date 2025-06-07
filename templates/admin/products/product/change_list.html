@@ -3,45 +3,23 @@
 
 {% block extrahead %}
     {{ block.super }}
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        /* Enhanced Admin Styling with Dark Mode Support */
-        body.change-list {
-            background: #f8fafc;
-            transition: background-color 0.3s ease;
-        }
-        
-        [data-theme="dark"] body.change-list {
-            background: #111827;
-        }
-        
+        /* Product-specific styling */
         .product-image {
             width: 50px;
             height: 50px;
             object-fit: cover;
             border-radius: 8px;
             border: 2px solid #e5e7eb;
-            transition: border-color 0.3s ease;
         }
         
         [data-theme="dark"] .product-image {
             border-color: #374151;
         }
         
-        .product-name {
-            font-weight: 600;
-            color: #111827;
-            transition: color 0.3s ease;
-        }
-        
-        [data-theme="dark"] .product-name {
-            color: #f9fafb;
-        }
-        
         .product-price {
-            font-weight: 700;
+            font-weight: 600;
             color: #059669;
-            font-size: 1.1em;
         }
         
         [data-theme="dark"] .product-price {
@@ -51,16 +29,10 @@
         .product-stock {
             display: inline-flex;
             align-items: center;
-            padding: 6px 12px;
-            border-radius: 20px;
+            padding: 4px 8px;
+            border-radius: 12px;
             font-size: 0.875rem;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-        
-        .product-stock i {
-            margin-right: 4px;
-            font-size: 0.75rem;
+            font-weight: 500;
         }
         
         .stock-high {
@@ -105,315 +77,17 @@
         
         .category-badge {
             display: inline-block;
-            padding: 4px 10px;
+            padding: 4px 8px;
             background: #f3f4f6;
             color: #374151;
-            border-radius: 12px;
-            font-size: 0.8rem;
+            border-radius: 8px;
+            font-size: 0.75rem;
             font-weight: 500;
-            transition: all 0.3s ease;
         }
         
         [data-theme="dark"] .category-badge {
             background: #374151;
             color: #d1d5db;
         }
-        
-        .stats-card {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 12px;
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-            border: 1px solid #e5e7eb;
-            min-width: 200px;
-            transition: all 0.3s ease;
-        }
-        
-        [data-theme="dark"] .stats-card {
-            background: #1f2937;
-            border-color: #374151;
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
-        }
-        
-        .stats-card:hover {
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            transform: translateY(-1px);
-        }
-        
-        [data-theme="dark"] .stats-card:hover {
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
-        }
-        
-        .admin-header {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            color: white;
-            padding: 2rem;
-            margin: -20px -20px 2rem -20px;
-            border-radius: 0 0 16px 16px;
-        }
-        
-        [data-theme="dark"] .admin-header {
-            background: linear-gradient(135deg, #065f46 0%, #064e3b 100%);
-        }
-        
-        #result_list {
-            background: white;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-            border: 1px solid #e5e7eb;
-            transition: all 0.3s ease;
-        }
-        
-        [data-theme="dark"] #result_list {
-            background: #1f2937;
-            border-color: #374151;
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
-        }
-        
-        #result_list th {
-            background: #f9fafb;
-            padding: 16px;
-            font-weight: 600;
-            color: #374151;
-            text-transform: uppercase;
-            font-size: 0.75rem;
-            letter-spacing: 0.05em;
-            border-bottom: 1px solid #e5e7eb;
-            transition: all 0.3s ease;
-        }
-        
-        [data-theme="dark"] #result_list th {
-            background: #374151;
-            color: #d1d5db;
-            border-bottom-color: #4b5563;
-        }
-        
-        #result_list td {
-            padding: 16px;
-            border-bottom: 1px solid #f3f4f6;
-            vertical-align: middle;
-            transition: all 0.3s ease;
-        }
-        
-        [data-theme="dark"] #result_list td {
-            border-bottom-color: #374151;
-            color: #d1d5db;
-        }
-        
-        #result_list tbody tr:hover {
-            background: #f0fdf4;
-        }
-        
-        [data-theme="dark"] #result_list tbody tr:hover {
-            background: rgba(5, 150, 105, 0.1);
-        }
-        
-        .paginator {
-            background: white;
-            border-radius: 12px;
-            padding: 1rem;
-            margin-top: 1rem;
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-            border: 1px solid #e5e7eb;
-            transition: all 0.3s ease;
-        }
-        
-        [data-theme="dark"] .paginator {
-            background: #1f2937;
-            border-color: #374151;
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
-        }
-        
-        .paginator a {
-            background: #f9fafb;
-            color: #374151;
-            padding: 8px 12px;
-            border-radius: 6px;
-            text-decoration: none;
-            margin: 0 2px;
-            border: 1px solid #e5e7eb;
-            transition: all 0.2s ease;
-        }
-        
-        [data-theme="dark"] .paginator a {
-            background: #374151;
-            color: #d1d5db;
-            border-color: #4b5563;
-        }
-        
-        .paginator a:hover {
-            background: #10b981;
-            color: white;
-            border-color: #10b981;
-        }
-        
-        .changelist-search {
-            background: white;
-            border-radius: 12px;
-            padding: 1rem;
-            margin-bottom: 1rem;
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-            border: 1px solid #e5e7eb;
-            transition: all 0.3s ease;
-        }
-        
-        [data-theme="dark"] .changelist-search {
-            background: #1f2937;
-            border-color: #374151;
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
-        }
-        
-        .changelist-search input[type="text"] {
-            border: 1px solid #d1d5db;
-            border-radius: 8px;
-            padding: 8px 12px;
-            font-size: 14px;
-            transition: all 0.3s ease;
-        }
-        
-        [data-theme="dark"] .changelist-search input[type="text"] {
-            background: #374151;
-            border-color: #4b5563;
-            color: #f9fafb;
-        }
-        
-        .changelist-search input[type="text"]:focus {
-            border-color: #10b981;
-            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
-        }
-        
-        #changelist-filter {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-            border: 1px solid #e5e7eb;
-            transition: all 0.3s ease;
-        }
-        
-        [data-theme="dark"] #changelist-filter {
-            background: #1f2937;
-            border-color: #374151;
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
-        }
-        
-        #changelist-filter h3 {
-            background: #f9fafb;
-            padding: 12px 16px;
-            margin: 0;
-            font-size: 14px;
-            font-weight: 600;
-            color: #374151;
-            border-bottom: 1px solid #e5e7eb;
-            transition: all 0.3s ease;
-        }
-        
-        [data-theme="dark"] #changelist-filter h3 {
-            background: #374151;
-            color: #d1d5db;
-            border-bottom-color: #4b5563;
-        }
-        
-        /* Stock Alert Indicators */
-        .stock-alert-indicator {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            margin-left: 8px;
-            animation: pulse 2s infinite;
-        }
-        
-        .stock-alert-low {
-            background-color: #f59e0b;
-        }
-        
-        .stock-alert-critical {
-            background-color: #ef4444;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-        
-        /* Dark mode text colors */
-        [data-theme="dark"] .stats-card p {
-            color: #d1d5db;
-        }
-        
-        [data-theme="dark"] .stats-card .text-gray-600 {
-            color: #9ca3af !important;
-        }
     </style>
-{% endblock %}
-
-{% block content_title %}
-<div class="admin-header">
-    <div class="flex items-center justify-between">
-        <div>
-            <h1 class="text-3xl font-bold flex items-center">
-                <i class="fas fa-boxes mr-3 text-white"></i>
-                Product Management
-            </h1>
-            <p class="text-emerald-100 mt-2">Manage your product inventory with ease</p>
-        </div>
-        <div class="text-right">
-            <div class="text-2xl font-bold">{{ cl.full_result_count }}</div>
-            <div class="text-emerald-200 text-sm">Total Products</div>
-        </div>
-    </div>
-</div>
-{% endblock %}
-
-{% block date_hierarchy %}
-<div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-    <div class="stats-card">
-        <div class="flex items-center justify-between">
-            <div>
-                <p class="text-sm font-medium text-gray-900 dark:text-gray-400">Total Products</p>
-                <p class="text-2xl font-bold text-emerald-600">{{ cl.full_result_count }}</p>
-            </div>
-            <div class="bg-emerald-100 p-3 rounded-full">
-                <i class="fas fa-boxes text-emerald-600 text-xl"></i>
-            </div>
-        </div>
-    </div>
-    <div class="stats-card">
-        <div class="flex items-center justify-between">
-            <div>
-                <p class="text-sm font-medium text-gray-900 dark:text-gray-400">Active Products</p>
-                <p class="text-2xl font-bold text-emerald-600">{{ cl.result_count }}</p>
-            </div>
-            <div class="bg-green-100 p-3 rounded-full">
-                <i class="fas fa-check-circle text-green-600 text-xl"></i>
-            </div>
-        </div>
-    </div>
-    <div class="stats-card">
-        <div class="flex items-center justify-between">
-            <div>
-                <p class="text-sm font-medium text-gray-900 dark:text-gray-400">This Page</p>
-                <p class="text-2xl font-bold text-blue-600">{{ cl.result_count }}</p>
-            </div>
-            <div class="bg-blue-100 p-3 rounded-full">
-                <i class="fas fa-eye text-blue-600 text-xl"></i>
-            </div>
-        </div>
-    </div>
-    <div class="stats-card">
-        <div class="flex items-center justify-between">
-            <div>
-                <p class="text-sm font-medium text-gray-900 dark:text-gray-400">Page</p>
-                <p class="text-2xl font-bold text-amber-600">{{ cl.page_num|default:1 }} of {{ cl.paginator.num_pages|default:1 }}</p>
-            </div>
-            <div class="bg-amber-100 p-3 rounded-full">
-                <i class="fas fa-file text-amber-600 text-xl"></i>
-            </div>
-        </div>
-    </div>
-</div>
-{{ block.super }}
 {% endblock %}

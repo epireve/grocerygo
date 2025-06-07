@@ -375,20 +375,18 @@
     <main class="flex-1 admin-content">
         <div class="p-6">
             {% block breadcrumbs %}
-            <nav class="flex mb-6" aria-label="Breadcrumb">
-                <ol class="inline-flex items-center space-x-1 md:space-x-3">
-                    <li class="inline-flex items-center">
-                        <a href="{% url 'admin:index' %}" class="hover:text-gray-700" style="color: var(--text-muted);">
+            <nav class="card px-6 py-3 mb-6" aria-label="Breadcrumb">
+                <ol class="flex items-center space-x-2 text-sm" style="color: var(--text-secondary);">
+                    <li>
+                        <a href="{% url 'admin:index' %}" class="text-emerald-600 hover:text-emerald-700 font-medium transition-colors">
                             <i class="fas fa-home mr-1"></i>
                             Admin
                         </a>
                     </li>
                     {% if title %}
                     <li>
-                        <div class="flex items-center">
-                            <i class="fas fa-chevron-right text-gray-400 text-sm mr-2"></i>
-                            <span class="font-medium" style="color: var(--text-secondary);">{{ title }}</span>
-                        </div>
+                        <i class="fas fa-chevron-right mx-2" style="color: var(--text-muted);"></i>
+                        <span class="font-semibold" style="color: var(--text-primary);">{{ title }}</span>
                     </li>
                     {% endif %}
                 </ol>

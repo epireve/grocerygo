@@ -10,22 +10,22 @@
 {% endblock %}
 
 {% block breadcrumbs %}
-<nav class="bg-white dark:bg-gray-800 px-6 py-3 border-b border-gray-200 dark:border-gray-700" aria-label="Breadcrumb">
-    <ol class="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
+<nav class="card px-6 py-3 mb-6" aria-label="Breadcrumb">
+    <ol class="flex items-center space-x-2 text-sm" style="color: var(--text-secondary);">
         <li>
-            <a href="{% url 'admin:index' %}" class="text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 font-medium transition-colors">
+            <a href="{% url 'admin:index' %}" class="text-emerald-600 hover:text-emerald-700 font-medium transition-colors">
                 <i class="fas fa-home mr-1"></i>{% trans 'Home' %}
             </a>
         </li>
         <li>
-            <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
-            <a href="{% url 'admin:app_list' app_label=opts.app_label %}" class="text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 font-medium transition-colors">
+            <i class="fas fa-chevron-right mx-2" style="color: var(--text-muted);"></i>
+            <a href="{% url 'admin:app_list' app_label=opts.app_label %}" class="text-emerald-600 hover:text-emerald-700 font-medium transition-colors">
                 {{ opts.app_config.verbose_name }}
             </a>
         </li>
         <li>
-            <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
-            <span class="text-gray-900 dark:text-gray-100 font-semibold">{{ opts.verbose_name_plural|capfirst }}</span>
+            <i class="fas fa-chevron-right mx-2" style="color: var(--text-muted);"></i>
+            <span class="font-semibold" style="color: var(--text-primary);">{{ opts.verbose_name_plural|capfirst }}</span>
         </li>
     </ol>
 </nav>
@@ -34,7 +34,7 @@
 {% block content %}
 <div class="admin-content">
     <!-- Header Section -->
-    <div class="admin-header bg-gradient-to-r from-emerald-600 to-emerald-700 text-white p-6 rounded-lg mb-6 shadow-lg">
+    <div class="admin-header bg-gradient-to-r from-emerald-600 to-emerald-700 text-white p-6 rounded-lg mb-6">
         <div class="flex items-center justify-between">
             <div>
                 <h1 class="text-3xl font-bold flex items-center">
@@ -65,8 +65,8 @@
             </div>
             
             {% if has_add_permission %}
-            <a href="{% url 'admin:'|add:opts.app_label|add:'_'|add:opts.model_name|add:'_add' %}" 
-               class="bg-white text-emerald-700 hover:bg-emerald-50 px-6 py-3 rounded-lg font-semibold transition-all duration-200 flex items-center space-x-2 shadow-md hover:shadow-lg">
+            <a href="{% url 'admin:'|add:opts.app_label|add:'_'|add:opts.model_name|add:'_add' %}"
+               class="bg-white text-emerald-700 hover:bg-emerald-50 px-6 py-3 rounded-lg font-semibold transition-all duration-200 flex items-center space-x-2">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
                 </svg>
@@ -77,10 +77,10 @@
     </div>
 
     <!-- Search and Filters Section -->
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 mb-6">
-        <div class="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-4 rounded-t-xl">
-            <h3 class="text-lg font-semibold flex items-center">
-                <i class="fas fa-search mr-2"></i>
+    <div class="card mb-6">
+        <div class="px-6 py-4 border-b" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
+            <h3 class="text-lg font-semibold flex items-center" style="color: var(--text-primary);">
+                <i class="fas fa-search mr-2 text-emerald-600"></i>
                 Search & Filters
             </h3>
         </div>
@@ -92,13 +92,14 @@
                 <form method="get" id="changelist-search">
                     <div class="flex gap-4 items-end">
                         <div class="flex-1">
-                            <label for="searchbar" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Search {{ opts.verbose_name_plural }}</label>
+                            <label for="searchbar" class="block text-sm font-medium mb-2" style="color: var(--text-primary);">Search {{ opts.verbose_name_plural }}</label>
                             <div class="relative">
                                 <input type="search" id="searchbar" name="{{ search_var }}" value="{{ cl.query }}"
-                                       class="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-700 dark:text-white"
+                                       class="w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors"
+                                       style="border-color: var(--border-color); background-color: var(--bg-card); color: var(--text-primary);"
                                        placeholder="Search products...">
                                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <i class="fas fa-search text-gray-400"></i>
+                                    <i class="fas fa-search" style="color: var(--text-muted);"></i>
                                 </div>
                             </div>
                         </div>
@@ -106,7 +107,10 @@
                             <i class="fas fa-search mr-2"></i>Search
                         </button>
                         {% if cl.query %}
-                        <a href="?" class="px-4 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors">
+                        <a href="?" class="px-4 py-3 text-white rounded-lg transition-colors"
+                           style="background-color: var(--text-muted);"
+                           onmouseover="this.style.backgroundColor='var(--text-secondary)';"
+                           onmouseout="this.style.backgroundColor='var(--text-muted)';">
                             <i class="fas fa-times mr-1"></i>Clear
                         </a>
                         {% endif %}
@@ -122,14 +126,14 @@
             
             <!-- Filters -->
             {% if cl.has_filters %}
-            <div class="border-t border-gray-200 dark:border-gray-600 pt-6">
+            <div class="border-t pt-6" style="border-color: var(--border-color);">
                 <div class="flex items-center justify-between mb-4">
-                    <h4 class="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center">
-                        <i class="fas fa-filter mr-2 text-blue-600"></i>
+                    <h4 class="text-lg font-semibold flex items-center" style="color: var(--text-primary);">
+                        <i class="fas fa-filter mr-2 text-emerald-600"></i>
                         Filters
                     </h4>
                     {% if cl.has_active_filters %}
-                    <a href="?" class="text-blue-600 hover:text-blue-700 text-sm font-medium transition-colors duration-150">
+                    <a href="?" class="text-emerald-600 hover:text-emerald-700 text-sm font-medium transition-colors duration-150">
                         <i class="fas fa-times mr-1"></i>Clear all filters
                     </a>
                     {% endif %}
@@ -138,9 +142,9 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     {% for spec in cl.filter_specs %}
                     <div class="filter-group">
-                        <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-                            <h5 class="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-3 flex items-center">
-                                <span class="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
+                        <div class="rounded-lg p-4" style="background-color: var(--bg-secondary);">
+                            <h5 class="text-sm font-semibold mb-3 flex items-center" style="color: var(--text-primary);">
+                                <span class="w-2 h-2 bg-emerald-500 rounded-full mr-2"></span>
                                 {{ spec.title }}
                             </h5>
                             <div class="space-y-2">
@@ -148,17 +152,20 @@
                                 <div class="filter-option">
                                     {% if choice.selected %}
                                     <a href="{{ choice.query_string|iriencode }}"
-                                       class="flex items-center justify-between w-full px-3 py-2 text-sm bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-lg font-medium border-2 border-blue-300 dark:border-blue-700 transition-all duration-150 hover:border-blue-400 dark:hover:border-blue-600">
+                                       class="flex items-center justify-between w-full px-3 py-2 text-sm bg-emerald-100 text-emerald-800 rounded-lg font-medium transition-all duration-150">
                                         <span class="flex items-center">
-                                            <i class="fas fa-check text-blue-600 mr-2"></i>
+                                            <i class="fas fa-check text-emerald-600 mr-2"></i>
                                         {{ choice.display }}
                                     </span>
-                                    <i class="fas fa-times text-blue-600 hover:text-blue-800"></i>
+                                    <i class="fas fa-times text-emerald-600 hover:text-emerald-800"></i>
                                 </a>
                                 {% else %}
-                                <a href="{{ choice.query_string|iriencode }}" 
-                                   class="flex items-center w-full px-3 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900 hover:text-blue-700 dark:hover:text-blue-300 rounded-lg transition-all duration-150 border border-transparent hover:border-blue-200 dark:hover:border-blue-800">
-                                    <i class="fas fa-circle text-gray-400 mr-2 text-xs"></i>
+                                <a href="{{ choice.query_string|iriencode }}"
+                                   class="flex items-center w-full px-3 py-2.5 text-sm rounded-lg transition-all duration-150 border border-transparent hover:border-emerald-200"
+                                   style="color: var(--text-secondary); background-color: var(--bg-card);"
+                                   onmouseover="this.style.backgroundColor='#f0fdf4'; this.style.color='#047857';"
+                                   onmouseout="this.style.backgroundColor='var(--bg-card)'; this.style.color='var(--text-secondary)';">
+                                    <i class="fas fa-circle mr-2 text-xs" style="color: var(--text-muted);"></i>
                                     <span>{{ choice.display }}</span>
                                 </a>
                                 {% endif %}
@@ -176,11 +183,12 @@
     <!-- Main Content Area -->
     <div class="w-full">
         <!-- Actions Bar -->
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 p-6 mb-6">
+        <div class="card mb-6">
+            <div class="p-6">
             <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
                 <!-- Page Info -->
                 <div class="flex items-center space-x-4">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                    <h3 class="text-lg font-semibold" style="color: var(--text-primary);">
                         {% if cl.result_count %}
                             {{ cl.result_count }} {{ opts.verbose_name_plural|lower }}
                         {% else %}
@@ -194,14 +202,15 @@
                 <div class="flex items-center space-x-4">
                         <form method="post" class="flex items-center space-x-3">
                             {% csrf_token %}
-                            <select name="action" 
-                                    class="border-2 border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 text-sm dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200">
+                            <select name="action"
+                                    class="border-2 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200"
+                                    style="border-color: var(--border-color); background-color: var(--bg-card); color: var(--text-primary);">
                                 <option value="">Select action...</option>
                                 {% for choice in action_form.action.field.choices %}
                                     <option value="{{ choice.0 }}">{{ choice.1|capfirst }}</option>
                                 {% endfor %}
                             </select>
-                            <button type="submit" 
+                            <button type="submit"
                                     class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors duration-200">
                                 Go
                             </button>
@@ -210,11 +219,13 @@
                     {% endif %}
                 </div>
             </div>
+        </div>
 
             <!-- Results Table - Using Django's Built-in System -->
-            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div class="card">
                 {% if cl.result_count %}
-                <div class="overflow-x-auto">
+                <div class="p-6 pb-0">
+                    <div class="overflow-x-auto rounded-lg">
                     {% if action_form and actions_on_top and cl.show_admin_actions %}
                     <form method="post" class="changelist-results">
                         {% csrf_token %}
@@ -225,54 +236,68 @@
                         {% result_list cl %}
                     </div>
                     {% endif %}
+                    </div>
                 </div>
                 
                 <!-- Pagination -->
                 {% if cl.result_count %}
-                <div class="bg-gray-50 dark:bg-gray-900 px-6 py-4 border-t border-gray-200 dark:border-gray-700">
+                <div class="px-6 py-4 border-t" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
                     <div class="flex items-center justify-between">
                         <div class="flex-1 flex justify-between sm:hidden">
                             {% if cl.paginator.has_previous %}
-                            <a href="?{% if cl.paginator.previous_page_number %}page={{ cl.paginator.previous_page_number }}{% endif %}{{ cl.get_query_string }}" 
-                               class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                            <a href="?{% if cl.paginator.previous_page_number %}page={{ cl.paginator.previous_page_number }}{% endif %}{{ cl.get_query_string }}"
+                               class="relative inline-flex items-center px-4 py-2 border text-sm font-medium rounded-md transition-colors duration-150"
+                               style="border-color: var(--border-color); background-color: var(--bg-card); color: var(--text-secondary);"
+                               onmouseover="this.style.backgroundColor='var(--bg-secondary)';"
+                               onmouseout="this.style.backgroundColor='var(--bg-card)';">
                                 Previous
                             </a>
                             {% endif %}
                             {% if cl.paginator.has_next %}
-                            <a href="?page={{ cl.paginator.next_page_number }}{{ cl.get_query_string }}" 
-                               class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                            <a href="?page={{ cl.paginator.next_page_number }}{{ cl.get_query_string }}"
+                               class="ml-3 relative inline-flex items-center px-4 py-2 border text-sm font-medium rounded-md transition-colors duration-150"
+                               style="border-color: var(--border-color); background-color: var(--bg-card); color: var(--text-secondary);"
+                               onmouseover="this.style.backgroundColor='var(--bg-secondary)';"
+                               onmouseout="this.style.backgroundColor='var(--bg-card)';">
                                 Next
                             </a>
                             {% endif %}
                         </div>
                         <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
                             <div>
-                                <p class="text-sm text-gray-700 dark:text-gray-300">
-                                    Showing 
+                                <p class="text-sm" style="color: var(--text-secondary);">
+                                    Showing
                                     <span class="font-semibold">{{ cl.paginator.start_index }}</span>
-                                    to 
+                                    to
                                     <span class="font-semibold">{{ cl.paginator.end_index }}</span>
-                                    of 
+                                    of
                                     <span class="font-semibold">{{ cl.result_count }}</span>
                                     results
                                 </p>
                             </div>
                             <div>
-                                <nav class="relative z-0 inline-flex rounded-lg shadow-sm -space-x-px">
+                                <nav class="relative z-0 inline-flex rounded-lg -space-x-px">
                                     {% if cl.paginator.has_previous %}
-                                    <a href="?{% if cl.paginator.previous_page_number %}page={{ cl.paginator.previous_page_number }}{% endif %}{{ cl.get_query_string }}" 
-                                       class="relative inline-flex items-center px-3 py-2 rounded-l-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors duration-150">
+                                    <a href="?{% if cl.paginator.previous_page_number %}page={{ cl.paginator.previous_page_number }}{% endif %}{{ cl.get_query_string }}"
+                                       class="relative inline-flex items-center px-3 py-2 rounded-l-lg border text-sm font-medium transition-colors duration-150"
+                                       style="border-color: var(--border-color); background-color: var(--bg-card); color: var(--text-secondary);"
+                                       onmouseover="this.style.backgroundColor='var(--bg-secondary)';"
+                                       onmouseout="this.style.backgroundColor='var(--bg-card)';">
                                         <i class="fas fa-chevron-left"></i>
                                     </a>
                                     {% endif %}
                                     
-                                    <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    <span class="relative inline-flex items-center px-4 py-2 border text-sm font-medium"
+                                          style="border-color: var(--border-color); background-color: var(--bg-card); color: var(--text-primary);">
                                         {{ cl.paginator.number }} of {{ cl.paginator.paginator.num_pages }}
                                     </span>
                                     
                                     {% if cl.paginator.has_next %}
-                                    <a href="?page={{ cl.paginator.next_page_number }}{{ cl.get_query_string }}" 
-                                       class="relative inline-flex items-center px-3 py-2 rounded-r-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors duration-150">
+                                    <a href="?page={{ cl.paginator.next_page_number }}{{ cl.get_query_string }}"
+                                       class="relative inline-flex items-center px-3 py-2 rounded-r-lg border text-sm font-medium transition-colors duration-150"
+                                       style="border-color: var(--border-color); background-color: var(--bg-card); color: var(--text-secondary);"
+                                       onmouseover="this.style.backgroundColor='var(--bg-secondary)';"
+                                       onmouseout="this.style.backgroundColor='var(--bg-card)';">
                                         <i class="fas fa-chevron-right"></i>
                                     </a>
                                     {% endif %}
@@ -285,15 +310,16 @@
                 
                 {% else %}
                 <div class="text-center py-16">
-                    <div class="inline-flex items-center justify-center w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full mb-4">
-                        <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="inline-flex items-center justify-center w-16 h-16 rounded-full mb-4"
+                         style="background-color: var(--bg-secondary);">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color: var(--text-muted);">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2M4 13h2m0 0v5a2 2 0 002 2h8a2 2 0 002-2v-5"/>
                         </svg>
                     </div>
-                    <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">No {{ opts.verbose_name_plural|lower }}</h3>
-                    <p class="text-gray-500 dark:text-gray-400 mb-6">Get started by creating a new {{ opts.verbose_name|lower }}.</p>
+                    <h3 class="text-lg font-medium mb-2" style="color: var(--text-primary);">No {{ opts.verbose_name_plural|lower }}</h3>
+                    <p class="mb-6" style="color: var(--text-muted);">Get started by creating a new {{ opts.verbose_name|lower }}.</p>
                     {% if has_add_permission %}
-                    <a href="{% url 'admin:'|add:opts.app_label|add:'_'|add:opts.model_name|add:'_add' %}" 
+                    <a href="{% url 'admin:'|add:opts.app_label|add:'_'|add:opts.model_name|add:'_add' %}"
                        class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-colors duration-200">
                         <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
@@ -315,14 +341,15 @@
     width: 100%;
     border-collapse: collapse;
     margin: 0;
+    background-color: #ffffff;
 }
 
 .changelist-results thead th {
-    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%) !important;
     padding: 16px;
     text-align: left;
     font-weight: 600;
-    color: #374151;
+    color: #374151 !important;
     text-transform: uppercase;
     font-size: 0.75rem;
     letter-spacing: 0.05em;
@@ -332,58 +359,56 @@
     z-index: 10;
 }
 
-[data-theme="dark"] .changelist-results thead th {
-    background: linear-gradient(135deg, #374151 0%, #1f2937 100%);
-    color: #d1d5db;
-    border-bottom-color: #4b5563;
+/* Ensure first column header is always left-aligned */
+.changelist-results thead th:first-child {
+    text-align: left !important;
 }
 
 .changelist-results tbody td {
     padding: 12px 16px;
     border-bottom: 1px solid #f3f4f6;
     vertical-align: middle;
-    color: #374151;
+    color: #374151 !important;
     font-size: 0.875rem;
+    background-color: #ffffff !important;
 }
 
-[data-theme="dark"] .changelist-results tbody td {
-    border-bottom-color: #4b5563;
-    color: #d1d5db;
+/* Ensure first column content is always left-aligned */
+.changelist-results tbody td:first-child {
+    text-align: left !important;
+    font-weight: 500;
+}
+
+.changelist-results tbody tr {
+    background-color: #ffffff !important;
 }
 
 .changelist-results tbody tr:hover {
-    background-color: #f0f9ff;
+    background-color: #f0f9ff !important;
     transition: background-color 0.15s ease;
 }
 
-[data-theme="dark"] .changelist-results tbody tr:hover {
-    background-color: #1e3a8a;
+.changelist-results tbody tr:hover td {
+    background-color: #f0f9ff !important;
 }
 
 .changelist-results tbody td a {
-    color: #2563eb;
+    color: #2563eb !important;
     text-decoration: none;
     font-weight: 500;
     transition: color 0.15s ease;
 }
 
 .changelist-results tbody td a:hover {
-    color: #1d4ed8;
+    color: #1d4ed8 !important;
     text-decoration: underline;
-}
-
-[data-theme="dark"] .changelist-results tbody td a {
-    color: #60a5fa;
-}
-
-[data-theme="dark"] .changelist-results tbody td a:hover {
-    color: #93c5fd;
 }
 
 /* Checkbox styling */
 .changelist-results .action-checkbox-column {
     width: 40px;
-    text-align: center;
+    text-align: center !important;
+    background-color: #ffffff !important;
 }
 
 .changelist-results .action-checkbox {
@@ -399,27 +424,81 @@
     border-color: #059669;
 }
 
+/* Override any dark theme styles that might interfere */
+.changelist-results,
+.changelist-results table,
+.changelist-results thead,
+.changelist-results tbody,
+.changelist-results tr,
+.changelist-results th,
+.changelist-results td {
+    background-color: #ffffff !important;
+}
+
+.changelist-results thead th {
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%) !important;
+    color: #374151 !important;
+}
+
+.changelist-results tbody tr:hover,
+.changelist-results tbody tr:hover td,
+.changelist-results tbody tr:hover th {
+    background-color: #f0f9ff !important;
+}
+
+/* Dark theme styles - only apply when explicitly in dark mode */
+@media (prefers-color-scheme: dark) {
+    html[data-theme="dark"] .changelist-results,
+    html[data-theme="dark"] .changelist-results table,
+    html[data-theme="dark"] .changelist-results thead,
+    html[data-theme="dark"] .changelist-results tbody,
+    html[data-theme="dark"] .changelist-results tr,
+    html[data-theme="dark"] .changelist-results th,
+    html[data-theme="dark"] .changelist-results td {
+        background-color: #1f2937 !important;
+    }
+
+    html[data-theme="dark"] .changelist-results thead th {
+        background: linear-gradient(135deg, #374151 0%, #1f2937 100%) !important;
+        color: #d1d5db !important;
+        border-bottom-color: #4b5563;
+    }
+
+    html[data-theme="dark"] .changelist-results tbody td {
+        border-bottom-color: #4b5563;
+        color: #d1d5db !important;
+        background-color: #1f2937 !important;
+    }
+
+    html[data-theme="dark"] .changelist-results tbody tr:hover,
+    html[data-theme="dark"] .changelist-results tbody tr:hover td {
+        background-color: #1e3a8a !important;
+    }
+
+    html[data-theme="dark"] .changelist-results tbody td a {
+        color: #60a5fa !important;
+    }
+
+    html[data-theme="dark"] .changelist-results tbody td a:hover {
+        color: #93c5fd !important;
+    }
+}
+
 /* Custom field styling for Products */
 .product-price {
     font-weight: 600;
-    color: #059669;
+    color: #059669 !important;
 }
 
 .category-badge {
     display: inline-flex;
     align-items: center;
-    px: 8px;
-    py: 4px;
-    rounded: 9999px;
+    padding: 4px 8px;
+    border-radius: 9999px;
     font-size: 0.75rem;
     font-weight: 500;
     background-color: #dbeafe;
     color: #1e40af;
-}
-
-[data-theme="dark"] .category-badge {
-    background-color: #1e3a8a;
-    color: #93c5fd;
 }
 
 .product-stock {
@@ -429,19 +508,19 @@
 }
 
 .product-stock.stock-out {
-    color: #dc2626;
+    color: #dc2626 !important;
 }
 
 .product-stock.stock-low {
-    color: #d97706;
+    color: #d97706 !important;
 }
 
 .product-stock.stock-medium {
-    color: #2563eb;
+    color: #2563eb !important;
 }
 
 .product-stock.stock-high {
-    color: #059669;
+    color: #059669 !important;
 }
 
 .product-stock i {
@@ -452,34 +531,21 @@
 .changelist-date-hierarchy {
     margin-bottom: 16px;
     padding: 16px;
-    background: #f9fafb;
+    background: #f9fafb !important;
     border-radius: 8px;
     border: 1px solid #e5e7eb;
 }
 
-[data-theme="dark"] .changelist-date-hierarchy {
-    background: #1f2937;
-    border-color: #4b5563;
-}
-
 .changelist-date-hierarchy a {
-    color: #2563eb;
+    color: #2563eb !important;
     text-decoration: none;
     margin: 0 4px;
     font-weight: 500;
 }
 
 .changelist-date-hierarchy a:hover {
-    color: #1d4ed8;
+    color: #1d4ed8 !important;
     text-decoration: underline;
-}
-
-[data-theme="dark"] .changelist-date-hierarchy a {
-    color: #60a5fa;
-}
-
-[data-theme="dark"] .changelist-date-hierarchy a:hover {
-    color: #93c5fd;
 }
 
 /* Responsive design */
@@ -492,6 +558,29 @@
     .changelist-results tbody td {
         padding: 8px 12px;
     }
+}
+
+/* Ensure consistent styling across all admin pages */
+.changelist-results table th,
+.changelist-results table td {
+    text-align: left !important;
+}
+
+.changelist-results table th:first-child,
+.changelist-results table td:first-child {
+    text-align: left !important;
+    padding-left: 16px !important;
+}
+
+.changelist-results .action-checkbox-column {
+    text-align: center !important;
+    padding-left: 16px !important;
+}
+
+/* Additional consistency fixes */
+.changelist-results tbody td:nth-child(2) {
+    text-align: left !important;
+    font-weight: 500;
 }
 </style>
 

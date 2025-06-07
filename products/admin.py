@@ -86,19 +86,19 @@ class ProductAdmin(admin.ModelAdmin):
         if stock <= 0:
             badge_class = "stock-out"
             icon = "fas fa-times-circle"
-            text = f"Out of Stock"
+            text = "0"
         elif stock <= 10:
             badge_class = "stock-low"
             icon = "fas fa-exclamation-triangle"
-            text = f"{stock} left"
+            text = f"{stock}"
         elif stock <= 50:
             badge_class = "stock-medium"
             icon = "fas fa-exclamation-circle"
-            text = f"{stock} in stock"
+            text = f"{stock}"
         else:
             badge_class = "stock-high"
             icon = "fas fa-check-circle"
-            text = f"{stock} in stock"
+            text = f"{stock}"
 
         return format_html(
             '<span class="product-stock {}"><i class="{}"></i> {}</span>',
