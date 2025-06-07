@@ -15,7 +15,7 @@ class CategoryAdmin(admin.ModelAdmin):
     prepopulated_fields = {"slug": ("name",)}
     list_editable = ("active",)
     readonly_fields = ("created_at", "updated_at")
-    list_per_page = 5  # Set pagination to 5 items per page for testing
+    list_per_page = 10  # Set pagination to 5 items per page for testing
     fieldsets = (
         (None, {"fields": ("name", "slug", "description", "parent")}),
         ("Status", {"fields": ("active",)}),
@@ -156,7 +156,7 @@ class ProductAdmin(admin.ModelAdmin):
     prepopulated_fields = {"slug": ("name",)}
     # list_editable = ("is_active", "is_featured")  # Temporarily disabled to test pagination
     readonly_fields = ("created_at", "updated_at")
-    list_per_page = 5  # Set pagination to 5 items per page for testing
+    list_per_page = 10  # Set pagination to 5 items per page for testing
     inlines = [ProductVariantInline]
     actions = [
         "mark_as_featured",

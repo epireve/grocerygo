@@ -451,6 +451,74 @@
     position: sticky;
     top: 0;
     z-index: 10;
+    position: relative;
+}
+
+/* Sortable column indicators */
+.changelist-results thead th.sortable {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.changelist-results thead th.sortable:hover {
+    background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%) !important;
+    color: #1f2937 !important;
+}
+
+.changelist-results thead th.sortable a {
+    color: #374151 !important;
+    text-decoration: none;
+    display: block;
+    position: relative;
+    padding-right: 20px;
+}
+
+.changelist-results thead th.sortable a:hover {
+    color: #1f2937 !important;
+}
+
+/* Sort direction indicators */
+.changelist-results thead th.sortable a::after {
+    content: "\f0dc";
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 0.3;
+    font-size: 0.7rem;
+    transition: opacity 0.2s ease;
+}
+
+.changelist-results thead th.sortable:hover a::after {
+    opacity: 0.6;
+}
+
+/* Active sort indicators */
+.changelist-results thead th.sorted.ascending a::after {
+    content: "\f0de";
+    opacity: 1;
+    color: #059669 !important;
+    font-weight: 900;
+}
+
+.changelist-results thead th.sorted.descending a::after {
+    content: "\f0dd";
+    opacity: 1;
+    color: #059669 !important;
+    font-weight: 900;
+}
+
+/* Highlight active sorted column */
+.changelist-results thead th.sorted {
+    background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%) !important;
+    border-bottom: 3px solid #059669 !important;
+}
+
+.changelist-results thead th.sorted a {
+    color: #065f46 !important;
+    font-weight: 700;
 }
 
 /* Ensure first column header is always left-aligned */
