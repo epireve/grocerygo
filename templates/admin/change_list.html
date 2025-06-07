@@ -94,10 +94,10 @@
                         <div class="flex-1">
                             <label for="searchbar" class="block text-sm font-medium mb-2" style="color: var(--text-primary);">Search {{ opts.verbose_name_plural }}</label>
                             <div class="relative">
-                                <input type="search" id="searchbar" name="{{ search_var }}" value="{{ cl.query }}"
+                                <input type="search" id="searchbar" name="q" value="{{ cl.query }}"
                                        class="w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors"
                                        style="border-color: var(--border-color); background-color: var(--bg-card); color: var(--text-primary);"
-                                       placeholder="Search products...">
+                                       placeholder="Search {{ opts.verbose_name_plural|lower }}...">
                                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                     <i class="fas fa-search" style="color: var(--text-muted);"></i>
                                 </div>
@@ -116,7 +116,7 @@
                         {% endif %}
                     </div>
                     {% for k, v in cl.params.items %}
-                        {% if k != search_var %}
+                        {% if k != 'q' %}
                             <input type="hidden" name="{{ k }}" value="{{ v }}">
                         {% endif %}
                     {% endfor %}
@@ -239,66 +239,160 @@
                     </div>
                 </div>
                 
-                <!-- Pagination -->
+                <!-- Enhanced Pagination -->
                 {% if cl.result_count %}
                 <div class="px-6 py-4 border-t" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
-                    <div class="flex items-center justify-between">
-                        <div class="flex-1 flex justify-between sm:hidden">
+                    <!-- Mobile Pagination -->
+                    <div class="flex items-center justify-between sm:hidden">
+                        <div class="flex items-center space-x-4">
+                            <div class="text-sm" style="color: var(--text-secondary);">
+                                Page {{ cl.paginator.number }} of {{ cl.paginator.paginator.num_pages }}
+                            </div>
+                        </div>
+                        <div class="flex space-x-2">
                             {% if cl.paginator.has_previous %}
                             <a href="?{% if cl.paginator.previous_page_number %}page={{ cl.paginator.previous_page_number }}{% endif %}{{ cl.get_query_string }}"
-                               class="relative inline-flex items-center px-4 py-2 border text-sm font-medium rounded-md transition-colors duration-150"
+                               class="inline-flex items-center px-3 py-2 border text-sm font-medium rounded-md transition-colors duration-150"
                                style="border-color: var(--border-color); background-color: var(--bg-card); color: var(--text-secondary);"
                                onmouseover="this.style.backgroundColor='var(--bg-secondary)';"
                                onmouseout="this.style.backgroundColor='var(--bg-card)';">
-                                Previous
+                                <i class="fas fa-chevron-left mr-1"></i>Prev
                             </a>
                             {% endif %}
                             {% if cl.paginator.has_next %}
                             <a href="?page={{ cl.paginator.next_page_number }}{{ cl.get_query_string }}"
-                               class="ml-3 relative inline-flex items-center px-4 py-2 border text-sm font-medium rounded-md transition-colors duration-150"
+                               class="inline-flex items-center px-3 py-2 border text-sm font-medium rounded-md transition-colors duration-150"
                                style="border-color: var(--border-color); background-color: var(--bg-card); color: var(--text-secondary);"
                                onmouseover="this.style.backgroundColor='var(--bg-secondary)';"
                                onmouseout="this.style.backgroundColor='var(--bg-card)';">
-                                Next
+                                Next<i class="fas fa-chevron-right ml-1"></i>
                             </a>
                             {% endif %}
                         </div>
-                        <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                            <div>
-                                <p class="text-sm" style="color: var(--text-secondary);">
+                    </div>
+
+                    <!-- Desktop Pagination -->
+                    <div class="hidden sm:block">
+                        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+                            <!-- Results Info and Per-Page Selector -->
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:space-x-6 space-y-2 sm:space-y-0">
+                                <div class="text-sm" style="color: var(--text-secondary);">
                                     Showing
-                                    <span class="font-semibold">{{ cl.paginator.start_index }}</span>
+                                    <span class="font-semibold text-emerald-600">{{ cl.paginator.start_index }}</span>
                                     to
-                                    <span class="font-semibold">{{ cl.paginator.end_index }}</span>
+                                    <span class="font-semibold text-emerald-600">{{ cl.paginator.end_index }}</span>
                                     of
-                                    <span class="font-semibold">{{ cl.result_count }}</span>
+                                    <span class="font-semibold text-emerald-600">{{ cl.result_count }}</span>
                                     results
-                                </p>
+                                </div>
+                                
+                                <!-- Items per page selector -->
+                                <div class="flex items-center space-x-2">
+                                    <label class="text-sm font-medium" style="color: var(--text-secondary);">Show:</label>
+                                    <select id="items-per-page"
+                                            class="border rounded-md px-3 py-1 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                                            style="border-color: var(--border-color); background-color: var(--bg-card); color: var(--text-primary);"
+                                            onchange="changeItemsPerPage(this.value)">
+                                        <option value="10" {% if cl.paginator.per_page == 10 %}selected{% endif %}>10</option>
+                                        <option value="25" {% if cl.paginator.per_page == 25 %}selected{% endif %}>25</option>
+                                        <option value="50" {% if cl.paginator.per_page == 50 %}selected{% endif %}>50</option>
+                                        <option value="100" {% if cl.paginator.per_page == 100 %}selected{% endif %}>100</option>
+                                    </select>
+                                    <span class="text-sm" style="color: var(--text-secondary);">per page</span>
+                                </div>
                             </div>
-                            <div>
-                                <nav class="relative z-0 inline-flex rounded-lg -space-x-px">
-                                    {% if cl.paginator.has_previous %}
-                                    <a href="?{% if cl.paginator.previous_page_number %}page={{ cl.paginator.previous_page_number }}{% endif %}{{ cl.get_query_string }}"
-                                       class="relative inline-flex items-center px-3 py-2 rounded-l-lg border text-sm font-medium transition-colors duration-150"
+
+                            <!-- Pagination Controls -->
+                            <div class="flex items-center space-x-4">
+                                <!-- Page Jump -->
+                                {% if cl.paginator.paginator.num_pages > 1 %}
+                                <div class="flex items-center space-x-2">
+                                    <label class="text-sm font-medium" style="color: var(--text-secondary);">Go to page:</label>
+                                    <input type="number"
+                                           id="page-jump"
+                                           min="1"
+                                           max="{{ cl.paginator.paginator.num_pages }}"
+                                           value="{{ cl.paginator.number }}"
+                                           class="w-16 border rounded-md px-2 py-1 text-sm text-center focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                                           style="border-color: var(--border-color); background-color: var(--bg-card); color: var(--text-primary);"
+                                           onkeypress="handlePageJump(event)"
+                                           onchange="jumpToPage(this.value)">
+                                    <span class="text-sm" style="color: var(--text-secondary);">of {{ cl.paginator.paginator.num_pages }}</span>
+                                </div>
+                                {% endif %}
+
+                                <!-- Navigation Buttons -->
+                                <nav class="flex items-center space-x-1">
+                                    <!-- First Page -->
+                                    {% if cl.paginator.number > 1 %}
+                                    <a href="?page=1{{ cl.get_query_string }}"
+                                       class="inline-flex items-center px-3 py-2 border text-sm font-medium rounded-md transition-colors duration-150"
                                        style="border-color: var(--border-color); background-color: var(--bg-card); color: var(--text-secondary);"
                                        onmouseover="this.style.backgroundColor='var(--bg-secondary)';"
-                                       onmouseout="this.style.backgroundColor='var(--bg-card)';">
+                                       onmouseout="this.style.backgroundColor='var(--bg-card)';"
+                                       title="First page">
+                                        <i class="fas fa-angle-double-left"></i>
+                                    </a>
+                                    {% endif %}
+
+                                    <!-- Previous Page -->
+                                    {% if cl.paginator.has_previous %}
+                                    <a href="?page={{ cl.paginator.previous_page_number }}{{ cl.get_query_string }}"
+                                       class="inline-flex items-center px-3 py-2 border text-sm font-medium rounded-md transition-colors duration-150"
+                                       style="border-color: var(--border-color); background-color: var(--bg-card); color: var(--text-secondary);"
+                                       onmouseover="this.style.backgroundColor='var(--bg-secondary)';"
+                                       onmouseout="this.style.backgroundColor='var(--bg-card)';"
+                                       title="Previous page">
                                         <i class="fas fa-chevron-left"></i>
                                     </a>
                                     {% endif %}
-                                    
-                                    <span class="relative inline-flex items-center px-4 py-2 border text-sm font-medium"
-                                          style="border-color: var(--border-color); background-color: var(--bg-card); color: var(--text-primary);">
-                                        {{ cl.paginator.number }} of {{ cl.paginator.paginator.num_pages }}
-                                    </span>
-                                    
+
+                                    <!-- Page Numbers -->
+                                    {% with cl.paginator.paginator.page_range as page_range %}
+                                    {% with cl.paginator.number as current_page %}
+                                    {% for page_num in page_range %}
+                                        {% if page_num == current_page %}
+                                        <span class="inline-flex items-center px-4 py-2 border text-sm font-semibold rounded-md bg-emerald-600 text-white border-emerald-600">
+                                            {{ page_num }}
+                                        </span>
+                                        {% elif page_num == 1 or page_num == page_range|last or page_num|add:"-2" <= current_page <= page_num|add:"2" %}
+                                        <a href="?page={{ page_num }}{{ cl.get_query_string }}"
+                                           class="inline-flex items-center px-4 py-2 border text-sm font-medium rounded-md transition-colors duration-150"
+                                           style="border-color: var(--border-color); background-color: var(--bg-card); color: var(--text-secondary);"
+                                           onmouseover="this.style.backgroundColor='var(--bg-secondary)';"
+                                           onmouseout="this.style.backgroundColor='var(--bg-card)';">
+                                            {{ page_num }}
+                                        </a>
+                                        {% elif page_num == 2 and current_page > 4 %}
+                                        <span class="inline-flex items-center px-2 py-2 text-sm" style="color: var(--text-muted);">...</span>
+                                        {% elif page_num == page_range|last|add:"-1" and current_page < page_range|last|add:"-3" %}
+                                        <span class="inline-flex items-center px-2 py-2 text-sm" style="color: var(--text-muted);">...</span>
+                                        {% endif %}
+                                    {% endfor %}
+                                    {% endwith %}
+                                    {% endwith %}
+
+                                    <!-- Next Page -->
                                     {% if cl.paginator.has_next %}
                                     <a href="?page={{ cl.paginator.next_page_number }}{{ cl.get_query_string }}"
-                                       class="relative inline-flex items-center px-3 py-2 rounded-r-lg border text-sm font-medium transition-colors duration-150"
+                                       class="inline-flex items-center px-3 py-2 border text-sm font-medium rounded-md transition-colors duration-150"
                                        style="border-color: var(--border-color); background-color: var(--bg-card); color: var(--text-secondary);"
                                        onmouseover="this.style.backgroundColor='var(--bg-secondary)';"
-                                       onmouseout="this.style.backgroundColor='var(--bg-card)';">
+                                       onmouseout="this.style.backgroundColor='var(--bg-card)';"
+                                       title="Next page">
                                         <i class="fas fa-chevron-right"></i>
+                                    </a>
+                                    {% endif %}
+
+                                    <!-- Last Page -->
+                                    {% if cl.paginator.number < cl.paginator.paginator.num_pages %}
+                                    <a href="?page={{ cl.paginator.paginator.num_pages }}{{ cl.get_query_string }}"
+                                       class="inline-flex items-center px-3 py-2 border text-sm font-medium rounded-md transition-colors duration-150"
+                                       style="border-color: var(--border-color); background-color: var(--bg-card); color: var(--text-secondary);"
+                                       onmouseover="this.style.backgroundColor='var(--bg-secondary)';"
+                                       onmouseout="this.style.backgroundColor='var(--bg-card)';"
+                                       title="Last page">
+                                        <i class="fas fa-angle-double-right"></i>
                                     </a>
                                     {% endif %}
                                 </nav>
@@ -569,18 +663,27 @@
 .changelist-results table th:first-child,
 .changelist-results table td:first-child {
     text-align: left !important;
-    padding-left: 16px !important;
+    padding-left: 24px !important; /* Match header padding (px-6 = 24px) */
 }
 
 .changelist-results .action-checkbox-column {
     text-align: center !important;
-    padding-left: 16px !important;
+    padding-left: 24px !important; /* Match header padding */
 }
 
 /* Additional consistency fixes */
 .changelist-results tbody td:nth-child(2) {
     text-align: left !important;
     font-weight: 500;
+    padding-left: 24px !important; /* Ensure second column also has consistent padding */
+}
+
+/* Ensure all table cells have consistent left padding for the navigation column */
+.changelist-results table th:first-child,
+.changelist-results table td:first-child,
+.changelist-results table th:nth-child(2),
+.changelist-results table td:nth-child(2) {
+    padding-left: 24px !important;
 }
 </style>
 
@@ -629,5 +732,31 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+
+// Pagination functionality
+function changeItemsPerPage(perPage) {
+    const url = new URL(window.location);
+    url.searchParams.set('list_per_page', perPage);
+    url.searchParams.delete('page'); // Reset to first page when changing items per page
+    window.location.href = url.toString();
+}
+
+function jumpToPage(pageNum) {
+    const maxPages = parseInt(document.querySelector('#page-jump').getAttribute('max'));
+    const page = parseInt(pageNum);
+    
+    if (page >= 1 && page <= maxPages) {
+        const url = new URL(window.location);
+        url.searchParams.set('page', page);
+        window.location.href = url.toString();
+    }
+}
+
+function handlePageJump(event) {
+    if (event.key === 'Enter') {
+        event.preventDefault();
+        jumpToPage(event.target.value);
+    }
+}
 </script>
 {% endblock %}

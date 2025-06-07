@@ -75,8 +75,23 @@ class ProductAdmin(admin.ModelAdmin):
                 per_page = int(request.GET["list_per_page"])
                 if per_page in [10, 25, 50, 100]:
                     self.list_per_page = per_page
+                    # Store the choice in session for persistence
+                    request.session["products_list_per_page"] = per_page
             except (ValueError, TypeError):
                 pass
+        elif "products_list_per_page" in request.session:
+            # Use stored preference if no explicit parameter
+            self.list_per_page = request.session["products_list_per_page"]
+
+        # Add pagination context
+        extra_context = extra_context or {}
+        extra_context.update(
+            {
+                "current_per_page": self.list_per_page,
+                "per_page_options": [10, 25, 50, 100],
+            }
+        )
+
         return super().changelist_view(request, extra_context)
 
     def stock_level_display(self, obj):
