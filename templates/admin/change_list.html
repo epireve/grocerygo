@@ -251,7 +251,7 @@
                         </div>
                         <div class="flex space-x-2">
                             {% if cl.paginator.has_previous %}
-                            <a href="?{% if cl.paginator.previous_page_number %}page={{ cl.paginator.previous_page_number }}{% endif %}{{ cl.get_query_string }}"
+                            <a href="?page={{ cl.paginator.previous_page_number }}{% if cl.query %}&q={{ cl.query }}{% endif %}{% for k, v in cl.params.items %}{% if k != 'page' and k != 'q' %}&{{ k }}={{ v }}{% endif %}{% endfor %}"
                                class="inline-flex items-center px-3 py-2 border text-sm font-medium rounded-md transition-colors duration-150"
                                style="border-color: var(--border-color); background-color: var(--bg-card); color: var(--text-secondary);"
                                onmouseover="this.style.backgroundColor='var(--bg-secondary)';"
@@ -260,7 +260,7 @@
                             </a>
                             {% endif %}
                             {% if cl.paginator.has_next %}
-                            <a href="?page={{ cl.paginator.next_page_number }}{{ cl.get_query_string }}"
+                            <a href="?page={{ cl.paginator.next_page_number }}{% if cl.query %}&q={{ cl.query }}{% endif %}{% for k, v in cl.params.items %}{% if k != 'page' and k != 'q' %}&{{ k }}={{ v }}{% endif %}{% endfor %}"
                                class="inline-flex items-center px-3 py-2 border text-sm font-medium rounded-md transition-colors duration-150"
                                style="border-color: var(--border-color); background-color: var(--bg-card); color: var(--text-secondary);"
                                onmouseover="this.style.backgroundColor='var(--bg-secondary)';"
@@ -325,7 +325,7 @@
                                 <nav class="flex items-center space-x-1">
                                     <!-- First Page -->
                                     {% if cl.paginator.number > 1 %}
-                                    <a href="?page=1{{ cl.get_query_string }}"
+                                    <a href="?page=1{% if cl.query %}&q={{ cl.query }}{% endif %}{% for k, v in cl.params.items %}{% if k != 'page' and k != 'q' %}&{{ k }}={{ v }}{% endif %}{% endfor %}"
                                        class="inline-flex items-center px-3 py-2 border text-sm font-medium rounded-md transition-colors duration-150"
                                        style="border-color: var(--border-color); background-color: var(--bg-card); color: var(--text-secondary);"
                                        onmouseover="this.style.backgroundColor='var(--bg-secondary)';"
@@ -337,7 +337,7 @@
 
                                     <!-- Previous Page -->
                                     {% if cl.paginator.has_previous %}
-                                    <a href="?page={{ cl.paginator.previous_page_number }}{{ cl.get_query_string }}"
+                                    <a href="?page={{ cl.paginator.previous_page_number }}{% if cl.query %}&q={{ cl.query }}{% endif %}{% for k, v in cl.params.items %}{% if k != 'page' and k != 'q' %}&{{ k }}={{ v }}{% endif %}{% endfor %}"
                                        class="inline-flex items-center px-3 py-2 border text-sm font-medium rounded-md transition-colors duration-150"
                                        style="border-color: var(--border-color); background-color: var(--bg-card); color: var(--text-secondary);"
                                        onmouseover="this.style.backgroundColor='var(--bg-secondary)';"
@@ -356,7 +356,7 @@
                                             {{ page_num }}
                                         </span>
                                         {% elif page_num == 1 or page_num == page_range|last or page_num|add:"-2" <= current_page <= page_num|add:"2" %}
-                                        <a href="?page={{ page_num }}{{ cl.get_query_string }}"
+                                        <a href="?page={{ page_num }}{% if cl.query %}&q={{ cl.query }}{% endif %}{% for k, v in cl.params.items %}{% if k != 'page' and k != 'q' %}&{{ k }}={{ v }}{% endif %}{% endfor %}"
                                            class="inline-flex items-center px-4 py-2 border text-sm font-medium rounded-md transition-colors duration-150"
                                            style="border-color: var(--border-color); background-color: var(--bg-card); color: var(--text-secondary);"
                                            onmouseover="this.style.backgroundColor='var(--bg-secondary)';"
@@ -374,7 +374,7 @@
 
                                     <!-- Next Page -->
                                     {% if cl.paginator.has_next %}
-                                    <a href="?page={{ cl.paginator.next_page_number }}{{ cl.get_query_string }}"
+                                    <a href="?page={{ cl.paginator.next_page_number }}{% if cl.query %}&q={{ cl.query }}{% endif %}{% for k, v in cl.params.items %}{% if k != 'page' and k != 'q' %}&{{ k }}={{ v }}{% endif %}{% endfor %}"
                                        class="inline-flex items-center px-3 py-2 border text-sm font-medium rounded-md transition-colors duration-150"
                                        style="border-color: var(--border-color); background-color: var(--bg-card); color: var(--text-secondary);"
                                        onmouseover="this.style.backgroundColor='var(--bg-secondary)';"
@@ -386,7 +386,7 @@
 
                                     <!-- Last Page -->
                                     {% if cl.paginator.number < cl.paginator.paginator.num_pages %}
-                                    <a href="?page={{ cl.paginator.paginator.num_pages }}{{ cl.get_query_string }}"
+                                    <a href="?page={{ cl.paginator.paginator.num_pages }}{% if cl.query %}&q={{ cl.query }}{% endif %}{% for k, v in cl.params.items %}{% if k != 'page' and k != 'q' %}&{{ k }}={{ v }}{% endif %}{% endfor %}"
                                        class="inline-flex items-center px-3 py-2 border text-sm font-medium rounded-md transition-colors duration-150"
                                        style="border-color: var(--border-color); background-color: var(--bg-card); color: var(--text-secondary);"
                                        onmouseover="this.style.backgroundColor='var(--bg-secondary)';"

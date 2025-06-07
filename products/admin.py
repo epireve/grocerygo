@@ -154,9 +154,9 @@ class ProductAdmin(admin.ModelAdmin):
     list_filter = ("is_active", "is_featured", "category")
     search_fields = ("name", "slug", "description")
     prepopulated_fields = {"slug": ("name",)}
-    list_editable = ("is_active", "is_featured")
+    # list_editable = ("is_active", "is_featured")  # Temporarily disabled to test pagination
     readonly_fields = ("created_at", "updated_at")
-    list_per_page = 10  # Set pagination to 10 items per page
+    list_per_page = 5  # Set pagination to 5 items per page for testing
     inlines = [ProductVariantInline]
     actions = [
         "mark_as_featured",
