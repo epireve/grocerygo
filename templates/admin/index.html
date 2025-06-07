@@ -132,22 +132,22 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <a href="{% url 'admin:products_product_add' %}" class="flex items-center p-4 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:hover:bg-emerald-900/30 rounded-lg transition-colors">
                 <i class="fas fa-plus-circle text-emerald-600 dark:text-emerald-400 text-xl mr-3"></i>
-                <span class="font-medium text-emerald-800 dark:text-emerald-300">Add Product</span>
+                <span class="font-medium text-emerald-900 dark:text-emerald-300">Add Product</span>
             </a>
             
             <a href="{% url 'admin:orders_order_changelist' %}" class="flex items-center p-4 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/30 rounded-lg transition-colors">
                 <i class="fas fa-list text-blue-600 dark:text-blue-400 text-xl mr-3"></i>
-                <span class="font-medium text-blue-800 dark:text-blue-300">View Orders</span>
+                <span class="font-medium text-blue-900 dark:text-blue-300">View Orders</span>
             </a>
             
             <a href="{% url 'admin:auth_user_changelist' %}" class="flex items-center p-4 bg-purple-50 hover:bg-purple-100 dark:bg-purple-900/20 dark:hover:bg-purple-900/30 rounded-lg transition-colors">
                 <i class="fas fa-users text-purple-600 dark:text-purple-400 text-xl mr-3"></i>
-                <span class="font-medium text-purple-800 dark:text-purple-300">Manage Users</span>
+                <span class="font-medium text-purple-900 dark:text-purple-300">Manage Users</span>
             </a>
             
             <a href="{% url 'admin:products_category_changelist' %}" class="flex items-center p-4 bg-yellow-50 hover:bg-yellow-100 dark:bg-yellow-900/20 dark:hover:bg-yellow-900/30 rounded-lg transition-colors">
                 <i class="fas fa-tags text-yellow-600 dark:text-yellow-400 text-xl mr-3"></i>
-                <span class="font-medium text-yellow-800 dark:text-yellow-300">Categories</span>
+                <span class="font-medium text-yellow-900 dark:text-yellow-300">Categories</span>
             </a>
         </div>
     </div>
@@ -598,7 +598,7 @@ async function loadLowStockItems() {
         
         if (data.products.length === 0) {
             container.innerHTML = `
-                <div class="flex items-center justify-center py-8 text-gray-500 dark:text-gray-400 col-span-full">
+                <div class="flex items-center justify-center py-8 text-gray-900 dark:text-gray-400 col-span-full">
                     <i class="fas fa-check-circle mr-2 text-green-500"></i>
                     All products are well stocked!
                 </div>
@@ -612,7 +612,7 @@ async function loadLowStockItems() {
                     <div class="flex items-center justify-between p-4 border border-red-200 dark:border-red-800 rounded-lg bg-red-50 dark:bg-red-900/20">
                         <div>
                             <p class="font-medium text-gray-900 dark:text-white">${item.name}</p>
-                            <p class="text-sm text-gray-500 dark:text-gray-400">${item.category}</p>
+                            <p class="text-sm text-gray-700 dark:text-gray-400">${item.category}</p>
                             <p class="text-xs text-gray-400 dark:text-gray-500">RM ${item.price}</p>
                         </div>
                         <div class="text-right">
@@ -641,7 +641,7 @@ function loadLowStockItemsDemo() {
         <div class="flex items-center justify-between p-4 border border-red-200 dark:border-red-800 rounded-lg bg-red-50 dark:bg-red-900/20">
             <div>
                 <p class="font-medium text-gray-900 dark:text-white">${item.name}</p>
-                <p class="text-sm text-gray-500 dark:text-gray-400">${item.category}</p>
+                <p class="text-sm text-gray-700 dark:text-gray-400">${item.category}</p>
             </div>
             <div class="text-right">
                 <span class="stock-badge stock-low">${item.stock} left</span>

@@ -21,7 +21,7 @@
                     {% endif %}
                 </h1>
                 {% if not add and original %}
-                <p class="text-gray-600 mt-1">{{ original }}</p>
+                <p class="text-gray-900 dark:text-gray-400 mt-1">{{ original }}</p>
                 {% endif %}
             </div>
             
@@ -91,7 +91,7 @@
                         {% endif %}
                         
                         {% if fieldset.description %}
-                        <div class="mb-4 text-sm text-gray-600">
+                        <div class="mb-4 text-sm text-gray-900 dark:text-gray-400">
                             {{ fieldset.description|safe }}
                         </div>
                         {% endif %}
@@ -108,7 +108,7 @@
                                     </label>
                                     
                                     {% if field.field.help_text %}
-                                    <p class="text-xs text-gray-500 mb-2">{{ field.field.help_text|safe }}</p>
+                                    <p class="text-xs text-gray-700 dark:text-gray-400 mb-2">{{ field.field.help_text|safe }}</p>
                                     {% endif %}
                                     
                                     <div class="relative">

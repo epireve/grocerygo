@@ -373,7 +373,7 @@
     <div class="stats-card">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-sm font-medium text-gray-600">Total Products</p>
+                <p class="text-sm font-medium text-gray-900 dark:text-gray-400">Total Products</p>
                 <p class="text-2xl font-bold text-emerald-600">{{ cl.full_result_count }}</p>
             </div>
             <div class="bg-emerald-100 p-3 rounded-full">
@@ -384,7 +384,7 @@
     <div class="stats-card">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-sm font-medium text-gray-600">Active Products</p>
+                <p class="text-sm font-medium text-gray-900 dark:text-gray-400">Active Products</p>
                 <p class="text-2xl font-bold text-emerald-600">{{ cl.result_count }}</p>
             </div>
             <div class="bg-green-100 p-3 rounded-full">
@@ -395,7 +395,7 @@
     <div class="stats-card">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-sm font-medium text-gray-600">This Page</p>
+                <p class="text-sm font-medium text-gray-900 dark:text-gray-400">This Page</p>
                 <p class="text-2xl font-bold text-blue-600">{{ cl.result_count }}</p>
             </div>
             <div class="bg-blue-100 p-3 rounded-full">
@@ -406,7 +406,7 @@
     <div class="stats-card">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-sm font-medium text-gray-600">Page</p>
+                <p class="text-sm font-medium text-gray-900 dark:text-gray-400">Page</p>
                 <p class="text-2xl font-bold text-amber-600">{{ cl.page_num|default:1 }} of {{ cl.paginator.num_pages|default:1 }}</p>
             </div>
             <div class="bg-amber-100 p-3 rounded-full">

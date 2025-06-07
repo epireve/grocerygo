@@ -3,6 +3,7 @@ from .models import Category, Product
 import csv
 from django.http import HttpResponse
 from django.core.exceptions import PermissionDenied
+from django.utils.html import format_html
 
 
 # Register your models here.
@@ -99,26 +100,32 @@ class ProductAdmin(admin.ModelAdmin):
             icon = "fas fa-check-circle"
             text = f"{stock} in stock"
 
-        return f'<span class="product-stock {badge_class}"><i class="{icon}"></i> {text}</span>'
+        return format_html(
+            '<span class="product-stock {}"><i class="{}"></i> {}</span>',
+            badge_class,
+            icon,
+            text,
+        )
 
     stock_level_display.short_description = "Stock Level"
-    stock_level_display.allow_tags = True
 
     def category_display(self, obj):
-        """Display category with badge styling"""
-        return f'<span class="category-badge">{obj.category.name}</span>'
+        """Display category name"""
+        return obj.category.name
 
     category_display.short_description = "Category"
-    category_display.allow_tags = True
 
     def price_display(self, obj):
         """Display price with discount information"""
         if obj.discount_price:
-            return f'<span class="product-price">RM {obj.discount_price}</span> <span style="text-decoration: line-through; color: #9ca3af;">RM {obj.price}</span>'
-        return f'<span class="product-price">RM {obj.price}</span>'
+            return format_html(
+                '<span class="product-price">RM {}</span> <span style="text-decoration: line-through; color: #9ca3af;">RM {}</span>',
+                obj.discount_price,
+                obj.price,
+            )
+        return format_html('<span class="product-price">RM {}</span>', obj.price)
 
     price_display.short_description = "Price"
-    price_display.allow_tags = True
 
     list_display = (
         "name",

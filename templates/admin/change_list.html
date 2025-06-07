@@ -1,0 +1,544 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls static admin_list %}
+
+{% block title %}{{ title }} | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <script src="{% static 'admin/js/filters.js' %}"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block breadcrumbs %}
+<nav class="bg-white dark:bg-gray-800 px-6 py-3 border-b border-gray-200 dark:border-gray-700" aria-label="Breadcrumb">
+    <ol class="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
+        <li>
+            <a href="{% url 'admin:index' %}" class="text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 font-medium transition-colors">
+                <i class="fas fa-home mr-1"></i>{% trans 'Home' %}
+            </a>
+        </li>
+        <li>
+            <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+            <a href="{% url 'admin:app_list' app_label=opts.app_label %}" class="text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 font-medium transition-colors">
+                {{ opts.app_config.verbose_name }}
+            </a>
+        </li>
+        <li>
+            <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+            <span class="text-gray-900 dark:text-gray-100 font-semibold">{{ opts.verbose_name_plural|capfirst }}</span>
+        </li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="admin-content">
+    <!-- Header Section -->
+    <div class="admin-header bg-gradient-to-r from-emerald-600 to-emerald-700 text-white p-6 rounded-lg mb-6 shadow-lg">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-3xl font-bold flex items-center">
+                    {% if 'user' in opts.model_name %}
+                        <i class="fas fa-users mr-3"></i>
+                    {% elif 'product' in opts.model_name %}
+                        <i class="fas fa-boxes mr-3"></i>
+                    {% elif 'order' in opts.model_name %}
+                        <i class="fas fa-shopping-cart mr-3"></i>
+                    {% elif 'category' in opts.model_name %}
+                        <i class="fas fa-tags mr-3"></i>
+                    {% elif 'address' in opts.model_name %}
+                        <i class="fas fa-map-marker-alt mr-3"></i>
+                    {% elif 'checkout' in opts.model_name %}
+                        <i class="fas fa-credit-card mr-3"></i>
+                    {% else %}
+                        <i class="fas fa-list mr-3"></i>
+                    {% endif %}
+                    {{ opts.verbose_name_plural|capfirst }}
+                </h1>
+                <p class="text-emerald-100 mt-1">
+                    {% if cl.result_count %}
+                        {% blocktrans count counter=cl.result_count %}{{ counter }} {{ opts.verbose_name }}{% plural %}{{ counter }} {{ opts.verbose_name_plural }}{% endblocktrans %}
+                    {% else %}
+                        {% trans 'No' %} {{ opts.verbose_name_plural }}
+                    {% endif %}
+                </p>
+            </div>
+            
+            {% if has_add_permission %}
+            <a href="{% url 'admin:'|add:opts.app_label|add:'_'|add:opts.model_name|add:'_add' %}" 
+               class="bg-white text-emerald-700 hover:bg-emerald-50 px-6 py-3 rounded-lg font-semibold transition-all duration-200 flex items-center space-x-2 shadow-md hover:shadow-lg">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                </svg>
+                <span>Add {{ opts.verbose_name }}</span>
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Search and Filters Section -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 mb-6">
+        <div class="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-4 rounded-t-xl">
+            <h3 class="text-lg font-semibold flex items-center">
+                <i class="fas fa-search mr-2"></i>
+                Search & Filters
+            </h3>
+        </div>
+        
+        <div class="p-6">
+            <!-- Search Bar -->
+            {% if cl.search_fields %}
+            <div class="mb-6">
+                <form method="get" id="changelist-search">
+                    <div class="flex gap-4 items-end">
+                        <div class="flex-1">
+                            <label for="searchbar" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Search {{ opts.verbose_name_plural }}</label>
+                            <div class="relative">
+                                <input type="search" id="searchbar" name="{{ search_var }}" value="{{ cl.query }}"
+                                       class="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-700 dark:text-white"
+                                       placeholder="Search products...">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-search text-gray-400"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="submit" class="px-6 py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors font-medium">
+                            <i class="fas fa-search mr-2"></i>Search
+                        </button>
+                        {% if cl.query %}
+                        <a href="?" class="px-4 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors">
+                            <i class="fas fa-times mr-1"></i>Clear
+                        </a>
+                        {% endif %}
+                    </div>
+                    {% for k, v in cl.params.items %}
+                        {% if k != search_var %}
+                            <input type="hidden" name="{{ k }}" value="{{ v }}">
+                        {% endif %}
+                    {% endfor %}
+                </form>
+            </div>
+            {% endif %}
+            
+            <!-- Filters -->
+            {% if cl.has_filters %}
+            <div class="border-t border-gray-200 dark:border-gray-600 pt-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h4 class="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center">
+                        <i class="fas fa-filter mr-2 text-blue-600"></i>
+                        Filters
+                    </h4>
+                    {% if cl.has_active_filters %}
+                    <a href="?" class="text-blue-600 hover:text-blue-700 text-sm font-medium transition-colors duration-150">
+                        <i class="fas fa-times mr-1"></i>Clear all filters
+                    </a>
+                    {% endif %}
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    {% for spec in cl.filter_specs %}
+                    <div class="filter-group">
+                        <div class="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                            <h5 class="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-3 flex items-center">
+                                <span class="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
+                                {{ spec.title }}
+                            </h5>
+                            <div class="space-y-2">
+                                {% for choice in spec.choices %}
+                                <div class="filter-option">
+                                    {% if choice.selected %}
+                                    <a href="{{ choice.query_string|iriencode }}"
+                                       class="flex items-center justify-between w-full px-3 py-2 text-sm bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-lg font-medium border-2 border-blue-300 dark:border-blue-700 transition-all duration-150 hover:border-blue-400 dark:hover:border-blue-600">
+                                        <span class="flex items-center">
+                                            <i class="fas fa-check text-blue-600 mr-2"></i>
+                                        {{ choice.display }}
+                                    </span>
+                                    <i class="fas fa-times text-blue-600 hover:text-blue-800"></i>
+                                </a>
+                                {% else %}
+                                <a href="{{ choice.query_string|iriencode }}" 
+                                   class="flex items-center w-full px-3 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900 hover:text-blue-700 dark:hover:text-blue-300 rounded-lg transition-all duration-150 border border-transparent hover:border-blue-200 dark:hover:border-blue-800">
+                                    <i class="fas fa-circle text-gray-400 mr-2 text-xs"></i>
+                                    <span>{{ choice.display }}</span>
+                                </a>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="w-full">
+        <!-- Actions Bar -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 p-6 mb-6">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+                <!-- Page Info -->
+                <div class="flex items-center space-x-4">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                        {% if cl.result_count %}
+                            {{ cl.result_count }} {{ opts.verbose_name_plural|lower }}
+                        {% else %}
+                            No {{ opts.verbose_name_plural|lower }}
+                        {% endif %}
+                    </h3>
+                </div>
+
+                <!-- Actions -->
+                {% if action_form and actions_on_top and cl.show_admin_actions %}
+                <div class="flex items-center space-x-4">
+                        <form method="post" class="flex items-center space-x-3">
+                            {% csrf_token %}
+                            <select name="action" 
+                                    class="border-2 border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 text-sm dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200">
+                                <option value="">Select action...</option>
+                                {% for choice in action_form.action.field.choices %}
+                                    <option value="{{ choice.0 }}">{{ choice.1|capfirst }}</option>
+                                {% endfor %}
+                            </select>
+                            <button type="submit" 
+                                    class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors duration-200">
+                                Go
+                            </button>
+                        </form>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Results Table - Using Django's Built-in System -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 overflow-hidden">
+                {% if cl.result_count %}
+                <div class="overflow-x-auto">
+                    {% if action_form and actions_on_top and cl.show_admin_actions %}
+                    <form method="post" class="changelist-results">
+                        {% csrf_token %}
+                        {% result_list cl %}
+                    </form>
+                    {% else %}
+                    <div class="changelist-results">
+                        {% result_list cl %}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Pagination -->
+                {% if cl.result_count %}
+                <div class="bg-gray-50 dark:bg-gray-900 px-6 py-4 border-t border-gray-200 dark:border-gray-700">
+                    <div class="flex items-center justify-between">
+                        <div class="flex-1 flex justify-between sm:hidden">
+                            {% if cl.paginator.has_previous %}
+                            <a href="?{% if cl.paginator.previous_page_number %}page={{ cl.paginator.previous_page_number }}{% endif %}{{ cl.get_query_string }}" 
+                               class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                                Previous
+                            </a>
+                            {% endif %}
+                            {% if cl.paginator.has_next %}
+                            <a href="?page={{ cl.paginator.next_page_number }}{{ cl.get_query_string }}" 
+                               class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                                Next
+                            </a>
+                            {% endif %}
+                        </div>
+                        <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                            <div>
+                                <p class="text-sm text-gray-700 dark:text-gray-300">
+                                    Showing 
+                                    <span class="font-semibold">{{ cl.paginator.start_index }}</span>
+                                    to 
+                                    <span class="font-semibold">{{ cl.paginator.end_index }}</span>
+                                    of 
+                                    <span class="font-semibold">{{ cl.result_count }}</span>
+                                    results
+                                </p>
+                            </div>
+                            <div>
+                                <nav class="relative z-0 inline-flex rounded-lg shadow-sm -space-x-px">
+                                    {% if cl.paginator.has_previous %}
+                                    <a href="?{% if cl.paginator.previous_page_number %}page={{ cl.paginator.previous_page_number }}{% endif %}{{ cl.get_query_string }}" 
+                                       class="relative inline-flex items-center px-3 py-2 rounded-l-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors duration-150">
+                                        <i class="fas fa-chevron-left"></i>
+                                    </a>
+                                    {% endif %}
+                                    
+                                    <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm font-medium text-gray-700 dark:text-gray-300">
+                                        {{ cl.paginator.number }} of {{ cl.paginator.paginator.num_pages }}
+                                    </span>
+                                    
+                                    {% if cl.paginator.has_next %}
+                                    <a href="?page={{ cl.paginator.next_page_number }}{{ cl.get_query_string }}" 
+                                       class="relative inline-flex items-center px-3 py-2 rounded-r-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors duration-150">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </a>
+                                    {% endif %}
+                                </nav>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% else %}
+                <div class="text-center py-16">
+                    <div class="inline-flex items-center justify-center w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full mb-4">
+                        <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2M4 13h2m0 0v5a2 2 0 002 2h8a2 2 0 002-2v-5"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">No {{ opts.verbose_name_plural|lower }}</h3>
+                    <p class="text-gray-500 dark:text-gray-400 mb-6">Get started by creating a new {{ opts.verbose_name|lower }}.</p>
+                    {% if has_add_permission %}
+                    <a href="{% url 'admin:'|add:opts.app_label|add:'_'|add:opts.model_name|add:'_add' %}" 
+                       class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-colors duration-200">
+                        <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                        </svg>
+                        Add {{ opts.verbose_name }}
+                    </a>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Enhanced CSS for Django Admin Tables -->
+<style>
+/* Override Django's default table styling */
+.changelist-results table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0;
+}
+
+.changelist-results thead th {
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    padding: 16px;
+    text-align: left;
+    font-weight: 600;
+    color: #374151;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    border-bottom: 2px solid #e5e7eb;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+[data-theme="dark"] .changelist-results thead th {
+    background: linear-gradient(135deg, #374151 0%, #1f2937 100%);
+    color: #d1d5db;
+    border-bottom-color: #4b5563;
+}
+
+.changelist-results tbody td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #f3f4f6;
+    vertical-align: middle;
+    color: #374151;
+    font-size: 0.875rem;
+}
+
+[data-theme="dark"] .changelist-results tbody td {
+    border-bottom-color: #4b5563;
+    color: #d1d5db;
+}
+
+.changelist-results tbody tr:hover {
+    background-color: #f0f9ff;
+    transition: background-color 0.15s ease;
+}
+
+[data-theme="dark"] .changelist-results tbody tr:hover {
+    background-color: #1e3a8a;
+}
+
+.changelist-results tbody td a {
+    color: #2563eb;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.15s ease;
+}
+
+.changelist-results tbody td a:hover {
+    color: #1d4ed8;
+    text-decoration: underline;
+}
+
+[data-theme="dark"] .changelist-results tbody td a {
+    color: #60a5fa;
+}
+
+[data-theme="dark"] .changelist-results tbody td a:hover {
+    color: #93c5fd;
+}
+
+/* Checkbox styling */
+.changelist-results .action-checkbox-column {
+    width: 40px;
+    text-align: center;
+}
+
+.changelist-results .action-checkbox {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    border: 2px solid #d1d5db;
+    accent-color: #059669;
+}
+
+.changelist-results .action-checkbox:checked {
+    background-color: #059669;
+    border-color: #059669;
+}
+
+/* Custom field styling for Products */
+.product-price {
+    font-weight: 600;
+    color: #059669;
+}
+
+.category-badge {
+    display: inline-flex;
+    align-items: center;
+    px: 8px;
+    py: 4px;
+    rounded: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    background-color: #dbeafe;
+    color: #1e40af;
+}
+
+[data-theme="dark"] .category-badge {
+    background-color: #1e3a8a;
+    color: #93c5fd;
+}
+
+.product-stock {
+    display: inline-flex;
+    align-items: center;
+    font-weight: 500;
+}
+
+.product-stock.stock-out {
+    color: #dc2626;
+}
+
+.product-stock.stock-low {
+    color: #d97706;
+}
+
+.product-stock.stock-medium {
+    color: #2563eb;
+}
+
+.product-stock.stock-high {
+    color: #059669;
+}
+
+.product-stock i {
+    margin-right: 4px;
+}
+
+/* Date hierarchy */
+.changelist-date-hierarchy {
+    margin-bottom: 16px;
+    padding: 16px;
+    background: #f9fafb;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+}
+
+[data-theme="dark"] .changelist-date-hierarchy {
+    background: #1f2937;
+    border-color: #4b5563;
+}
+
+.changelist-date-hierarchy a {
+    color: #2563eb;
+    text-decoration: none;
+    margin: 0 4px;
+    font-weight: 500;
+}
+
+.changelist-date-hierarchy a:hover {
+    color: #1d4ed8;
+    text-decoration: underline;
+}
+
+[data-theme="dark"] .changelist-date-hierarchy a {
+    color: #60a5fa;
+}
+
+[data-theme="dark"] .changelist-date-hierarchy a:hover {
+    color: #93c5fd;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .changelist-results table {
+        font-size: 0.75rem;
+    }
+    
+    .changelist-results thead th,
+    .changelist-results tbody td {
+        padding: 8px 12px;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-submit search on Enter
+    const searchInput = document.querySelector('input[type="search"]');
+    if (searchInput) {
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                this.form.submit();
+            }
+        });
+    }
+
+    // Smooth scrolling for pagination
+    const paginationLinks = document.querySelectorAll('nav a');
+    paginationLinks.forEach(link => {
+        link.addEventListener('click', function() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    });
+
+    // Select all functionality
+    const selectAllCheckbox = document.querySelector('#action-toggle');
+    if (selectAllCheckbox) {
+        selectAllCheckbox.addEventListener('change', function() {
+            const checkboxes = document.querySelectorAll('input[name="_selected_action"]');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+        });
+    }
+
+    // Enhanced filter interactions
+    const filterOptions = document.querySelectorAll('.filter-option a');
+    filterOptions.forEach(option => {
+        option.addEventListener('mouseenter', function() {
+            if (!this.classList.contains('bg-blue-100')) {
+                this.style.transform = 'translateX(4px)';
+            }
+        });
+        
+        option.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateX(0)';
+        });
+    });
+});
+</script>
+{% endblock %}
