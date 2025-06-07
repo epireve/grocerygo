@@ -1,0 +1,306 @@
+{% extends "admin/base.html" %}
+{% load i18n admin_urls static admin_modify %}
+
+{% block title %}
+    {% if add %}Add {{ opts.verbose_name }}{% else %}Change {{ opts.verbose_name }}{% endif %} | {{ site_title|default:_('Django site admin') }}
+{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header Section -->
+    <div class="card p-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900">
+                    {% if add %}
+                        <i class="fas fa-plus-circle text-emerald-600 mr-2"></i>
+                        Add {{ opts.verbose_name|capfirst }}
+                    {% else %}
+                        <i class="fas fa-edit text-blue-600 mr-2"></i>
+                        Change {{ opts.verbose_name|capfirst }}
+                    {% endif %}
+                </h1>
+                {% if not add and original %}
+                <p class="text-gray-600 mt-1">{{ original }}</p>
+                {% endif %}
+            </div>
+            
+            <div class="flex items-center space-x-3">
+                {% if not add and has_delete_permission %}
+                <a href="{% url opts|admin_urlname:'delete' original.pk|admin_urlquote %}" 
+                   class="inline-flex items-center px-4 py-2 border border-red-300 rounded-lg text-red-700 bg-white hover:bg-red-50 transition-colors"
+                   onclick="return confirm('Are you sure you want to delete this {{ opts.verbose_name|lower }}?')">
+                    <i class="fas fa-trash mr-2"></i>
+                    Delete
+                </a>
+                {% endif %}
+                
+                <a href="{% url opts|admin_urlname:'changelist' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors">
+                    <i class="fas fa-list mr-2"></i>
+                    View All
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Form Container -->
+    <form method="post" enctype="multipart/form-data" novalidate class="space-y-6">
+        {% csrf_token %}
+        
+        <!-- Main Form Card -->
+        <div class="card p-6">
+            {% if errors %}
+            <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-exclamation-circle text-red-400"></i>
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-sm font-medium text-red-800">Please correct the errors below:</h3>
+                        <div class="mt-2 text-sm text-red-700">
+                            {{ errors }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if adminform.form.non_field_errors %}
+            <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-exclamation-circle text-red-400"></i>
+                    </div>
+                    <div class="ml-3">
+                        <div class="text-sm text-red-700">
+                            {{ adminform.form.non_field_errors }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Form Fields -->
+            <div class="space-y-6">
+                {% for fieldset in adminform %}
+                    <fieldset class="{% if fieldset.name %}border border-gray-200 rounded-lg p-6{% endif %}">
+                        {% if fieldset.name %}
+                        <legend class="text-lg font-semibold text-gray-900 px-3 -ml-3 mb-4">
+                            {{ fieldset.name }}
+                        </legend>
+                        {% endif %}
+                        
+                        {% if fieldset.description %}
+                        <div class="mb-4 text-sm text-gray-600">
+                            {{ fieldset.description|safe }}
+                        </div>
+                        {% endif %}
+
+                        <div class="grid grid-cols-1 {% if fieldset.classes.wide %}lg:grid-cols-1{% else %}lg:grid-cols-2{% endif %} gap-6">
+                            {% for line in fieldset %}
+                                {% for field in line %}
+                                <div class="{% if field.field.name in wide_fields %}lg:col-span-2{% endif %}">
+                                    <label for="{{ field.field.html_name }}" class="block text-sm font-medium text-gray-700 mb-1">
+                                        {{ field.field.label }}
+                                        {% if field.field.field.required %}
+                                        <span class="text-red-500">*</span>
+                                        {% endif %}
+                                    </label>
+                                    
+                                    {% if field.field.help_text %}
+                                    <p class="text-xs text-gray-500 mb-2">{{ field.field.help_text|safe }}</p>
+                                    {% endif %}
+                                    
+                                    <div class="relative">
+                                        <!-- Render field with Django's default widget -->
+                                        <div class="admin-field-wrapper">
+                                            {{ field.field }}
+                                        </div>
+                                    </div>
+                                    
+                                    {% if field.errors %}
+                                    <div class="mt-1 text-sm text-red-600">
+                                        {{ field.errors }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                {% endfor %}
+                            {% endfor %}
+                        </div>
+                    </fieldset>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Inline Forms (if any) -->
+        {% for inline_admin_formset in inline_admin_formsets %}
+        <div class="card p-6">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">
+                <i class="fas fa-list mr-2"></i>
+                {{ inline_admin_formset.opts.verbose_name_plural|capfirst }}
+            </h2>
+            
+            <div class="space-y-4">
+                {% for inline_admin_form in inline_admin_formset %}
+                <div class="border border-gray-200 rounded-lg p-4">
+                    {% for fieldset in inline_admin_form %}
+                        {% for line in fieldset %}
+                            {% for field in line %}
+                            <div class="mb-4">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">
+                                    {{ field.field.label }}
+                                </label>
+                                {{ field.field }}
+                                {% if field.errors %}
+                                <div class="mt-1 text-sm text-red-600">{{ field.errors }}</div>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        {% endfor %}
+                    {% endfor %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+
+        <!-- Action Buttons -->
+        <div class="card p-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <button type="submit" name="_save" class="btn-primary inline-flex items-center">
+                        <i class="fas fa-save mr-2"></i>
+                        Save
+                    </button>
+                    
+                    {% if has_add_permission %}
+                    <button type="submit" name="_addanother" class="inline-flex items-center px-4 py-2 border border-emerald-300 rounded-lg text-emerald-700 bg-emerald-50 hover:bg-emerald-100 transition-colors">
+                        <i class="fas fa-plus mr-2"></i>
+                        Save and add another
+                    </button>
+                    {% endif %}
+                    
+                    {% if has_change_permission and not add %}
+                    <button type="submit" name="_continue" class="inline-flex items-center px-4 py-2 border border-blue-300 rounded-lg text-blue-700 bg-blue-50 hover:bg-blue-100 transition-colors">
+                        <i class="fas fa-edit mr-2"></i>
+                        Save and continue editing
+                    </button>
+                    {% endif %}
+                </div>
+                
+                <a href="{% url opts|admin_urlname:'changelist' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors">
+                    <i class="fas fa-times mr-2"></i>
+                    Cancel
+                </a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<style>
+/* Style Django admin form widgets */
+.admin-field-wrapper input[type="text"],
+.admin-field-wrapper input[type="email"],
+.admin-field-wrapper input[type="url"],
+.admin-field-wrapper input[type="number"],
+.admin-field-wrapper input[type="date"],
+.admin-field-wrapper input[type="datetime-local"],
+.admin-field-wrapper input[type="file"],
+.admin-field-wrapper textarea,
+.admin-field-wrapper select {
+    display: block;
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    background-color: white;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: #111827;
+}
+
+.admin-field-wrapper input:focus,
+.admin-field-wrapper textarea:focus,
+.admin-field-wrapper select:focus {
+    outline: none;
+    border-color: #10b981;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+.admin-field-wrapper textarea {
+    min-height: 4rem;
+    resize: vertical;
+}
+
+.admin-field-wrapper input[type="checkbox"] {
+    width: auto;
+    height: 1rem;
+    margin-right: 0.5rem;
+}
+
+/* File input styling */
+.admin-field-wrapper input[type="file"] {
+    padding: 0.75rem;
+    border: 2px dashed #d1d5db;
+    background-color: #f9fafb;
+}
+
+.admin-field-wrapper input[type="file"]:hover {
+    border-color: #10b981;
+    background-color: #f0fdf4;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-resize textareas
+    const textareas = document.querySelectorAll('textarea');
+    textareas.forEach(textarea => {
+        textarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = this.scrollHeight + 'px';
+        });
+    });
+    
+    // File upload preview
+    const fileInputs = document.querySelectorAll('input[type="file"]');
+    fileInputs.forEach(input => {
+        input.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file && file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = input.parentElement.querySelector('img');
+                    if (preview) {
+                        preview.src = e.target.result;
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    });
+    
+    // Form validation
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+        const requiredFields = form.querySelectorAll('[required]');
+        let isValid = true;
+        
+        requiredFields.forEach(field => {
+            if (!field.value.trim()) {
+                field.classList.add('border-red-300');
+                isValid = false;
+            } else {
+                field.classList.remove('border-red-300');
+                field.classList.add('border-emerald-300');
+            }
+        });
+        
+        if (!isValid) {
+            e.preventDefault();
+            alert('Please fill in all required fields.');
+        }
+    });
+});
+</script>
+{% endblock %}

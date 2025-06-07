@@ -14,6 +14,7 @@ class CategoryAdmin(admin.ModelAdmin):
     prepopulated_fields = {"slug": ("name",)}
     list_editable = ("active",)
     readonly_fields = ("created_at", "updated_at")
+    list_per_page = 5  # Set pagination to 5 items per page for testing
     fieldsets = (
         (None, {"fields": ("name", "slug", "description", "parent")}),
         ("Status", {"fields": ("active",)}),
@@ -64,11 +65,66 @@ class ProductVariantInline(admin.TabularInline):
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
+    change_list_template = "admin/products/product/change_list.html"
+
+    def changelist_view(self, request, extra_context=None):
+        # Handle custom list_per_page parameter
+        if "list_per_page" in request.GET:
+            try:
+                per_page = int(request.GET["list_per_page"])
+                if per_page in [10, 25, 50, 100]:
+                    self.list_per_page = per_page
+            except (ValueError, TypeError):
+                pass
+        return super().changelist_view(request, extra_context)
+
+    def stock_level_display(self, obj):
+        """Display stock level with visual indicators"""
+        stock = obj.stock
+
+        if stock <= 0:
+            badge_class = "stock-out"
+            icon = "fas fa-times-circle"
+            text = f"Out of Stock"
+        elif stock <= 10:
+            badge_class = "stock-low"
+            icon = "fas fa-exclamation-triangle"
+            text = f"{stock} left"
+        elif stock <= 50:
+            badge_class = "stock-medium"
+            icon = "fas fa-exclamation-circle"
+            text = f"{stock} in stock"
+        else:
+            badge_class = "stock-high"
+            icon = "fas fa-check-circle"
+            text = f"{stock} in stock"
+
+        return f'<span class="product-stock {badge_class}"><i class="{icon}"></i> {text}</span>'
+
+    stock_level_display.short_description = "Stock Level"
+    stock_level_display.allow_tags = True
+
+    def category_display(self, obj):
+        """Display category with badge styling"""
+        return f'<span class="category-badge">{obj.category.name}</span>'
+
+    category_display.short_description = "Category"
+    category_display.allow_tags = True
+
+    def price_display(self, obj):
+        """Display price with discount information"""
+        if obj.discount_price:
+            return f'<span class="product-price">RM {obj.discount_price}</span> <span style="text-decoration: line-through; color: #9ca3af;">RM {obj.price}</span>'
+        return f'<span class="product-price">RM {obj.price}</span>'
+
+    price_display.short_description = "Price"
+    price_display.allow_tags = True
+
     list_display = (
         "name",
-        "price",
-        "discount_price",
-        "category",
+        "price_display",
+        "category_display",
+        "stock_level_display",
         "is_active",
         "is_featured",
         "created_at",
@@ -78,6 +134,7 @@ class ProductAdmin(admin.ModelAdmin):
     prepopulated_fields = {"slug": ("name",)}
     list_editable = ("is_active", "is_featured")
     readonly_fields = ("created_at", "updated_at")
+    list_per_page = 10  # Set pagination to 10 items per page
     inlines = [ProductVariantInline]
     actions = [
         "mark_as_featured",
