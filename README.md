@@ -9,13 +9,22 @@ A simple Django web application for online grocery shopping, allowing customers 
 - Shopping cart management
 - User account management
 - Order placement and tracking
+- **Enhanced Admin Dashboard** with business intelligence features:
+  - Dark/Light theme toggle with persistent preferences
+  - Sales trend analytics with interactive Chart.js visualizations
+  - Order status distribution charts
+  - Top products performance tracking
+  - Low stock alerts and inventory monitoring
+  - Real-time dashboard data via custom API endpoints
 - Admin interface for product, order, and user management
 
 ## Technology Stack
 
 - Backend: Django
 - Database: SQLite
-- Frontend: Tailwind CSS
+- Frontend: Tailwind CSS with Shadcn/ui components
+- Data Visualization: Chart.js
+- Theme Management: CSS Custom Properties with LocalStorage persistence
 
 ## Setup Instructions
 
@@ -150,11 +159,19 @@ The project maintains migrations in app-specific directories:
 
 ### Admin Access
 
-The application includes a Django admin interface for managing content:
+The application includes an enhanced Django admin interface with business intelligence features:
 
 - **URL**: http://127.0.0.1:8000/admin/
 - **Username**: grocerygoadmin
 - **Password**: PassWord123!
+
+#### Admin Dashboard Features
+
+- **Business Intelligence Dashboard**: Interactive charts showing sales trends, order status distribution, and top-performing products
+- **Dark/Light Theme Toggle**: Persistent theme switching across all admin pages
+- **Low Stock Alerts**: Real-time monitoring of inventory levels with visual indicators
+- **Enhanced UI**: Modern, responsive design using Tailwind CSS and Shadcn/ui components
+- **API Endpoints**: Custom admin API for dashboard data (`/admin/api/sales-trend/`, `/admin/api/order-status/`, etc.)
 
 > **Note**: If you need to create a new admin user, run:
 > ```
@@ -218,7 +235,12 @@ For information about cart implementation and troubleshooting, see [docs/cart_de
 - `/cart/remove/<item_id>/` - Remove a product from cart
 
 ### Admin Interface
-- `/admin/` - Django administration interface for site management
+- `/admin/` - Enhanced Django administration interface with business intelligence dashboard
+- `/admin/login/` - Standalone admin login page with theme toggle
+- `/admin/api/sales-trend/<days>/` - Sales trend data API endpoint
+- `/admin/api/order-status/` - Order status distribution API endpoint
+- `/admin/api/top-products/` - Top products performance API endpoint
+- `/admin/api/low-stock/` - Low stock alerts API endpoint
 
 ## Testing
 

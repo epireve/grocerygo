@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>{% load i18n %}{% trans 'Log in' %} | {{ site_title|default:_('Django site admin') }}</title>
+    
+    <!-- Load static files -->
+    {% load static %}
+    <link href="{% static 'css/dist/styles.css' %}" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+        :root {
+            /* Light theme colors */
+            --bg-primary: #ffffff;
+            --bg-secondary: #f9fafb;
+            --text-primary: #111827;
+            --text-secondary: #6b7280;
+            --text-muted: #9ca3af;
+            --border-color: #d1d5db;
+            --accent-color: #10b981;
+            --accent-hover: #059669;
+            --input-bg: #ffffff;
+            --icon-bg: #f3f4f6;
+            --error-bg: #fef2f2;
+            --error-text: #dc2626;
+        }
+
+        [data-theme="dark"] {
+            /* Dark theme colors */
+            --bg-primary: #1f2937;
+            --bg-secondary: #111827;
+            --text-primary: #f9fafb;
+            --text-secondary: #d1d5db;
+            --text-muted: #9ca3af;
+            --border-color: #374151;
+            --accent-color: #10b981;
+            --accent-hover: #059669;
+            --input-bg: #374151;
+            --icon-bg: #4b5563;
+            --error-bg: #7f1d1d;
+            --error-text: #fca5a5;
+        }
+
+        * {
+            transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+        }
+
+        body {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        .login-icon-bg {
+            background-color: var(--icon-bg);
+        }
+
+        .login-input {
+            background-color: var(--input-bg);
+            border-color: var(--border-color);
+            color: var(--text-primary);
+        }
+
+        .login-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .login-input:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+        }
+
+        .login-label {
+            color: var(--text-secondary);
+        }
+
+        .login-subtitle {
+            color: var(--text-muted);
+        }
+
+        .error-container {
+            background-color: var(--error-bg);
+        }
+
+        .error-text {
+            color: var(--error-text);
+        }
+
+        .icon-color {
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full space-y-8">
+        <!-- Login Form -->
+        <div>
+            <div class="mx-auto h-20 w-20 login-icon-bg rounded-full flex items-center justify-center">
+                <i class="fas fa-shopping-cart text-3xl" style="color: var(--accent-color);"></i>
+            </div>
+            <h2 class="mt-6 text-center text-3xl font-extrabold" style="color: var(--text-primary);">
+                Admin Login
+            </h2>
+            <p class="mt-2 text-center text-sm login-subtitle">
+                Sign in to access GroceryGo administration
+            </p>
+        </div>
+        
+        <form class="mt-8 space-y-6" method="post" action="{{ app_path }}">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ next }}">
+            
+            <div class="rounded-md shadow-sm space-y-4">
+                <div>
+                    <label for="{{ form.username.id_for_label }}" class="block text-sm font-medium login-label mb-1">Username</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-user icon-color"></i>
+                        </div>
+                        <input
+                            type="text"
+                            name="{{ form.username.html_name }}"
+                            id="{{ form.username.id_for_label }}"
+                            value="{{ form.username.value|default:'' }}"
+                            class="appearance-none relative block w-full px-10 py-3 border rounded-lg login-input focus:outline-none focus:ring-2 focus:z-10 sm:text-sm transition-all duration-200"
+                            placeholder="Enter your username"
+                            required
+                            autofocus>
+                    </div>
+                    {% if form.username.errors %}
+                    <div class="mt-1 text-sm error-text">
+                        {{ form.username.errors }}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div>
+                    <label for="{{ form.password.id_for_label }}" class="block text-sm font-medium login-label mb-1">Password</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-lock icon-color"></i>
+                        </div>
+                        <input
+                            type="password"
+                            name="{{ form.password.html_name }}"
+                            id="{{ form.password.id_for_label }}"
+                            class="appearance-none relative block w-full px-10 py-3 border rounded-lg login-input focus:outline-none focus:ring-2 focus:z-10 sm:text-sm transition-all duration-200"
+                            placeholder="Enter your password"
+                            required>
+                    </div>
+                    {% if form.password.errors %}
+                    <div class="mt-1 text-sm error-text">
+                        {{ form.password.errors }}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if form.errors %}
+                <div class="rounded-md error-container p-4">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-exclamation-circle error-text"></i>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-sm font-medium error-text">
+                                Authentication Error
+                            </h3>
+                            <div class="mt-2 text-sm error-text">
+                                {% if form.non_field_errors %}
+                                    {{ form.non_field_errors }}
+                                {% else %}
+                                    Please enter a correct username and password. Note that both fields may be case-sensitive.
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            <div>
+                <button type="submit"
+                        class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-200"
+                        style="background-color: var(--accent-color);"
+                        onmouseover="this.style.backgroundColor='var(--accent-hover)'"
+                        onmouseout="this.style.backgroundColor='var(--accent-color)'">
+                    <span class="absolute left-0 inset-y-0 flex items-center pl-3">
+                        <i class="fas fa-sign-in-alt opacity-80"></i>
+                    </span>
+                    Sign in
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- No theme switcher on login page -->
+</body>
+</html>

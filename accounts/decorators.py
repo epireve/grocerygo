@@ -69,25 +69,35 @@ def owner_required(model_class, lookup_field="pk"):
             try:
                 # Get the object and check ownership
                 obj = model_class.objects.get(**lookup)
+                logger.info(f"Found object: {obj} for user: {request.user.username}")
 
                 # Check if the user is the owner (using a generic 'user' field)
                 # For more complex ownership models, extend this function
                 if hasattr(obj, "user") and obj.user == request.user:
+                    logger.info(
+                        f"User {request.user.username} owns the object - allowing access"
+                    )
                     return view_func(request, *args, **kwargs)
 
                 # If it's an order, check if it belongs to the user
                 if hasattr(obj, "user_id") and obj.user_id == request.user.id:
+                    logger.info(
+                        f"User {request.user.username} owns the object via user_id - allowing access"
+                    )
                     return view_func(request, *args, **kwargs)
 
                 # Special case for User itself
                 if hasattr(obj, "id") and obj.id == request.user.id:
+                    logger.info(
+                        f"User {request.user.username} is accessing their own user object - allowing access"
+                    )
                     return view_func(request, *args, **kwargs)
 
                 # User is not the owner
                 logger.warning(
                     f"Unauthorized access attempt: {request.user.username} "
                     f"attempted to access {model_class.__name__} {lookup_value} "
-                    f"which they do not own."
+                    f"which they do not own. Object user: {getattr(obj, 'user', 'No user field')}"
                 )
                 messages.error(
                     request, "You do not have permission to access this page."
@@ -96,6 +106,9 @@ def owner_required(model_class, lookup_field="pk"):
 
             except model_class.DoesNotExist:
                 # Object doesn't exist
+                logger.warning(
+                    f"Object {model_class.__name__} with {lookup_field}={lookup_value} does not exist"
+                )
                 messages.error(request, "The requested resource does not exist.")
                 return HttpResponseRedirect(reverse("core:home"))
 
