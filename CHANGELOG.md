@@ -5,6 +5,22 @@ All notable changes to the GroceryGo project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.2] - 2025-06-09
+
+### Fixed
+
+1. **Order Confirmation Page Fix**
+   - Fixed AttributeError when viewing order confirmation page
+   - The issue was caused by custom `get_status_display()` and `get_payment_method_display()` methods in the Checkout model that incorrectly referenced non-existent `STATUS_CHOICES` and `PAYMENT_METHOD_CHOICES` attributes
+   - Removed these custom methods to use Django's built-in display methods for proper field choice rendering
+   - Restored proper display of order status and payment method information on confirmation pages
+
+2. **Cart Clearing Enhancement**
+   - Improved cart clearing after checkout completion for better user experience
+   - While backend cart clearing (database and session) was working correctly, added JavaScript to the order confirmation page to also clear localStorage cart data
+   - Enhanced cart UI counter to properly update and show 0 items after successful checkout
+   - Ensured complete cart state synchronization across all storage mechanisms (session, localStorage, and database)
+
 ## [0.3.1] - 2025-06-08
 
 ### Fixed

@@ -272,8 +272,8 @@
                                                     <td class="px-6 py-4 whitespace-nowrap">
                                                         <div class="flex items-center">
                                                             <div class="h-10 w-10 flex-shrink-0">
-                                                                {% if item.product.primary_image %}
-                                                                    <img class="h-10 w-10 rounded-full object-cover" src="{{ item.product.primary_image.url }}" alt="{{ item.product.name }}">
+                                                                {% if item.product.image %}
+                                                                    <img class="h-10 w-10 rounded-full object-cover" src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
                                                                 {% else %}
                                                                     <div class="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
                                                                         <span class="text-gray-500 text-xs">No img</span>

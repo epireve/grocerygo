@@ -130,15 +130,8 @@ class Checkout(models.Model):
     def __str__(self):
         return f"Checkout #{self.id} - {self.user.username}"
 
-    def get_status_display(self):
-        """Return the human-readable status"""
-        return dict(self.STATUS_CHOICES).get(self.status, self.status)
-
-    def get_payment_method_display(self):
-        """Return the human-readable payment method"""
-        return dict(self.PAYMENT_METHOD_CHOICES).get(
-            self.payment_method, self.payment_method
-        )
+    # Removed custom get_status_display and get_payment_method_display methods
+    # Django automatically provides these methods for fields with choices
 
 
 class CheckoutItem(BaseItemModel):
