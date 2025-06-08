@@ -21,6 +21,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
    - Enhanced cart UI counter to properly update and show 0 items after successful checkout
    - Ensured complete cart state synchronization across all storage mechanisms (session, localStorage, and database)
 
+3. **Order Pages Product Image Fix**
+   - Fixed product images showing "No img." on order confirmation, order detail, and checkout pages
+   - The issue was caused by templates referencing `item.product.primary_image` when the actual Product model field is `image`
+   - Also fixed the Total column not displaying by correcting references from `item.total` to `item.total_price`
+
 ## [0.3.1] - 2025-06-08
 
 ### Fixed

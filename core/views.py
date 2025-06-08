@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from products.models import Category, Product
 
 # Create your views here.
@@ -29,3 +30,33 @@ def home(request):
         "featured_products": featured_products,
     }
     return render(request, "core/home.html", context)
+
+
+def deals(request):
+    """
+    View for the deals page - displays all featured products with pagination
+    """
+    # Get all featured products, ordered by name
+    featured_products = Product.objects.filter(
+        is_featured=True, is_active=True, parent=None
+    ).order_by("name")
+
+    # Pagination - 12 products per page
+    paginator = Paginator(featured_products, 12)
+    page = request.GET.get("page", 1)
+
+    try:
+        products = paginator.page(page)
+    except PageNotAnInteger:
+        # If page is not an integer, deliver first page
+        products = paginator.page(1)
+    except EmptyPage:
+        # If page is out of range, deliver last page
+        products = paginator.page(paginator.num_pages)
+
+    context = {
+        "products": products,
+        "featured_products": products,  # For template compatibility
+        "total_count": featured_products.count(),
+    }
+    return render(request, "core/deals.html", context)
