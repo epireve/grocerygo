@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from products.models import Product
 from django.utils import timezone
+from orders.models import BaseItemModel
 
 
 class Cart(models.Model):
@@ -33,20 +34,15 @@ class Cart(models.Model):
         verbose_name_plural = "Carts"
 
 
-class CartItem(models.Model):
+class CartItem(BaseItemModel):
+    """Cart item model inheriting from base item model"""
+
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name="items")
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    quantity = models.PositiveIntegerField(default=1)
     added_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"{self.quantity} x {self.product.name}"
-
-    @property
-    def total_price(self):
-        """Calculate total price for this cart item"""
-        return self.quantity * self.product.price
 
     class Meta:
         verbose_name = "Cart Item"

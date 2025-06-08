@@ -151,7 +151,7 @@ def checkout_view(request):
                                 street_address=sanitize_user_input(
                                     form_data.get("street_address")
                                 ),
-                                apartment_address=sanitize_user_input(
+                                apartment_unit=sanitize_user_input(
                                     form_data.get("apartment_unit", "")
                                 ),
                                 city=sanitize_user_input(form_data.get("city")),
@@ -385,15 +385,16 @@ def checkout_view(request):
 
 
 @login_required
-@owner_required(Checkout)
 def order_confirmation_view(request, pk):
     """
     View for order confirmation page after checkout is complete.
     """
     try:
         logger.info(f"Accessing order confirmation for checkout ID: {pk}")
+        logger.info(f"User: {request.user.username} (ID: {request.user.id})")
         checkout = get_object_or_404(Checkout, id=pk, user=request.user)
         logger.info(f"Found checkout: {checkout}")
+        logger.info(f"Checkout user: {checkout.user.username} (ID: {checkout.user.id})")
         checkout_items = checkout.items.all()
         logger.info(f"Found {checkout_items.count()} checkout items")
 

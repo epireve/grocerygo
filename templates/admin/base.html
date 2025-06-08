@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+{% load i18n static %}
+{% load static tailwind_tags %}
+<html lang="{{ LANGUAGE_CODE|default:"en-us" }}" dir="{{ LANGUAGE_BIDI|yesno:"rtl,ltr,auto" }}" class="scroll-smooth">
+<head>
+    <title>{% block title %}{% endblock %} | GroceryGo Admin</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="NONE,NOARCHIVE">
+    {% tailwind_css %}
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="{% static 'css/dist/styles.css' %}" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        :root {
+            --primary-color: #059669;
+            --primary-hover: #047857;
+            --primary-light: #d1fae5;
+            --text-primary: #111827;
+            --text-secondary: #6b7280;
+            --text-muted: #9ca3af;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f9fafb;
+            --bg-card: #ffffff;
+            --border-color: #d1d5db;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --error-color: #ef4444;
+        }
+        
+        [data-theme="dark"] {
+            --primary-color: #10b981;
+            --primary-hover: #059669;
+            --primary-light: rgba(16, 185, 129, 0.1);
+            --text-primary: #f9fafb;
+            --text-secondary: #d1d5db;
+            --text-muted: #9ca3af;
+            --bg-primary: #1f2937;
+            --bg-secondary: #111827;
+            --bg-card: #1f2937;
+            --border-color: #374151;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --error-color: #ef4444;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        
+        .admin-header {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        [data-theme="dark"] .admin-header {
+            background: linear-gradient(135deg, #065f46 0%, #064e3b 100%);
+        }
+        
+        .admin-nav {
+            background-color: var(--bg-primary);
+            border-right: 1px solid var(--border-color);
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .admin-content {
+            background-color: var(--bg-secondary);
+            min-height: calc(100vh - 80px);
+            transition: background-color 0.3s ease;
+        }
+        
+        .card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+        
+        [data-theme="dark"] .card {
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
+        }
+        
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+        
+        .stats-card {
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            border-left: 4px solid var(--primary-color);
+            transition: all 0.3s ease;
+        }
+        
+        [data-theme="dark"] .stats-card {
+            background: linear-gradient(135deg, rgba(5, 150, 105, 0.1) 0%, rgba(4, 120, 87, 0.1) 100%);
+        }
+        
+        .nav-item {
+            transition: all 0.2s;
+            border-radius: 8px;
+            margin: 2px 0;
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+        
+        .nav-item:hover {
+            background-color: var(--border-color);
+            transform: translateX(4px);
+            color: var(--text-primary);
+        }
+        
+        [data-theme="dark"] .nav-item:hover {
+            background-color: #374151;
+        }
+        
+        .nav-item.active {
+            background-color: var(--primary-light);
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+        
+        .table-responsive {
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+        }
+        
+        .admin-footer {
+            background-color: var(--bg-primary);
+            border-top: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+        
+        /* Theme Toggle Button */
+        .theme-toggle {
+            position: relative;
+            width: 48px;
+            height: 24px;
+            background-color: #374151;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        
+        .theme-toggle::before {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            background-color: white;
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+        }
+        
+        [data-theme="dark"] .theme-toggle {
+            background-color: var(--primary-color);
+        }
+        
+        [data-theme="dark"] .theme-toggle::before {
+            transform: translateX(24px);
+        }
+        
+        /* Stock Level Badges */
+        .stock-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .stock-high {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+        
+        .stock-medium {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+        
+        .stock-low {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .stock-out {
+            background-color: #f3f4f6;
+            color: #6b7280;
+        }
+        
+        [data-theme="dark"] .stock-high {
+            background-color: rgba(5, 150, 105, 0.2);
+            color: #6ee7b7;
+        }
+        
+        [data-theme="dark"] .stock-medium {
+            background-color: rgba(245, 158, 11, 0.2);
+            color: #fbbf24;
+        }
+        
+        [data-theme="dark"] .stock-low {
+            background-color: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+        }
+        
+        [data-theme="dark"] .stock-out {
+            background-color: rgba(107, 114, 128, 0.2);
+            color: #9ca3af;
+        }
+        
+        /* Chart container */
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+        
+        /* Loading spinner */
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        
+        [data-theme="dark"] ::-webkit-scrollbar-track {
+            background: #374151;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 3px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-hover);
+        }
+    </style>
+    
+    {% block extrahead %}{% endblock %}
+    {% block responsive %}{% endblock %}
+    {% block blockbots %}<meta name="robots" content="NONE,NOARCHIVE">{% endblock %}
+</head>
+
+<body class="{% if is_popup %}popup {% endif %}{% block bodyclass %}{% endblock %}"
+      data-admin-utc-offset="{% now "Z" %}">
+
+<!-- Header -->
+<header class="admin-header">
+    <div class="flex items-center justify-between h-20 px-6">
+        <div class="flex items-center space-x-4">
+            <h1 class="text-2xl font-bold text-white">
+                <i class="fas fa-store mr-2"></i>
+                GroceryGo Admin
+            </h1>
+        </div>
+        
+        <div class="flex items-center space-x-4">
+            <!-- Theme Toggle -->
+            <div class="flex items-center space-x-3">
+                <div class="flex items-center space-x-2 text-white cursor-pointer" onclick="toggleTheme()" title="Toggle Dark/Light Mode">
+                    <i class="fas fa-sun text-sm"></i>
+                    <div class="theme-toggle"></div>
+                    <i class="fas fa-moon text-sm"></i>
+                </div>
+            </div>
+            
+            {% block user_info %}
+            {% if user.is_authenticated %}
+                <div class="flex items-center space-x-3 text-white">
+                    <div class="h-6 w-px bg-white opacity-30"></div>
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-user-circle text-xl"></i>
+                        <span class="font-medium">{{ user.get_full_name|default:user.username }}</span>
+                    </div>
+                    <div class="h-6 w-px bg-white opacity-30"></div>
+                    <a href="{% url 'admin:logout' %}" class="flex items-center space-x-1 hover:text-emerald-200 transition-colors">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Logout</span>
+                    </a>
+                </div>
+            {% endif %}
+            {% endblock %}
+        </div>
+    </div>
+</header>
+
+<div class="flex min-h-screen">
+    <!-- Sidebar Navigation -->
+    <nav class="admin-nav w-64 px-4 py-6">
+        <div class="space-y-1">
+            <a href="{% url 'admin:index' %}" class="nav-item flex items-center px-3 py-2 text-sm font-medium {% if request.resolver_match.url_name == 'index' %}active{% endif %}">
+                <i class="fas fa-tachometer-alt mr-3"></i>
+                Dashboard
+            </a>
+            
+            {% if available_apps %}
+                {% for app in available_apps %}
+                <div class="mt-4">
+                    <h3 class="px-3 text-xs font-semibold uppercase tracking-wider" style="color: var(--text-muted);">
+                        {{ app.name }}
+                    </h3>
+                    <div class="mt-1 space-y-1">
+                        {% for model in app.models %}
+                        <a href="{{ model.admin_url }}" class="nav-item flex items-center px-3 py-2 text-sm font-medium">
+                            {% if 'user' in model.object_name|lower %}
+                                <i class="fas fa-users mr-3"></i>
+                            {% elif 'product' in model.object_name|lower %}
+                                <i class="fas fa-box mr-3"></i>
+                            {% elif 'order' in model.object_name|lower %}
+                                <i class="fas fa-shopping-cart mr-3"></i>
+                            {% elif 'category' in model.object_name|lower %}
+                                <i class="fas fa-tags mr-3"></i>
+                            {% elif 'cart' in model.object_name|lower %}
+                                <i class="fas fa-shopping-basket mr-3"></i>
+                            {% else %}
+                                <i class="fas fa-cog mr-3"></i>
+                            {% endif %}
+                            {{ model.name }}
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+        
+        <div class="mt-8 pt-4 border-t border-gray-200">
+            <a href="/" target="_blank" class="nav-item flex items-center px-3 py-2 text-sm font-medium">
+                <i class="fas fa-external-link-alt mr-3"></i>
+                View Site
+            </a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-1 admin-content">
+        <div class="p-6">
+            {% block breadcrumbs %}
+            <nav class="card px-6 py-3 mb-6" aria-label="Breadcrumb">
+                <ol class="flex items-center space-x-2 text-sm" style="color: var(--text-secondary);">
+                    <li>
+                        <a href="{% url 'admin:index' %}" class="text-emerald-600 hover:text-emerald-700 font-medium transition-colors">
+                            <i class="fas fa-home mr-1"></i>
+                            Admin
+                        </a>
+                    </li>
+                    {% if title %}
+                    <li>
+                        <i class="fas fa-chevron-right mx-2" style="color: var(--text-muted);"></i>
+                        <span class="font-semibold" style="color: var(--text-primary);">{{ title }}</span>
+                    </li>
+                    {% endif %}
+                </ol>
+            </nav>
+            {% endblock %}
+
+            {% block messages %}
+                {% if messages %}
+                    <div class="mb-6 space-y-2">
+                        {% for message in messages %}
+                            <div class="flex items-center p-4 rounded-lg {% if message.tags == 'success' %}bg-green-50 text-green-800 border border-green-200{% elif message.tags == 'error' %}bg-red-50 text-red-800 border border-red-200{% elif message.tags == 'warning' %}bg-yellow-50 text-yellow-800 border border-yellow-200{% else %}bg-blue-50 text-blue-800 border border-blue-200{% endif %}">
+                                <i class="fas {% if message.tags == 'success' %}fa-check-circle{% elif message.tags == 'error' %}fa-exclamation-circle{% elif message.tags == 'warning' %}fa-exclamation-triangle{% else %}fa-info-circle{% endif %} mr-3"></i>
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endblock messages %}
+
+            {% block content %}
+            {% endblock %}
+        </div>
+    </main>
+</div>
+
+<!-- Footer -->
+<footer class="admin-footer py-4 px-6">
+    <div class="flex items-center justify-between text-sm" style="color: var(--text-muted);">
+        <div>
+            <span>&copy; {% now "Y" %} GroceryGo. All rights reserved.</span>
+        </div>
+        <div class="flex items-center space-x-4">
+            <span>Django Admin</span>
+            <span>|</span>
+            <span>Version 1.0</span>
+        </div>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+
+<script>
+// Theme Management
+function initializeTheme() {
+    const savedTheme = localStorage.getItem('admin-theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    console.log('Theme initialized:', savedTheme);
+}
+
+function toggleTheme() {
+    const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    
+    console.log('Switching theme from', currentTheme, 'to', newTheme);
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('admin-theme', newTheme);
+    
+    // Update charts if they exist
+    if (window.chartInstances) {
+        Object.values(window.chartInstances).forEach(chart => {
+            updateChartTheme(chart, newTheme);
+        });
+    }
+}
+
+function updateChartTheme(chart, theme) {
+    const isDark = theme === 'dark';
+    const textColor = isDark ? '#f9fafb' : '#111827';
+    const gridColor = isDark ? '#374151' : '#e5e7eb';
+    
+    chart.options.plugins.legend.labels.color = textColor;
+    chart.options.scales.x.ticks.color = textColor;
+    chart.options.scales.x.grid.color = gridColor;
+    chart.options.scales.y.ticks.color = textColor;
+    chart.options.scales.y.grid.color = gridColor;
+    
+    chart.update('none');
+}
+
+// Initialize theme on page load
+document.addEventListener('DOMContentLoaded', function() {
+    initializeTheme();
+});
+
+// Also initialize theme immediately to prevent flash
+initializeTheme();
+
+// Stock level badge helper
+function getStockLevelClass(stock) {
+    if (stock <= 0) return 'stock-out';
+    if (stock <= 10) return 'stock-low';
+    if (stock <= 50) return 'stock-medium';
+    return 'stock-high';
+}
+
+function getStockLevelText(stock) {
+    if (stock <= 0) return 'Out of Stock';
+    if (stock <= 10) return 'Low Stock';
+    if (stock <= 50) return 'Medium Stock';
+    return 'In Stock';
+}
+</script>
+
+{% block extrajs %}{% endblock %}
+</body>
+</html>

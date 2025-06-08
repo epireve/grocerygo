@@ -5,6 +5,131 @@ All notable changes to the GroceryGo project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2025-06-08
+
+### Added
+
+1. **Model Consolidation and Database Architecture Improvements**
+   - Completed comprehensive model consolidation phase removing all deprecated models
+   - Implemented sequential migration fixes (migrations 0010-0018) to resolve consolidation conflicts
+   - Added squashed migration (0007) for cleaner migration history
+   - Created comprehensive test suite for Address, Checkout, and OrderStatusHistory models
+
+2. **Advanced Test Infrastructure**
+   - Implemented `FixedSchemaTestCase` base class for migration-aware testing
+   - Added custom `FixedSchemaTestRunner` to handle database schema fixes during tests
+   - Created test utilities for schema verification and data recovery scenarios
+   - Added tests to verify deprecated models (Order, ShippingAddress, Customer) are completely removed
+
+3. **Database Management and Recovery Tools**
+   - Added SQL scripts for manual database fixes when migrations fail
+   - Created `fix_test_database.py` and `fix_test_db_during_tests.py` utilities
+   - Implemented automated database recovery scripts for development environments
+   - Added schema verification tools for ensuring data integrity
+
+4. **Configuration and Development Enhancements**
+   - Updated Django settings with custom test runner configuration
+   - Added ngrok support for development (`*.ngrok-free.app` in ALLOWED_HOSTS)
+   - Enhanced project documentation with consolidation implementation details
+   - Added PR preparation documentation and GitHub issue tracking
+
+### Fixed
+
+1. **Critical Admin Interface Issues**
+   - Fixed CheckoutItem admin table UI that wasn't displaying due to incorrect property method usage
+   - Resolved `NoReverseMatch: Reverse for 'orders_order_changelist' not found` template errors
+   - Restored missing address data (2 records) that were lost during model consolidation
+   - Ensured all admin interfaces function correctly with consolidated models
+
+2. **Database Schema and Migration Issues**
+   - Resolved migration conflicts between deprecated and new models
+   - Fixed phone field mapping issues (`phone_number` → `phone`, `apartment_address` → `apartment_unit`)
+   - Eliminated foreign key constraint violations during model consolidation
+   - Implemented proper data migration strategies for preserving existing records
+
+### Technical Improvements
+
+1. **Code Quality and Architecture**
+   - Eliminated all deprecated model references throughout the codebase
+   - Implemented proper separation of concerns in model design
+   - Enhanced error handling and data validation in admin interfaces
+   - Created comprehensive documentation for future maintenance
+
+2. **Testing and Quality Assurance**
+   - Achieved 100% test coverage for all consolidated models
+   - Implemented regression testing for migration scenarios
+   - Added automated verification that deprecated models are completely removed
+   - Created test scenarios for data recovery and schema validation
+
+## [0.2.0] - 2025-06-08
+
+### Added
+
+1. Enhanced Admin Dashboard with Business Intelligence
+   - Implemented comprehensive business intelligence dashboard with interactive data visualizations
+   - Added Chart.js integration for dynamic charts (line, doughnut, and bar charts)
+   - Created sales trend analytics with configurable time periods (7, 30, 90 days)
+   - Implemented order status distribution tracking and visualization
+   - Added top products performance monitoring with sales data
+   - Created low stock alerts system with visual indicators and thresholds
+
+2. Dark/Light Theme System
+   - Implemented comprehensive dark/light theme toggle across all admin pages
+   - Added CSS custom properties for seamless theme switching
+   - Integrated theme persistence using localStorage API
+   - Created theme-aware chart styling that adapts to current theme
+   - Enhanced admin login page with standalone theme toggle functionality
+
+3. Custom Admin API Endpoints
+   - Created `/admin/api/sales-trend/<days>/` endpoint for sales analytics data
+   - Implemented `/admin/api/order-status/` endpoint for order distribution metrics
+   - Added `/admin/api/top-products/` endpoint for product performance data
+   - Created `/admin/api/low-stock/` endpoint for inventory monitoring
+   - All endpoints include proper error handling and JSON response formatting
+
+4. Enhanced Admin Templates
+   - Redesigned admin dashboard (`templates/admin/index.html`) with modern BI interface
+   - Updated admin base template (`templates/admin/base.html`) with theme toggle and dark mode support
+   - Created standalone admin login page (`templates/admin/login.html`) with focused, clean design
+   - Enhanced admin change list and change form templates with improved styling
+   - Implemented responsive design for mobile and tablet compatibility
+
+5. Stock Management Enhancements
+   - Added `get_stock_level_class()` method to Product model for categorizing stock levels
+   - Implemented visual stock level indicators (Low, Medium, High, Out of Stock)
+   - Created automated low stock detection with configurable thresholds
+   - Added stock level filtering and management capabilities in admin interface
+
+### Enhanced
+
+1. Admin Interface Modernization
+   - Upgraded admin interface styling with Tailwind CSS and Shadcn/ui components
+   - Improved navigation and user experience across all admin pages
+   - Added loading states and error handling for all API-driven components
+   - Enhanced form styling and layout consistency
+   - Implemented smooth transitions and hover effects throughout admin interface
+
+2. JavaScript Functionality
+   - Added real-time chart updates when switching between light and dark themes
+   - Implemented dynamic data loading with proper error handling and fallback mechanisms
+   - Created modular JavaScript architecture for dashboard components
+   - Added chart responsiveness and mobile optimization
+   - Integrated localStorage for theme preference persistence across sessions
+
+### Technical Improvements
+
+1. Django Admin Customization
+   - Extended Django admin with custom views and URL patterns for BI dashboard
+   - Implemented proper permission handling for admin API endpoints
+   - Added custom admin actions and improved model administration
+   - Enhanced admin site configuration and branding
+
+2. Frontend Architecture
+   - Integrated Chart.js library for professional data visualizations
+   - Implemented CSS custom properties system for comprehensive theming
+   - Added responsive design patterns for cross-device compatibility
+   - Created reusable component patterns for admin interface elements
+
 ## [0.1.1] - 2025-04-26
 
 ### Fixed

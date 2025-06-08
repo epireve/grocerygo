@@ -112,10 +112,10 @@ class SecurityHeadersMiddleware:
             # More permissive for development
             return (
                 "default-src 'self'; "
-                "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
-                "style-src 'self' 'unsafe-inline'; "
+                "script-src 'self' 'unsafe-inline' 'unsafe-eval' cdn.jsdelivr.net; "
+                "style-src 'self' 'unsafe-inline' fonts.googleapis.com cdnjs.cloudflare.com; "
                 "img-src 'self' data:; "
-                "font-src 'self'; "
+                "font-src 'self' fonts.gstatic.com cdnjs.cloudflare.com; "
                 "connect-src 'self'; "
                 "frame-src 'self'; "
                 "object-src 'none';"

@@ -3,6 +3,7 @@ from .models import Category, Product
 import csv
 from django.http import HttpResponse
 from django.core.exceptions import PermissionDenied
+from django.utils.html import format_html
 
 
 # Register your models here.
@@ -14,6 +15,7 @@ class CategoryAdmin(admin.ModelAdmin):
     prepopulated_fields = {"slug": ("name",)}
     list_editable = ("active",)
     readonly_fields = ("created_at", "updated_at")
+    list_per_page = 10  # Set pagination to 5 items per page for testing
     fieldsets = (
         (None, {"fields": ("name", "slug", "description", "parent")}),
         ("Status", {"fields": ("active",)}),
@@ -64,11 +66,87 @@ class ProductVariantInline(admin.TabularInline):
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
+    change_list_template = "admin/products/product/change_list.html"
+
+    def changelist_view(self, request, extra_context=None):
+        # Handle custom list_per_page parameter
+        if "list_per_page" in request.GET:
+            try:
+                per_page = int(request.GET["list_per_page"])
+                if per_page in [10, 25, 50, 100]:
+                    self.list_per_page = per_page
+                    # Store the choice in session for persistence
+                    request.session["products_list_per_page"] = per_page
+            except (ValueError, TypeError):
+                pass
+        elif "products_list_per_page" in request.session:
+            # Use stored preference if no explicit parameter
+            self.list_per_page = request.session["products_list_per_page"]
+
+        # Add pagination context
+        extra_context = extra_context or {}
+        extra_context.update(
+            {
+                "current_per_page": self.list_per_page,
+                "per_page_options": [10, 25, 50, 100],
+            }
+        )
+
+        return super().changelist_view(request, extra_context)
+
+    def stock_level_display(self, obj):
+        """Display stock level with visual indicators"""
+        stock = obj.stock
+
+        if stock <= 0:
+            badge_class = "stock-out"
+            icon = "fas fa-times-circle"
+            text = "0"
+        elif stock <= 10:
+            badge_class = "stock-low"
+            icon = "fas fa-exclamation-triangle"
+            text = f"{stock}"
+        elif stock <= 50:
+            badge_class = "stock-medium"
+            icon = "fas fa-exclamation-circle"
+            text = f"{stock}"
+        else:
+            badge_class = "stock-high"
+            icon = "fas fa-check-circle"
+            text = f"{stock}"
+
+        return format_html(
+            '<span class="product-stock {}"><i class="{}"></i> {}</span>',
+            badge_class,
+            icon,
+            text,
+        )
+
+    stock_level_display.short_description = "Stock Level"
+
+    def category_display(self, obj):
+        """Display category name"""
+        return obj.category.name
+
+    category_display.short_description = "Category"
+
+    def price_display(self, obj):
+        """Display price with discount information"""
+        if obj.discount_price:
+            return format_html(
+                '<span class="product-price">RM {}</span> <span style="text-decoration: line-through; color: #9ca3af;">RM {}</span>',
+                obj.discount_price,
+                obj.price,
+            )
+        return format_html('<span class="product-price">RM {}</span>', obj.price)
+
+    price_display.short_description = "Price"
+
     list_display = (
         "name",
-        "price",
-        "discount_price",
-        "category",
+        "price_display",
+        "category_display",
+        "stock_level_display",
         "is_active",
         "is_featured",
         "created_at",
@@ -76,8 +154,9 @@ class ProductAdmin(admin.ModelAdmin):
     list_filter = ("is_active", "is_featured", "category")
     search_fields = ("name", "slug", "description")
     prepopulated_fields = {"slug": ("name",)}
-    list_editable = ("is_active", "is_featured")
+    # list_editable = ("is_active", "is_featured")  # Temporarily disabled to test pagination
     readonly_fields = ("created_at", "updated_at")
+    list_per_page = 10  # Set pagination to 5 items per page for testing
     inlines = [ProductVariantInline]
     actions = [
         "mark_as_featured",

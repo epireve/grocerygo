@@ -1,0 +1,830 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls static admin_list %}
+
+{% block title %}{{ title }} | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <script src="{% static 'admin/js/filters.js' %}"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block breadcrumbs %}
+<nav class="card px-6 py-3 mb-6" aria-label="Breadcrumb">
+    <ol class="flex items-center space-x-2 text-sm" style="color: var(--text-secondary);">
+        <li>
+            <a href="{% url 'admin:index' %}" class="text-emerald-600 hover:text-emerald-700 font-medium transition-colors">
+                <i class="fas fa-home mr-1"></i>{% trans 'Home' %}
+            </a>
+        </li>
+        <li>
+            <i class="fas fa-chevron-right mx-2" style="color: var(--text-muted);"></i>
+            <a href="{% url 'admin:app_list' app_label=opts.app_label %}" class="text-emerald-600 hover:text-emerald-700 font-medium transition-colors">
+                {{ opts.app_config.verbose_name }}
+            </a>
+        </li>
+        <li>
+            <i class="fas fa-chevron-right mx-2" style="color: var(--text-muted);"></i>
+            <span class="font-semibold" style="color: var(--text-primary);">{{ opts.verbose_name_plural|capfirst }}</span>
+        </li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="admin-content">
+    <!-- Header Section -->
+    <div class="admin-header bg-gradient-to-r from-emerald-600 to-emerald-700 text-white p-6 rounded-lg mb-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-3xl font-bold flex items-center">
+                    {% if 'user' in opts.model_name %}
+                        <i class="fas fa-users mr-3"></i>
+                    {% elif 'product' in opts.model_name %}
+                        <i class="fas fa-boxes mr-3"></i>
+                    {% elif 'order' in opts.model_name %}
+                        <i class="fas fa-shopping-cart mr-3"></i>
+                    {% elif 'category' in opts.model_name %}
+                        <i class="fas fa-tags mr-3"></i>
+                    {% elif 'address' in opts.model_name %}
+                        <i class="fas fa-map-marker-alt mr-3"></i>
+                    {% elif 'checkout' in opts.model_name %}
+                        <i class="fas fa-credit-card mr-3"></i>
+                    {% else %}
+                        <i class="fas fa-list mr-3"></i>
+                    {% endif %}
+                    {{ opts.verbose_name_plural|capfirst }}
+                </h1>
+                <p class="text-emerald-100 mt-1">
+                    {% if cl.result_count %}
+                        {% blocktrans count counter=cl.result_count %}{{ counter }} {{ opts.verbose_name }}{% plural %}{{ counter }} {{ opts.verbose_name_plural }}{% endblocktrans %}
+                    {% else %}
+                        {% trans 'No' %} {{ opts.verbose_name_plural }}
+                    {% endif %}
+                </p>
+            </div>
+            
+            {% if has_add_permission %}
+            <a href="{% url 'admin:'|add:opts.app_label|add:'_'|add:opts.model_name|add:'_add' %}"
+               class="bg-white text-emerald-700 hover:bg-emerald-50 px-6 py-3 rounded-lg font-semibold transition-all duration-200 flex items-center space-x-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                </svg>
+                <span>Add {{ opts.verbose_name }}</span>
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Search and Filters Section -->
+    <div class="card mb-6">
+        <div class="px-6 py-4 border-b" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
+            <h3 class="text-lg font-semibold flex items-center" style="color: var(--text-primary);">
+                <i class="fas fa-search mr-2 text-emerald-600"></i>
+                Search & Filters
+            </h3>
+        </div>
+        
+        <div class="p-6">
+            <!-- Search Bar -->
+            {% if cl.search_fields %}
+            <div class="mb-6">
+                <form method="get" id="changelist-search">
+                    <div class="flex gap-4 items-end">
+                        <div class="flex-1">
+                            <label for="searchbar" class="block text-sm font-medium mb-2" style="color: var(--text-primary);">Search {{ opts.verbose_name_plural }}</label>
+                            <div class="relative">
+                                <input type="search" id="searchbar" name="q" value="{{ cl.query }}"
+                                       class="w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors"
+                                       style="border-color: var(--border-color); background-color: var(--bg-card); color: var(--text-primary);"
+                                       placeholder="Search {{ opts.verbose_name_plural|lower }}...">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-search" style="color: var(--text-muted);"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="submit" class="px-6 py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors font-medium">
+                            <i class="fas fa-search mr-2"></i>Search
+                        </button>
+                        {% if cl.query %}
+                        <a href="?" class="px-4 py-3 text-white rounded-lg transition-colors"
+                           style="background-color: var(--text-muted);"
+                           onmouseover="this.style.backgroundColor='var(--text-secondary)';"
+                           onmouseout="this.style.backgroundColor='var(--text-muted)';">
+                            <i class="fas fa-times mr-1"></i>Clear
+                        </a>
+                        {% endif %}
+                    </div>
+                    {% for k, v in cl.params.items %}
+                        {% if k != 'q' %}
+                            <input type="hidden" name="{{ k }}" value="{{ v }}">
+                        {% endif %}
+                    {% endfor %}
+                </form>
+            </div>
+            {% endif %}
+            
+            <!-- Filters -->
+            {% if cl.has_filters %}
+            <div class="border-t pt-6" style="border-color: var(--border-color);">
+                <div class="flex items-center justify-between mb-4">
+                    <h4 class="text-lg font-semibold flex items-center" style="color: var(--text-primary);">
+                        <i class="fas fa-filter mr-2 text-emerald-600"></i>
+                        Filters
+                    </h4>
+                    {% if cl.has_active_filters %}
+                    <a href="?" class="text-emerald-600 hover:text-emerald-700 text-sm font-medium transition-colors duration-150">
+                        <i class="fas fa-times mr-1"></i>Clear all filters
+                    </a>
+                    {% endif %}
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    {% for spec in cl.filter_specs %}
+                    <div class="filter-group">
+                        <div class="rounded-lg p-4" style="background-color: var(--bg-secondary);">
+                            <h5 class="text-sm font-semibold mb-3 flex items-center" style="color: var(--text-primary);">
+                                <span class="w-2 h-2 bg-emerald-500 rounded-full mr-2"></span>
+                                {{ spec.title }}
+                            </h5>
+                            <div class="space-y-2">
+                                {% for choice in spec.choices %}
+                                <div class="filter-option">
+                                    {% if choice.selected %}
+                                    <a href="{{ choice.query_string|iriencode }}"
+                                       class="flex items-center justify-between w-full px-3 py-2 text-sm bg-emerald-100 text-emerald-800 rounded-lg font-medium transition-all duration-150">
+                                        <span class="flex items-center">
+                                            <i class="fas fa-check text-emerald-600 mr-2"></i>
+                                        {{ choice.display }}
+                                    </span>
+                                    <i class="fas fa-times text-emerald-600 hover:text-emerald-800"></i>
+                                </a>
+                                {% else %}
+                                <a href="{{ choice.query_string|iriencode }}"
+                                   class="flex items-center w-full px-3 py-2.5 text-sm rounded-lg transition-all duration-150 border border-transparent hover:border-emerald-200"
+                                   style="color: var(--text-secondary); background-color: var(--bg-card);"
+                                   onmouseover="this.style.backgroundColor='#f0fdf4'; this.style.color='#047857';"
+                                   onmouseout="this.style.backgroundColor='var(--bg-card)'; this.style.color='var(--text-secondary)';">
+                                    <i class="fas fa-circle mr-2 text-xs" style="color: var(--text-muted);"></i>
+                                    <span>{{ choice.display }}</span>
+                                </a>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="w-full">
+        <!-- Actions Bar -->
+        <div class="card mb-6">
+            <div class="p-6">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+                <!-- Page Info -->
+                <div class="flex items-center space-x-4">
+                    <h3 class="text-lg font-semibold" style="color: var(--text-primary);">
+                        {% if cl.result_count %}
+                            {{ cl.result_count }} {{ opts.verbose_name_plural|lower }}
+                        {% else %}
+                            No {{ opts.verbose_name_plural|lower }}
+                        {% endif %}
+                    </h3>
+                </div>
+
+                <!-- Actions -->
+                {% if action_form and actions_on_top and cl.show_admin_actions %}
+                <div class="flex items-center space-x-4">
+                        <form method="post" class="flex items-center space-x-3">
+                            {% csrf_token %}
+                            <select name="action"
+                                    class="border-2 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200"
+                                    style="border-color: var(--border-color); background-color: var(--bg-card); color: var(--text-primary);">
+                                <option value="">Select action...</option>
+                                {% for choice in action_form.action.field.choices %}
+                                    <option value="{{ choice.0 }}">{{ choice.1|capfirst }}</option>
+                                {% endfor %}
+                            </select>
+                            <button type="submit"
+                                    class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors duration-200">
+                                Go
+                            </button>
+                        </form>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+            <!-- Results Table - Using Django's Built-in System -->
+            <div class="card">
+                {% if cl.result_count %}
+                <div class="p-6 pb-0">
+                    <div class="overflow-x-auto rounded-lg">
+                    {% if action_form and actions_on_top and cl.show_admin_actions %}
+                    <form method="post" class="changelist-results">
+                        {% csrf_token %}
+                        {% result_list cl %}
+                    </form>
+                    {% else %}
+                    <div class="changelist-results">
+                        {% result_list cl %}
+                    </div>
+                    {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Enhanced Pagination -->
+                {% if cl.result_count %}
+                <div class="px-6 py-4 border-t" style="background-color: var(--bg-secondary); border-color: var(--border-color);">
+                    <!-- Mobile Pagination -->
+                    <div class="flex items-center justify-between sm:hidden">
+                        <div class="flex items-center space-x-4">
+                            <div class="text-sm" style="color: var(--text-secondary);">
+                                Page {{ cl.paginator.number }} of {{ cl.paginator.paginator.num_pages }}
+                            </div>
+                        </div>
+                        <div class="flex space-x-2">
+                            {% if cl.paginator.has_previous %}
+                            <a href="?page={{ cl.paginator.previous_page_number }}{% if cl.query %}&q={{ cl.query }}{% endif %}{% for k, v in cl.params.items %}{% if k != 'page' and k != 'q' %}&{{ k }}={{ v }}{% endif %}{% endfor %}"
+                               class="inline-flex items-center px-3 py-2 border text-sm font-medium rounded-md transition-colors duration-150"
+                               style="border-color: var(--border-color); background-color: var(--bg-card); color: var(--text-secondary);"
+                               onmouseover="this.style.backgroundColor='var(--bg-secondary)';"
+                               onmouseout="this.style.backgroundColor='var(--bg-card)';">
+                                <i class="fas fa-chevron-left mr-1"></i>Prev
+                            </a>
+                            {% endif %}
+                            {% if cl.paginator.has_next %}
+                            <a href="?page={{ cl.paginator.next_page_number }}{% if cl.query %}&q={{ cl.query }}{% endif %}{% for k, v in cl.params.items %}{% if k != 'page' and k != 'q' %}&{{ k }}={{ v }}{% endif %}{% endfor %}"
+                               class="inline-flex items-center px-3 py-2 border text-sm font-medium rounded-md transition-colors duration-150"
+                               style="border-color: var(--border-color); background-color: var(--bg-card); color: var(--text-secondary);"
+                               onmouseover="this.style.backgroundColor='var(--bg-secondary)';"
+                               onmouseout="this.style.backgroundColor='var(--bg-card)';">
+                                Next<i class="fas fa-chevron-right ml-1"></i>
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Desktop Pagination -->
+                    <div class="hidden sm:block">
+                        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+                            <!-- Results Info and Per-Page Selector -->
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:space-x-6 space-y-2 sm:space-y-0">
+                                <div class="text-sm" style="color: var(--text-secondary);">
+                                    Showing
+                                    <span class="font-semibold text-emerald-600">{{ cl.paginator.start_index }}</span>
+                                    to
+                                    <span class="font-semibold text-emerald-600">{{ cl.paginator.end_index }}</span>
+                                    of
+                                    <span class="font-semibold text-emerald-600">{{ cl.result_count }}</span>
+                                    results
+                                </div>
+                                
+                                <!-- Items per page selector -->
+                                <div class="flex items-center space-x-2">
+                                    <label class="text-sm font-medium" style="color: var(--text-secondary);">Show:</label>
+                                    <select id="items-per-page"
+                                            class="border rounded-md px-3 py-1 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                                            style="border-color: var(--border-color); background-color: var(--bg-card); color: var(--text-primary);"
+                                            onchange="changeItemsPerPage(this.value)">
+                                        <option value="10" {% if cl.paginator.per_page == 10 %}selected{% endif %}>10</option>
+                                        <option value="25" {% if cl.paginator.per_page == 25 %}selected{% endif %}>25</option>
+                                        <option value="50" {% if cl.paginator.per_page == 50 %}selected{% endif %}>50</option>
+                                        <option value="100" {% if cl.paginator.per_page == 100 %}selected{% endif %}>100</option>
+                                    </select>
+                                    <span class="text-sm" style="color: var(--text-secondary);">per page</span>
+                                </div>
+                            </div>
+
+                            <!-- Pagination Controls -->
+                            <div class="flex items-center space-x-4">
+                                <!-- Page Jump -->
+                                {% if cl.paginator.paginator.num_pages > 1 %}
+                                <div class="flex items-center space-x-2">
+                                    <label class="text-sm font-medium" style="color: var(--text-secondary);">Go to page:</label>
+                                    <input type="number"
+                                           id="page-jump"
+                                           min="1"
+                                           max="{{ cl.paginator.paginator.num_pages }}"
+                                           value="{{ cl.paginator.number }}"
+                                           class="w-16 border rounded-md px-2 py-1 text-sm text-center focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                                           style="border-color: var(--border-color); background-color: var(--bg-card); color: var(--text-primary);"
+                                           onkeypress="handlePageJump(event)"
+                                           onchange="jumpToPage(this.value)">
+                                    <span class="text-sm" style="color: var(--text-secondary);">of {{ cl.paginator.paginator.num_pages }}</span>
+                                </div>
+                                {% endif %}
+
+                                <!-- Navigation Buttons -->
+                                <nav class="flex items-center space-x-1">
+                                    <!-- First Page -->
+                                    {% if cl.paginator.number > 1 %}
+                                    <a href="?page=1{% if cl.query %}&q={{ cl.query }}{% endif %}{% for k, v in cl.params.items %}{% if k != 'page' and k != 'q' %}&{{ k }}={{ v }}{% endif %}{% endfor %}"
+                                       class="inline-flex items-center px-3 py-2 border text-sm font-medium rounded-md transition-colors duration-150"
+                                       style="border-color: var(--border-color); background-color: var(--bg-card); color: var(--text-secondary);"
+                                       onmouseover="this.style.backgroundColor='var(--bg-secondary)';"
+                                       onmouseout="this.style.backgroundColor='var(--bg-card)';"
+                                       title="First page">
+                                        <i class="fas fa-angle-double-left"></i>
+                                    </a>
+                                    {% endif %}
+
+                                    <!-- Previous Page -->
+                                    {% if cl.paginator.has_previous %}
+                                    <a href="?page={{ cl.paginator.previous_page_number }}{% if cl.query %}&q={{ cl.query }}{% endif %}{% for k, v in cl.params.items %}{% if k != 'page' and k != 'q' %}&{{ k }}={{ v }}{% endif %}{% endfor %}"
+                                       class="inline-flex items-center px-3 py-2 border text-sm font-medium rounded-md transition-colors duration-150"
+                                       style="border-color: var(--border-color); background-color: var(--bg-card); color: var(--text-secondary);"
+                                       onmouseover="this.style.backgroundColor='var(--bg-secondary)';"
+                                       onmouseout="this.style.backgroundColor='var(--bg-card)';"
+                                       title="Previous page">
+                                        <i class="fas fa-chevron-left"></i>
+                                    </a>
+                                    {% endif %}
+
+                                    <!-- Page Numbers -->
+                                    {% with cl.paginator.paginator.page_range as page_range %}
+                                    {% with cl.paginator.number as current_page %}
+                                    {% for page_num in page_range %}
+                                        {% if page_num == current_page %}
+                                        <span class="inline-flex items-center px-4 py-2 border text-sm font-semibold rounded-md bg-emerald-600 text-white border-emerald-600">
+                                            {{ page_num }}
+                                        </span>
+                                        {% elif page_num == 1 or page_num == page_range|last or page_num|add:"-2" <= current_page <= page_num|add:"2" %}
+                                        <a href="?page={{ page_num }}{% if cl.query %}&q={{ cl.query }}{% endif %}{% for k, v in cl.params.items %}{% if k != 'page' and k != 'q' %}&{{ k }}={{ v }}{% endif %}{% endfor %}"
+                                           class="inline-flex items-center px-4 py-2 border text-sm font-medium rounded-md transition-colors duration-150"
+                                           style="border-color: var(--border-color); background-color: var(--bg-card); color: var(--text-secondary);"
+                                           onmouseover="this.style.backgroundColor='var(--bg-secondary)';"
+                                           onmouseout="this.style.backgroundColor='var(--bg-card)';">
+                                            {{ page_num }}
+                                        </a>
+                                        {% elif page_num == 2 and current_page > 4 %}
+                                        <span class="inline-flex items-center px-2 py-2 text-sm" style="color: var(--text-muted);">...</span>
+                                        {% elif page_num == page_range|last|add:"-1" and current_page < page_range|last|add:"-3" %}
+                                        <span class="inline-flex items-center px-2 py-2 text-sm" style="color: var(--text-muted);">...</span>
+                                        {% endif %}
+                                    {% endfor %}
+                                    {% endwith %}
+                                    {% endwith %}
+
+                                    <!-- Next Page -->
+                                    {% if cl.paginator.has_next %}
+                                    <a href="?page={{ cl.paginator.next_page_number }}{% if cl.query %}&q={{ cl.query }}{% endif %}{% for k, v in cl.params.items %}{% if k != 'page' and k != 'q' %}&{{ k }}={{ v }}{% endif %}{% endfor %}"
+                                       class="inline-flex items-center px-3 py-2 border text-sm font-medium rounded-md transition-colors duration-150"
+                                       style="border-color: var(--border-color); background-color: var(--bg-card); color: var(--text-secondary);"
+                                       onmouseover="this.style.backgroundColor='var(--bg-secondary)';"
+                                       onmouseout="this.style.backgroundColor='var(--bg-card)';"
+                                       title="Next page">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </a>
+                                    {% endif %}
+
+                                    <!-- Last Page -->
+                                    {% if cl.paginator.number < cl.paginator.paginator.num_pages %}
+                                    <a href="?page={{ cl.paginator.paginator.num_pages }}{% if cl.query %}&q={{ cl.query }}{% endif %}{% for k, v in cl.params.items %}{% if k != 'page' and k != 'q' %}&{{ k }}={{ v }}{% endif %}{% endfor %}"
+                                       class="inline-flex items-center px-3 py-2 border text-sm font-medium rounded-md transition-colors duration-150"
+                                       style="border-color: var(--border-color); background-color: var(--bg-card); color: var(--text-secondary);"
+                                       onmouseover="this.style.backgroundColor='var(--bg-secondary)';"
+                                       onmouseout="this.style.backgroundColor='var(--bg-card)';"
+                                       title="Last page">
+                                        <i class="fas fa-angle-double-right"></i>
+                                    </a>
+                                    {% endif %}
+                                </nav>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% else %}
+                <div class="text-center py-16">
+                    <div class="inline-flex items-center justify-center w-16 h-16 rounded-full mb-4"
+                         style="background-color: var(--bg-secondary);">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color: var(--text-muted);">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2M4 13h2m0 0v5a2 2 0 002 2h8a2 2 0 002-2v-5"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-medium mb-2" style="color: var(--text-primary);">No {{ opts.verbose_name_plural|lower }}</h3>
+                    <p class="mb-6" style="color: var(--text-muted);">Get started by creating a new {{ opts.verbose_name|lower }}.</p>
+                    {% if has_add_permission %}
+                    <a href="{% url 'admin:'|add:opts.app_label|add:'_'|add:opts.model_name|add:'_add' %}"
+                       class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-colors duration-200">
+                        <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                        </svg>
+                        Add {{ opts.verbose_name }}
+                    </a>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Enhanced CSS for Django Admin Tables -->
+<style>
+/* Override Django's default table styling */
+.changelist-results table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0;
+    background-color: #ffffff;
+}
+
+.changelist-results thead th {
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%) !important;
+    padding: 16px;
+    text-align: left;
+    font-weight: 600;
+    color: #374151 !important;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    border-bottom: 2px solid #e5e7eb;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    position: relative;
+}
+
+/* Sortable column indicators */
+.changelist-results thead th.sortable {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.changelist-results thead th.sortable:hover {
+    background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%) !important;
+    color: #1f2937 !important;
+}
+
+.changelist-results thead th.sortable a {
+    color: #374151 !important;
+    text-decoration: none;
+    display: block;
+    position: relative;
+    padding-right: 20px;
+}
+
+.changelist-results thead th.sortable a:hover {
+    color: #1f2937 !important;
+}
+
+/* Sort direction indicators */
+.changelist-results thead th.sortable a::after {
+    content: "\f0dc";
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 0.3;
+    font-size: 0.7rem;
+    transition: opacity 0.2s ease;
+}
+
+.changelist-results thead th.sortable:hover a::after {
+    opacity: 0.6;
+}
+
+/* Active sort indicators */
+.changelist-results thead th.sorted.ascending a::after {
+    content: "\f0de";
+    opacity: 1;
+    color: #059669 !important;
+    font-weight: 900;
+}
+
+.changelist-results thead th.sorted.descending a::after {
+    content: "\f0dd";
+    opacity: 1;
+    color: #059669 !important;
+    font-weight: 900;
+}
+
+/* Highlight active sorted column */
+.changelist-results thead th.sorted {
+    background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%) !important;
+    border-bottom: 3px solid #059669 !important;
+}
+
+.changelist-results thead th.sorted a {
+    color: #065f46 !important;
+    font-weight: 700;
+}
+
+/* Ensure first column header is always left-aligned */
+.changelist-results thead th:first-child {
+    text-align: left !important;
+}
+
+.changelist-results tbody td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #f3f4f6;
+    vertical-align: middle;
+    color: #374151 !important;
+    font-size: 0.875rem;
+    background-color: #ffffff !important;
+}
+
+/* Ensure first column content is always left-aligned */
+.changelist-results tbody td:first-child {
+    text-align: left !important;
+    font-weight: 500;
+}
+
+.changelist-results tbody tr {
+    background-color: #ffffff !important;
+}
+
+.changelist-results tbody tr:hover {
+    background-color: #f0f9ff !important;
+    transition: background-color 0.15s ease;
+}
+
+.changelist-results tbody tr:hover td {
+    background-color: #f0f9ff !important;
+}
+
+.changelist-results tbody td a {
+    color: #2563eb !important;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.15s ease;
+}
+
+.changelist-results tbody td a:hover {
+    color: #1d4ed8 !important;
+    text-decoration: underline;
+}
+
+/* Checkbox styling */
+.changelist-results .action-checkbox-column {
+    width: 40px;
+    text-align: center !important;
+    background-color: #ffffff !important;
+}
+
+.changelist-results .action-checkbox {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    border: 2px solid #d1d5db;
+    accent-color: #059669;
+}
+
+.changelist-results .action-checkbox:checked {
+    background-color: #059669;
+    border-color: #059669;
+}
+
+/* Override any dark theme styles that might interfere */
+.changelist-results,
+.changelist-results table,
+.changelist-results thead,
+.changelist-results tbody,
+.changelist-results tr,
+.changelist-results th,
+.changelist-results td {
+    background-color: #ffffff !important;
+}
+
+.changelist-results thead th {
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%) !important;
+    color: #374151 !important;
+}
+
+.changelist-results tbody tr:hover,
+.changelist-results tbody tr:hover td,
+.changelist-results tbody tr:hover th {
+    background-color: #f0f9ff !important;
+}
+
+/* Dark theme styles - only apply when explicitly in dark mode */
+@media (prefers-color-scheme: dark) {
+    html[data-theme="dark"] .changelist-results,
+    html[data-theme="dark"] .changelist-results table,
+    html[data-theme="dark"] .changelist-results thead,
+    html[data-theme="dark"] .changelist-results tbody,
+    html[data-theme="dark"] .changelist-results tr,
+    html[data-theme="dark"] .changelist-results th,
+    html[data-theme="dark"] .changelist-results td {
+        background-color: #1f2937 !important;
+    }
+
+    html[data-theme="dark"] .changelist-results thead th {
+        background: linear-gradient(135deg, #374151 0%, #1f2937 100%) !important;
+        color: #d1d5db !important;
+        border-bottom-color: #4b5563;
+    }
+
+    html[data-theme="dark"] .changelist-results tbody td {
+        border-bottom-color: #4b5563;
+        color: #d1d5db !important;
+        background-color: #1f2937 !important;
+    }
+
+    html[data-theme="dark"] .changelist-results tbody tr:hover,
+    html[data-theme="dark"] .changelist-results tbody tr:hover td {
+        background-color: #1e3a8a !important;
+    }
+
+    html[data-theme="dark"] .changelist-results tbody td a {
+        color: #60a5fa !important;
+    }
+
+    html[data-theme="dark"] .changelist-results tbody td a:hover {
+        color: #93c5fd !important;
+    }
+}
+
+/* Custom field styling for Products */
+.product-price {
+    font-weight: 600;
+    color: #059669 !important;
+}
+
+.category-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 8px;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    background-color: #dbeafe;
+    color: #1e40af;
+}
+
+.product-stock {
+    display: inline-flex;
+    align-items: center;
+    font-weight: 500;
+}
+
+.product-stock.stock-out {
+    color: #dc2626 !important;
+}
+
+.product-stock.stock-low {
+    color: #d97706 !important;
+}
+
+.product-stock.stock-medium {
+    color: #2563eb !important;
+}
+
+.product-stock.stock-high {
+    color: #059669 !important;
+}
+
+.product-stock i {
+    margin-right: 4px;
+}
+
+/* Date hierarchy */
+.changelist-date-hierarchy {
+    margin-bottom: 16px;
+    padding: 16px;
+    background: #f9fafb !important;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+}
+
+.changelist-date-hierarchy a {
+    color: #2563eb !important;
+    text-decoration: none;
+    margin: 0 4px;
+    font-weight: 500;
+}
+
+.changelist-date-hierarchy a:hover {
+    color: #1d4ed8 !important;
+    text-decoration: underline;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .changelist-results table {
+        font-size: 0.75rem;
+    }
+    
+    .changelist-results thead th,
+    .changelist-results tbody td {
+        padding: 8px 12px;
+    }
+}
+
+/* Ensure consistent styling across all admin pages */
+.changelist-results table th,
+.changelist-results table td {
+    text-align: left !important;
+}
+
+.changelist-results table th:first-child,
+.changelist-results table td:first-child {
+    text-align: left !important;
+    padding-left: 24px !important; /* Match header padding (px-6 = 24px) */
+}
+
+.changelist-results .action-checkbox-column {
+    text-align: center !important;
+    padding-left: 24px !important; /* Match header padding */
+}
+
+/* Additional consistency fixes */
+.changelist-results tbody td:nth-child(2) {
+    text-align: left !important;
+    font-weight: 500;
+    padding-left: 24px !important; /* Ensure second column also has consistent padding */
+}
+
+/* Ensure all table cells have consistent left padding for the navigation column */
+.changelist-results table th:first-child,
+.changelist-results table td:first-child,
+.changelist-results table th:nth-child(2),
+.changelist-results table td:nth-child(2) {
+    padding-left: 24px !important;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-submit search on Enter
+    const searchInput = document.querySelector('input[type="search"]');
+    if (searchInput) {
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                this.form.submit();
+            }
+        });
+    }
+
+    // Smooth scrolling for pagination
+    const paginationLinks = document.querySelectorAll('nav a');
+    paginationLinks.forEach(link => {
+        link.addEventListener('click', function() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    });
+
+    // Select all functionality
+    const selectAllCheckbox = document.querySelector('#action-toggle');
+    if (selectAllCheckbox) {
+        selectAllCheckbox.addEventListener('change', function() {
+            const checkboxes = document.querySelectorAll('input[name="_selected_action"]');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+        });
+    }
+
+    // Enhanced filter interactions
+    const filterOptions = document.querySelectorAll('.filter-option a');
+    filterOptions.forEach(option => {
+        option.addEventListener('mouseenter', function() {
+            if (!this.classList.contains('bg-blue-100')) {
+                this.style.transform = 'translateX(4px)';
+            }
+        });
+        
+        option.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateX(0)';
+        });
+    });
+});
+
+// Pagination functionality
+function changeItemsPerPage(perPage) {
+    const url = new URL(window.location);
+    url.searchParams.set('list_per_page', perPage);
+    url.searchParams.delete('page'); // Reset to first page when changing items per page
+    window.location.href = url.toString();
+}
+
+function jumpToPage(pageNum) {
+    const maxPages = parseInt(document.querySelector('#page-jump').getAttribute('max'));
+    const page = parseInt(pageNum);
+    
+    if (page >= 1 && page <= maxPages) {
+        const url = new URL(window.location);
+        url.searchParams.set('page', page);
+        window.location.href = url.toString();
+    }
+}
+
+function handlePageJump(event) {
+    if (event.key === 'Enter') {
+        event.preventDefault();
+        jumpToPage(event.target.value);
+    }
+}
+</script>
+{% endblock %}
