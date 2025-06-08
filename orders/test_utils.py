@@ -5,6 +5,19 @@ from django.db import connection
 class FixedSchemaTestCase(TestCase):
     """
     A TestCase that fixes the schema issues in the test database before running tests.
+
+    This custom TestCase is REQUIRED as a fallback/alternative to FixedSchemaTestRunner
+    for fixing database schema issues caused by complex migration history.
+
+    The migration history contains multiple migrations that add/remove the phone
+    column, creating conflicts during test database setup. This TestCase manually
+    recreates the Address table with the correct schema.
+
+    Usage: Inherit from this class instead of django.test.TestCase when tests
+    need to interact with the Address model.
+
+    WARNING: Do not remove this utility without first resolving the underlying
+    migration conflicts. Tests that use Address model may fail without this fix.
     """
 
     @classmethod

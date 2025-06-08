@@ -319,4 +319,6 @@ LOGGING = {
 }
 
 # Test Runner Configuration
+# Custom test runner is REQUIRED due to complex migration history that causes
+# "duplicate column name: phone" errors during test database creation
 TEST_RUNNER = "orders.test_runner.FixedSchemaTestRunner"

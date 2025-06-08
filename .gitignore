@@ -1,5 +1,6 @@
 # Project-specific exclusions
 .cursor/
+.kilocode/
 scripts/*
 !scripts/run-dev.sh
 !scripts/task-complete.sh

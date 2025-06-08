@@ -5,6 +5,18 @@ from django.db import connection
 class FixedSchemaTestRunner(DiscoverRunner):
     """
     A test runner that fixes the database schema issues before running tests.
+
+    This custom test runner is REQUIRED due to complex migration history that
+    causes "duplicate column name: phone" errors during test database creation.
+
+    The migration history contains multiple migrations that add/remove the phone
+    column, creating conflicts when Django tries to create the test database.
+    This runner manually recreates the tables with the correct schema after
+    the initial migration attempt fails.
+
+    WARNING: Do not remove this test runner without first resolving the
+    underlying migration conflicts. Tests will fail with OperationalError
+    without this fix.
     """
 
     def setup_databases(self, **kwargs):
