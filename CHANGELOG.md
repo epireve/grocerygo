@@ -5,6 +5,43 @@ All notable changes to the GroceryGo project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.3] - 2025-06-09
+
+### Enhanced
+
+1. **Product Detail Page UI Overhaul**
+   - Completely redesigned product detail page with modern styling and animations
+   - Replaced misleading "Customers also bought" section with interactive product variations selector
+   - Implemented dynamic variation selection with real-time price updates
+   - Added breadcrumb navigation for improved user experience
+   - Enhanced responsive design with Tailwind CSS and smooth transitions
+
+2. **Product Variations User Experience**
+   - Created interactive radio button-based variation selector
+   - Added dynamic product information updates when selecting variations
+   - Implemented smart stock display (only shows warnings for out-of-stock or low stock ≤5 items)
+   - Enhanced pricing display with discount percentage calculations
+   - Improved visual hierarchy and product information presentation
+
+3. **Technical Improvements**
+   - Added custom template filters for percentage calculations (`percentage_off`, `make_list`)
+   - Enhanced JavaScript functionality for dynamic UI updates
+   - Improved error handling and user feedback systems
+   - Better cart integration with variation selection
+   - Optimized database queries for variation data
+
+### Fixed
+
+1. **GitHub Issue #4: Product Variations UI Enhancement**
+   - Solved the misleading "Customers also bought" section that required multiple page navigations
+   - Users can now see all product variations on a single page with clear pricing differences
+   - Eliminated the need to navigate between different product pages to compare options
+   - Improved conversion rates by making variation selection more intuitive
+
+2. **Database Cleanup**
+   - Removed test category and related test products from database
+   - Cleaned up development artifacts for production readiness
+
 ## [0.3.2] - 2025-06-09
 
 ### Fixed
@@ -25,6 +62,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
    - Fixed product images showing "No img." on order confirmation, order detail, and checkout pages
    - The issue was caused by templates referencing `item.product.primary_image` when the actual Product model field is `image`
    - Also fixed the Total column not displaying by correcting references from `item.total` to `item.total_price`
+
+4. **Admin Checkout Status Update Fix**
+   - Resolved ManagementForm error when updating checkout status in Django admin
+   - The issue was caused by missing formset management data for inline forms
+   - Implemented custom formset class that automatically handles missing management form fields and gracefully recovers from corrupted data
+   - Also added automatic status history tracking when admins change checkout status, creating audit trail entries with user, timestamp, and descriptive notes
 
 ## [0.3.1] - 2025-06-08
 

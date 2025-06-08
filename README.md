@@ -4,11 +4,12 @@ A simple Django web application for online grocery shopping, allowing customers 
 
 ## Features
 
-- Product browsing and searching
-- Product categorization
-- Shopping cart management
-- User account management
-- Order placement and tracking
+- **Product browsing and searching** with enhanced user experience
+- **Product categorization** with detailed category pages and subcategory filtering
+- **Interactive product variations selector** - modern UI for comparing product options without page navigation
+- **Shopping cart management** with real-time updates and quantity controls
+- **User account management** with profile and order history
+- **Order placement and tracking** with comprehensive status updates
 - **Enhanced Admin Dashboard** with business intelligence features:
   - Dark/Light theme toggle with persistent preferences
   - Sales trend analytics with interactive Chart.js visualizations
