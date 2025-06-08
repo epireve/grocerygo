@@ -88,7 +88,7 @@ def categories_view(request):
 
 def category_detail_view(request, slug):
     """
-    View function for displaying a category and its products.
+    View function for displaying a category and its products with subcategory filtering.
 
     Args:
         request: The HTTP request
@@ -103,32 +103,116 @@ def category_detail_view(request, slug):
         # Get active subcategories
         subcategories = category.children.filter(active=True)
 
+        # Add product count to each subcategory
+        for subcategory in subcategories:
+            subcategory.product_count = Product.objects.filter(
+                category=subcategory, is_active=True, parent=None
+            ).count()
+
         # Add the subcategories property to the category object for consistency
         category.subcategories = subcategories
 
-        # Get sibling categories if this is a subcategory
-        siblings = []
+        # Get subcategory filter from URL parameters
+        subcategory_filter = request.GET.get("subcategory")
+        selected_subcategory = None
+
+        # Determine which products to show based on filtering
+        if subcategory_filter and subcategories.exists():
+            try:
+                selected_subcategory = subcategories.get(slug=subcategory_filter)
+                # Show products from the selected subcategory only
+                products = Product.objects.filter(
+                    category=selected_subcategory,
+                    is_active=True,
+                    parent=None,  # Only show parent products, not variants
+                )
+            except Category.DoesNotExist:
+                # If subcategory doesn't exist, show all products in the main category
+                # Get all products from this category and its subcategories
+                subcategory_ids = list(subcategories.values_list("id", flat=True))
+                all_category_ids = [category.id] + subcategory_ids
+                products = Product.objects.filter(
+                    category__id__in=all_category_ids,
+                    is_active=True,
+                    parent=None,
+                )
+        else:
+            # Show all products from this category and its subcategories
+            if subcategories.exists():
+                subcategory_ids = list(subcategories.values_list("id", flat=True))
+                all_category_ids = [category.id] + subcategory_ids
+                products = Product.objects.filter(
+                    category__id__in=all_category_ids,
+                    is_active=True,
+                    parent=None,
+                )
+            else:
+                # No subcategories, just show products from this category
+                products = Product.objects.filter(
+                    category=category,
+                    is_active=True,
+                    parent=None,
+                )
+
+        # Get related categories
+        related_categories = []
         if category.parent:
-            siblings = category.parent.children.filter(active=True).exclude(
+            # If this is a subcategory, get sibling categories
+            related_categories = category.parent.children.filter(active=True).exclude(
                 id=category.id
-            )
+            )[
+                :6
+            ]  # Limit to 6 related categories
+        else:
+            # If this is a parent category, get other parent categories
+            related_categories = Category.objects.filter(
+                parent=None, active=True
+            ).exclude(id=category.id)[
+                :6
+            ]  # Limit to 6 related categories
+
+        # Add product counts to related categories
+        for related_category in related_categories:
+            if related_category.children.exists():
+                # Include products from subcategories
+                subcategory_ids = list(
+                    related_category.children.filter(active=True).values_list(
+                        "id", flat=True
+                    )
+                )
+                all_category_ids = [related_category.id] + subcategory_ids
+                related_category.product_count = Product.objects.filter(
+                    category__id__in=all_category_ids, is_active=True, parent=None
+                ).count()
+            else:
+                related_category.product_count = Product.objects.filter(
+                    category=related_category, is_active=True, parent=None
+                ).count()
 
         # Get all parent categories (for breadcrumb navigation)
         parent_categories = Category.objects.filter(parent=None, active=True)
 
-        # Get all products from this category
-        products = Product.objects.filter(
-            category=category,
-            is_active=True,
-            parent=None,  # Only show parent products, not variants
-        )
+        # Calculate total product count for this category (including subcategories)
+        if subcategories.exists():
+            subcategory_ids = list(subcategories.values_list("id", flat=True))
+            all_category_ids = [category.id] + subcategory_ids
+            total_product_count = Product.objects.filter(
+                category__id__in=all_category_ids, is_active=True, parent=None
+            ).count()
+        else:
+            total_product_count = Product.objects.filter(
+                category=category, is_active=True, parent=None
+            ).count()
 
         context = {
             "category": category,
             "subcategories": subcategories,
-            "siblings": siblings,
+            "selected_subcategory": selected_subcategory,
+            "related_categories": related_categories,
             "parent_categories": parent_categories,
             "products": products,
+            "total_product_count": total_product_count,
+            "has_subcategories": subcategories.exists(),
         }
         return render(request, "products/category_detail.html", context)
     except Category.DoesNotExist:
