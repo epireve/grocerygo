@@ -13,6 +13,28 @@ def migrate_shipping_addresses_before_field_change(apps, schema_editor):
     Checkout.objects.all().update(shipping_address=None)
 
 
+def add_phone_field_conditionally(apps, schema_editor):
+    """
+    Add phone field to Address model only if it doesn't already exist
+    """
+    connection = schema_editor.connection
+
+    with connection.cursor() as cursor:
+        # Check if the table exists and get its schema
+        cursor.execute("PRAGMA table_info(orders_address);")
+        columns = cursor.fetchall()
+        column_names = [col[1] for col in columns]
+
+        # Only add phone field if it doesn't exist
+        if "phone" not in column_names:
+            cursor.execute(
+                """
+                ALTER TABLE orders_address 
+                ADD COLUMN phone VARCHAR(50) NULL;
+            """
+            )
+
+
 def reverse_migration(apps, schema_editor):
     """No need to reverse"""
     pass
@@ -52,11 +74,8 @@ class Migration(migrations.Migration):
             model_name="address",
             name="phone_number",
         ),
-        migrations.AddField(
-            model_name="address",
-            name="phone",
-            field=models.CharField(blank=True, max_length=50, null=True),
-        ),
+        # Conditionally add phone field
+        migrations.RunPython(add_phone_field_conditionally, reverse_migration),
         migrations.AlterField(
             model_name="address",
             name="full_name",

@@ -84,6 +84,11 @@ def add_to_cart(request, slug=None):
         # Get or initialize the cart
         session_cart = get_session_cart(request)
 
+        # DEBUG: Log session state before adding
+        print(f"DEBUG: Session before adding - cart: {request.session.get('cart', {})}")
+        print(f"DEBUG: Session keys: {list(request.session.keys())}")
+        print(f"DEBUG: Session cart from helper: {session_cart}")
+
         # If POST request, validate quantity from form
         if request.method == "POST":
             try:
@@ -119,6 +124,11 @@ def add_to_cart(request, slug=None):
         # Save the updated cart to session
         request.session["cart"] = session_cart
         request.session.modified = True
+
+        # DEBUG: Log session state after adding
+        print(f"DEBUG: Session after adding - cart: {request.session.get('cart', {})}")
+        print(f"DEBUG: Session modified flag: {request.session.modified}")
+        print(f"DEBUG: Session cart after save: {session_cart}")
 
         # Calculate cart total
         cart_total = calculate_cart_total(request)
@@ -393,7 +403,6 @@ def remove_from_cart(request, slug):
     return redirect("cart:view_cart")
 
 
-@login_required
 @require_POST
 def sync_cart(request):
     """Synchronize localStorage cart with session"""
@@ -422,7 +431,7 @@ def sync_cart(request):
         return JsonResponse({"success": False, "message": str(e)}, status=500)
 
 
-def get_session_cart(request):
+def api_get_session_cart(request):
     """Get the cart from session for syncing with localStorage"""
     cart = request.session.get("cart", {})
 

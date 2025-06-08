@@ -43,6 +43,28 @@ def fix_address_and_checkout(apps, schema_editor):
         ).update(shipping_address=address)
 
 
+def add_phone_field_if_not_exists(apps, schema_editor):
+    """
+    Add phone field to Address model only if it doesn't already exist
+    """
+    connection = schema_editor.connection
+
+    with connection.cursor() as cursor:
+        # Check if the table exists and get its schema
+        cursor.execute("PRAGMA table_info(orders_address);")
+        columns = cursor.fetchall()
+        column_names = [col[1] for col in columns]
+
+        # Only add phone field if it doesn't exist
+        if "phone" not in column_names:
+            cursor.execute(
+                """
+                ALTER TABLE orders_address 
+                ADD COLUMN phone VARCHAR(50) NULL;
+            """
+            )
+
+
 def reverse_func(apps, schema_editor):
     """
     No need to reverse this operation
@@ -57,12 +79,8 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        # First add the phone field to Address if it doesn't already exist
-        migrations.AddField(
-            model_name="address",
-            name="phone",
-            field=models.CharField(blank=True, max_length=50, null=True),
-        ),
+        # Conditionally add the phone field to Address if it doesn't already exist
+        migrations.RunPython(add_phone_field_if_not_exists, reverse_func),
         # Ensure Checkout references Address, not ShippingAddress
         migrations.AlterField(
             model_name="checkout",

@@ -18,5 +18,5 @@ urlpatterns = [
     path("remove-coupon/", views.remove_coupon, name="remove_coupon"),
     # API endpoints for localStorage sync
     path("sync/", views.sync_cart, name="sync_cart"),
-    path("get-session-cart/", views.get_session_cart, name="get_session_cart"),
+    path("get-session-cart/", views.api_get_session_cart, name="get_session_cart"),
 ]
