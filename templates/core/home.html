@@ -4,161 +4,485 @@
 {% block title %}GroceryGo - Home{% endblock %}
 
 {% block content %}
-<section class="py-12">
-    <div class="text-center">
-        <h1 class="text-4xl font-extrabold text-gray-900 sm:text-5xl sm:tracking-tight lg:text-6xl">
-            Fresh Groceries Delivered
-        </h1>
-        <p class="mt-5 max-w-xl mx-auto text-xl text-gray-500">
-            Shop for fresh produce, pantry staples, and more with convenient delivery right to your door.
-        </p>
-        <div class="mt-8 flex justify-center">
-            <a href="{% url 'products:product_list' %}" class="btn btn-primary px-5 py-3">
-                Shop Now
-            </a>
-            <a href="{% url 'category_list' %}" class="ml-3 btn btn-secondary px-5 py-3">
-                Browse Categories
-            </a>
-        </div>
+<!-- Enhanced Hero Section -->
+<section class="relative overflow-hidden bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50">
+    <!-- Background Pattern -->
+    <div class="absolute inset-0 opacity-5">
+        <svg class="w-full h-full" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+            <pattern id="groceryPattern" patternUnits="userSpaceOnUse" width="20" height="20">
+                <circle cx="10" cy="10" r="1.5" fill="currentColor"/>
+            </pattern>
+            <rect width="100" height="100" fill="url(#groceryPattern)"/>
+        </svg>
     </div>
-</section>
-
-<section class="py-12 bg-white">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="lg:text-center">
-            <h2 class="text-base text-primary-600 font-semibold tracking-wide uppercase">Categories</h2>
-            <p class="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl">
-                Explore Our Products
-            </p>
-        </div>
-
-        <div class="mt-10">
-            <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {% for category in categories %}
-                <a href="{% url 'category_detail' category.slug %}" class="block">
-                    <div class="card transition-transform hover:scale-105 h-full">
-                        <div class="h-40 bg-gray-200 rounded-md overflow-hidden">
-                            {% if category.image %}
-                            <img src="{{ category.image.url }}" alt="{{ category.name }}" class="w-full h-full object-cover">
-                            {% else %}
-                            <div class="flex items-center justify-center h-full">
-                                <svg class="h-16 w-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                                </svg>
-                            </div>
-                            {% endif %}
-                        </div>
-                        <div class="mt-4">
-                            <h3 class="text-lg font-medium text-gray-900">{{ category.name }}</h3>
-                            {% if category.description %}
-                            <p class="mt-2 text-sm text-gray-500 line-clamp-2">{{ category.description }}</p>
-                            {% endif %}
-                            <div class="mt-2 text-primary-600 font-medium">Shop Now →</div>
-                        </div>
-                    </div>
-                </a>
-                {% empty %}
-                <div class="col-span-full text-center py-8">
-                    <p class="text-gray-500">No categories found. Check back soon!</p>
-                </div>
-                {% endfor %}
+    
+    <!-- Floating Elements -->
+    <div class="absolute top-20 left-10 opacity-10 animate-float">
+        <div class="w-16 h-16 bg-emerald-500 rounded-full"></div>
+    </div>
+    <div class="absolute top-40 right-20 opacity-10 animate-float-delayed">
+        <div class="w-12 h-12 bg-teal-500 rounded-lg transform rotate-45"></div>
+    </div>
+    <div class="absolute bottom-32 left-20 opacity-10 animate-float">
+        <div class="w-20 h-20 bg-cyan-500 rounded-full"></div>
+    </div>
+    
+    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-28">
+        <div class="text-center">
+            <!-- Badge -->
+            <div class="inline-flex items-center px-4 py-2 bg-white bg-opacity-80 backdrop-blur-sm rounded-full shadow-lg mb-8 animate-fade-in">
+                <span class="flex h-2 w-2 bg-emerald-500 rounded-full mr-2 animate-pulse"></span>
+                <span class="text-sm font-medium text-gray-800">Fresh Delivery Available</span>
             </div>
             
-            <div class="mt-8 text-center">
-                <a href="{% url 'category_list' %}" class="btn btn-outline-primary">
-                    View All Categories
+            <!-- Main Heading -->
+            <h1 class="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-gray-900 mb-6 animate-slide-up">
+                <span class="block">Fresh Groceries</span>
+                <span class="block bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 bg-clip-text text-transparent">
+                    Delivered Daily
+                </span>
+            </h1>
+            
+            <!-- Subtitle -->
+            <p class="mt-6 max-w-3xl mx-auto text-xl lg:text-2xl text-gray-600 leading-relaxed animate-slide-up-delayed">
+                Shop for farm-fresh produce, premium pantry staples, and household essentials with
+                <span class="font-semibold text-emerald-600">convenient same-day delivery</span>
+                right to your doorstep.
+            </p>
+            
+            <!-- CTA Buttons -->
+            <div class="mt-10 flex flex-col sm:flex-row justify-center gap-4 animate-fade-in-delayed">
+                <a href="{% url 'products:product_list' %}"
+                   class="group relative inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 overflow-hidden">
+                    <span class="absolute inset-0 bg-gradient-to-r from-emerald-700 to-teal-700 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></span>
+                    <span class="relative flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+                        </svg>
+                        Start Shopping
+                    </span>
                 </a>
+                
+                <a href="{% url 'category_list' %}"
+                   class="group inline-flex items-center justify-center px-8 py-4 bg-white bg-opacity-90 backdrop-blur-sm text-gray-700 font-semibold rounded-xl border-2 border-gray-200 hover:border-emerald-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300">
+                    <span class="flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-gray-500 group-hover:text-emerald-600 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
+                        </svg>
+                        Browse Categories
+                    </span>
+                </a>
+            </div>
+            
+            <!-- Trust Indicators -->
+            <div class="mt-12 flex flex-wrap justify-center items-center gap-8 text-sm text-gray-500 animate-fade-in-delayed">
+                <div class="flex items-center">
+                    <svg class="w-5 h-5 text-emerald-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span>Quality Guaranteed</span>
+                </div>
+                <div class="flex items-center">
+                    <svg class="w-5 h-5 text-emerald-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span>Same-Day Delivery</span>
+                </div>
+                <div class="flex items-center">
+                    <svg class="w-5 h-5 text-emerald-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+                    </svg>
+                    <span>Secure Payment</span>
+                </div>
             </div>
         </div>
     </div>
 </section>
 
-<!-- Featured Products Section -->
-<section class="py-12 bg-gray-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center mb-10">
-            <h2 class="text-base text-primary-600 font-semibold tracking-wide uppercase">Featured Products</h2>
-            <p class="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl">
-                Top Rated & Highlighted Products
+<!-- Add custom animations -->
+<style>
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-20px); }
+}
+
+@keyframes float-delayed {
+    0%, 100% { transform: translateY(0px) rotate(45deg); }
+    50% { transform: translateY(-15px) rotate(45deg); }
+}
+
+@keyframes fade-in {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-up {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-float {
+    animation: float 6s ease-in-out infinite;
+}
+
+.animate-float-delayed {
+    animation: float-delayed 8s ease-in-out infinite;
+}
+
+.animate-fade-in {
+    animation: fade-in 0.8s ease-out;
+}
+
+.animate-fade-in-delayed {
+    animation: fade-in 1.2s ease-out;
+}
+
+.animate-slide-up {
+    animation: slide-up 0.8s ease-out;
+}
+
+.animate-slide-up-delayed {
+    animation: slide-up 1s ease-out;
+}
+</style>
+
+<!-- Enhanced Categories Section -->
+<section class="py-16 bg-white relative overflow-hidden">
+    <!-- Subtle background decoration -->
+    <div class="absolute inset-0 bg-gradient-to-b from-gray-50/50 to-transparent"></div>
+    
+    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12">
+            <div class="inline-flex items-center px-4 py-2 bg-emerald-100 text-emerald-800 rounded-full text-sm font-medium mb-4">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
+                </svg>
+                Shop by Category
+            </div>
+            <h2 class="text-4xl lg:text-5xl font-extrabold text-gray-900 mb-4">
+                Explore Our
+                <span class="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">Fresh Selection</span>
+            </h2>
+            <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                Discover premium quality products across all your favorite categories,
+                from farm-fresh produce to pantry essentials.
             </p>
         </div>
-        
-        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {% for product in featured_products %}
-            <a href="{% url 'product_detail' product.slug %}" class="group">
-                <div class="bg-white rounded-lg shadow-md overflow-hidden transform transition hover:shadow-xl hover:-translate-y-1">
-                    {% if product.image %}
-                    <img src="{{ product.image.url }}" alt="{{ product.name }}" class="h-48 w-full object-cover">
-                    {% else %}
-                    <div class="h-48 w-full bg-gray-200 flex items-center justify-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                        </svg>
-                    </div>
-                    {% endif %}
-                    <div class="p-4">
-                        <h3 class="text-lg font-medium text-gray-800 group-hover:text-green-600">{{ product.name }}</h3>
-                        <p class="text-green-600 font-semibold mt-1">RM{{ product.price }}</p>
-                        {% if product.discount_price %}
-                        <p class="text-sm text-gray-500 line-through">RM{{ product.discount_price }}</p>
+
+        <div class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            {% for category in categories %}
+            <a href="{% url 'category_detail' category.slug %}" class="group block">
+                <div class="relative bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 overflow-hidden">
+                    <!-- Category Image -->
+                    <div class="relative h-48 overflow-hidden">
+                        {% if category.image %}
+                        <img src="{{ category.image.url }}" alt="{{ category.name }}"
+                             class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                        {% else %}
+                        <div class="w-full h-full bg-gradient-to-br from-emerald-100 to-teal-100 flex items-center justify-center group-hover:from-emerald-200 group-hover:to-teal-200 transition-colors duration-300">
+                            <svg class="h-16 w-16 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+                            </svg>
+                        </div>
                         {% endif %}
-                        <div class="mt-2 text-sm text-gray-600 line-clamp-2">
-                            {{ product.description|default:"" }}
+                        
+                        <!-- Overlay -->
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    </div>
+                    
+                    <!-- Category Content -->
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold text-gray-900 group-hover:text-emerald-600 transition-colors duration-300 mb-2">
+                            {{ category.name }}
+                        </h3>
+                        {% if category.description %}
+                        <p class="text-gray-600 text-sm line-clamp-2 mb-4">{{ category.description }}</p>
+                        {% endif %}
+                        
+                        <!-- CTA -->
+                        <div class="flex items-center justify-between">
+                            <span class="inline-flex items-center text-emerald-600 font-semibold group-hover:text-emerald-700 transition-colors duration-300">
+                                Shop Now
+                                <svg class="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                </svg>
+                            </span>
                         </div>
                     </div>
                 </div>
             </a>
             {% empty %}
-            <div class="col-span-full text-center py-8">
-                <p class="text-gray-500">No featured products found. Check back soon!</p>
+            <div class="col-span-full text-center py-12">
+                <div class="w-24 h-24 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+                    <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                    </svg>
+                </div>
+                <p class="text-gray-500 text-lg">No categories found. Check back soon!</p>
             </div>
             {% endfor %}
         </div>
         
-        <div class="mt-8 text-center">
-            <a href="{% url 'products:product_list' %}" class="btn btn-outline-primary">
-                View All Products
+        <div class="mt-12 text-center">
+            <a href="{% url 'category_list' %}"
+               class="inline-flex items-center px-8 py-4 bg-white border-2 border-emerald-200 text-emerald-700 font-semibold rounded-xl hover:bg-emerald-50 hover:border-emerald-300 transform hover:-translate-y-0.5 transition-all duration-300 shadow-lg hover:shadow-xl">
+                <span>View All Categories</span>
+                <svg class="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
             </a>
         </div>
     </div>
 </section>
 
-<section class="py-12">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center">
-            <h2 class="text-base text-primary-600 font-semibold tracking-wide uppercase">Why Choose GroceryGo</h2>
-            <p class="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl">
-                Delivering Quality Since 2023
+<!-- Enhanced Featured Products Section -->
+<section class="py-16 bg-gradient-to-br from-gray-50 via-emerald-50/30 to-teal-50/30 relative overflow-hidden">
+    <!-- Background Pattern -->
+    <div class="absolute inset-0 opacity-5">
+        <svg class="w-full h-full" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+            <pattern id="productPattern" patternUnits="userSpaceOnUse" width="40" height="40">
+                <circle cx="20" cy="20" r="2" fill="currentColor"/>
+                <circle cx="10" cy="30" r="1" fill="currentColor"/>
+                <circle cx="30" cy="10" r="1.5" fill="currentColor"/>
+            </pattern>
+            <rect width="100" height="100" fill="url(#productPattern)"/>
+        </svg>
+    </div>
+    
+    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12">
+            <div class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-emerald-100 to-teal-100 text-emerald-800 rounded-full text-sm font-medium mb-4">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+                </svg>
+                Featured Selection
+            </div>
+            <h2 class="text-4xl lg:text-5xl font-extrabold text-gray-900 mb-4">
+                Our
+                <span class="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">Top Picks</span>
+            </h2>
+            <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                Handpicked favorites and customer favorites that deliver exceptional quality and value to your table.
             </p>
         </div>
-        <div class="mt-10">
-            <div class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-                <div class="text-center">
-                    <div class="flex items-center justify-center h-12 w-12 rounded-md bg-primary-500 text-white mx-auto">
-                        <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+            {% for product in featured_products %}
+            <a href="{% url 'product_detail' product.slug %}" class="group block">
+                <div class="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 overflow-hidden">
+                    <!-- Product Image -->
+                    <div class="relative h-48 overflow-hidden">
+                        {% if product.image %}
+                        <img src="{{ product.image.url }}" alt="{{ product.name }}"
+                             class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                        {% else %}
+                        <div class="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center group-hover:from-emerald-100 group-hover:to-teal-100 transition-colors duration-300">
+                            <svg class="h-16 w-16 text-gray-400 group-hover:text-emerald-500 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+                            </svg>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Featured Badge -->
+                        <div class="absolute top-3 left-3">
+                            <span class="inline-flex items-center px-2 py-1 bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-xs font-semibold rounded-full">
+                                <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+                                </svg>
+                                Featured
+                            </span>
+                        </div>
+                        
+                        <!-- Hover Overlay -->
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     </div>
-                    <h3 class="mt-4 text-lg font-medium text-gray-900">Quality Assurance</h3>
-                    <p class="mt-2 text-base text-gray-500">All products meet our high quality standards before reaching your doorstep.</p>
+                    
+                    <!-- Product Content -->
+                    <div class="p-6">
+                        <h3 class="text-lg font-bold text-gray-900 group-hover:text-emerald-600 transition-colors duration-300 mb-2 line-clamp-2">
+                            {{ product.name }}
+                        </h3>
+                        
+                        <!-- Price -->
+                        <div class="flex items-center space-x-2 mb-3">
+                            <span class="text-2xl font-bold text-emerald-600">RM{{ product.price }}</span>
+                            {% if product.discount_price %}
+                            <span class="text-lg text-gray-500 line-through">RM{{ product.discount_price }}</span>
+                            <span class="px-2 py-1 bg-red-100 text-red-600 text-xs font-semibold rounded-full">
+                                {% load custom_filters %}
+                                {{ product.discount_price|percentage_off:product.price }}% OFF
+                            </span>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Description -->
+                        {% if product.description %}
+                        <p class="text-gray-600 text-sm line-clamp-2 mb-4">{{ product.description }}</p>
+                        {% endif %}
+                        
+                        <!-- Add to Cart CTA -->
+                        <div class="flex items-center justify-between">
+                            <span class="inline-flex items-center text-emerald-600 font-semibold group-hover:text-emerald-700 transition-colors duration-300">
+                                View Details
+                                <svg class="ml-1 w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                </svg>
+                            </span>
+                        </div>
+                    </div>
                 </div>
-                <div class="text-center">
-                    <div class="flex items-center justify-center h-12 w-12 rounded-md bg-primary-500 text-white mx-auto">
-                        <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                    </div>
-                    <h3 class="mt-4 text-lg font-medium text-gray-900">Fast Delivery</h3>
-                    <p class="mt-2 text-base text-gray-500">Same-day delivery options available for orders placed before noon.</p>
+            </a>
+            {% empty %}
+            <div class="col-span-full text-center py-16">
+                <div class="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center">
+                    <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                    </svg>
                 </div>
-                <div class="text-center">
-                    <div class="flex items-center justify-center h-12 w-12 rounded-md bg-primary-500 text-white mx-auto">
-                        <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                <h3 class="text-xl font-semibold text-gray-700 mb-2">No Featured Products</h3>
+                <p class="text-gray-500 text-lg">Check back soon for our latest picks!</p>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="mt-12 text-center">
+            <a href="{% url 'products:product_list' %}"
+               class="inline-flex items-center px-8 py-4 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300">
+                <span>View All Products</span>
+                <svg class="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Enhanced Why Choose Us Section -->
+<section class="py-16 bg-white relative overflow-hidden">
+    <!-- Background Elements -->
+    <div class="absolute top-10 right-10 opacity-10">
+        <div class="w-32 h-32 bg-gradient-to-br from-emerald-400 to-teal-400 rounded-full blur-3xl"></div>
+    </div>
+    <div class="absolute bottom-10 left-10 opacity-10">
+        <div class="w-24 h-24 bg-gradient-to-br from-teal-400 to-cyan-400 rounded-full blur-2xl"></div>
+    </div>
+    
+    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-16">
+            <div class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-emerald-100 to-teal-100 text-emerald-800 rounded-full text-sm font-medium mb-4">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                </svg>
+                Why Choose GroceryGo
+            </div>
+            <h2 class="text-4xl lg:text-5xl font-extrabold text-gray-900 mb-6">
+                Delivering
+                <span class="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">Excellence</span>
+                <br>Since 2023
+            </h2>
+            <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                We're committed to revolutionizing your grocery shopping experience with unmatched quality,
+                speed, and convenience at every step.
+            </p>
+        </div>
+        
+        <div class="grid grid-cols-1 gap-12 sm:grid-cols-2 lg:grid-cols-3">
+            <!-- Quality Assurance -->
+            <div class="group text-center">
+                <div class="relative mb-6">
+                    <div class="flex items-center justify-center h-20 w-20 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 text-white mx-auto shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300">
+                        <svg class="h-10 w-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                         </svg>
                     </div>
-                    <h3 class="mt-4 text-lg font-medium text-gray-900">Secure Payment</h3>
-                    <p class="mt-2 text-base text-gray-500">Multiple secure payment options to choose from for your convenience.</p>
+                    <!-- Floating Badge -->
+                    <div class="absolute -top-2 -right-2 w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center transform group-hover:scale-110 transition-transform duration-300">
+                        <svg class="w-4 h-4 text-yellow-800" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+                        </svg>
+                    </div>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-900 mb-4 group-hover:text-emerald-600 transition-colors duration-300">
+                    Quality Assurance
+                </h3>
+                <p class="text-gray-600 text-lg leading-relaxed">
+                    Every product undergoes rigorous quality checks to ensure only the finest items reach your doorstep,
+                    backed by our freshness guarantee.
+                </p>
+            </div>
+            
+            <!-- Fast Delivery -->
+            <div class="group text-center">
+                <div class="relative mb-6">
+                    <div class="flex items-center justify-center h-20 w-20 rounded-2xl bg-gradient-to-br from-teal-500 to-teal-600 text-white mx-auto shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300">
+                        <svg class="h-10 w-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                    <!-- Floating Badge -->
+                    <div class="absolute -top-2 -right-2 w-8 h-8 bg-orange-400 rounded-full flex items-center justify-center transform group-hover:scale-110 transition-transform duration-300">
+                        <svg class="w-4 h-4 text-orange-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                        </svg>
+                    </div>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-900 mb-4 group-hover:text-teal-600 transition-colors duration-300">
+                    Lightning Fast Delivery
+                </h3>
+                <p class="text-gray-600 text-lg leading-relaxed">
+                    Same-day delivery available for orders placed before noon, with real-time tracking
+                    to keep you informed every step of the way.
+                </p>
+            </div>
+            
+            <!-- Secure Payment -->
+            <div class="group text-center sm:col-span-2 lg:col-span-1">
+                <div class="relative mb-6">
+                    <div class="flex items-center justify-center h-20 w-20 rounded-2xl bg-gradient-to-br from-cyan-500 to-cyan-600 text-white mx-auto shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300">
+                        <svg class="h-10 w-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+                        </svg>
+                    </div>
+                    <!-- Floating Badge -->
+                    <div class="absolute -top-2 -right-2 w-8 h-8 bg-green-400 rounded-full flex items-center justify-center transform group-hover:scale-110 transition-transform duration-300">
+                        <svg class="w-4 h-4 text-green-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                        </svg>
+                    </div>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-900 mb-4 group-hover:text-cyan-600 transition-colors duration-300">
+                    Secure & Flexible Payment
+                </h3>
+                <p class="text-gray-600 text-lg leading-relaxed">
+                    Multiple secure payment options including card payments and cash on delivery,
+                    with industry-leading encryption to protect your information.
+                </p>
+            </div>
+        </div>
+        
+        <!-- CTA Section -->
+        <div class="mt-16 text-center">
+            <div class="inline-flex items-center space-x-8">
+                <div class="flex items-center text-emerald-600">
+                    <div class="flex -space-x-2">
+                        <div class="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center border-2 border-white">
+                            <span class="text-xs font-semibold">👥</span>
+                        </div>
+                        <div class="w-8 h-8 bg-teal-100 rounded-full flex items-center justify-center border-2 border-white">
+                            <span class="text-xs font-semibold">👤</span>
+                        </div>
+                        <div class="w-8 h-8 bg-cyan-100 rounded-full flex items-center justify-center border-2 border-white">
+                            <span class="text-xs font-semibold">👋</span>
+                        </div>
+                    </div>
+                    <span class="ml-3 text-sm font-medium">1000+ Happy Customers</span>
+                </div>
+                <div class="h-6 w-px bg-gray-300"></div>
+                <div class="flex items-center text-emerald-600">
+                    <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+                    </svg>
+                    <span class="text-sm font-medium">4.9/5 Rating</span>
                 </div>
             </div>
         </div>
