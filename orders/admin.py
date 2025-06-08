@@ -170,7 +170,14 @@ class CheckoutAdmin(admin.ModelAdmin):
 
 @admin.register(CheckoutItem)
 class CheckoutItemAdmin(admin.ModelAdmin):
-    list_display = ["id", "checkout", "product", "quantity", "price", "total_price"]
+    list_display = ["id", "checkout", "product", "quantity", "price", "get_total_price"]
     list_filter = ["checkout__status"]
     search_fields = ["checkout__id", "product__name"]
-    readonly_fields = ["total_price"]
+    readonly_fields = ["get_total_price"]
+
+    def get_total_price(self, obj):
+        """Display the total price for this checkout item"""
+        return obj.total_price
+
+    get_total_price.short_description = "Total Price"
+    get_total_price.admin_order_field = "price"  # Allow ordering by price field
