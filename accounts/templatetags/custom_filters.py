@@ -12,6 +12,26 @@ def split(value, arg):
     return value.split(arg)
 
 
+@register.filter
+def make_list(value):
+    """Convert a string to a list of characters"""
+    return list(str(value))
+
+
+@register.filter
+def percentage_off(discount_price, original_price):
+    """Calculate percentage off between two prices"""
+    try:
+        discount = float(discount_price)
+        original = float(original_price)
+        if original > 0:
+            percentage = ((original - discount) / original) * 100
+            return int(round(percentage))
+        return 0
+    except (ValueError, TypeError, ZeroDivisionError):
+        return 0
+
+
 @register.simple_tag
 def csrf_token_value(request):
     """

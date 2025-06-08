@@ -44,18 +44,65 @@ def product_list_view(request):
 
 
 def product_detail_view(request, slug):
-    """View for displaying a single product's details"""
+    """View for displaying a single product's details with variations support"""
     product = get_object_or_404(Product, slug=slug, is_active=True)
+
+    # Check if this product is a variation, if so redirect to parent
+    if product.is_variant:
+        return redirect("product_detail", slug=product.parent.slug)
+
+    # Get all active variations for this product
+    product_variations = product.variants.filter(is_active=True).order_by("price")
+
+    # If this product has no variations, create a list with just itself for consistency
+    if not product_variations.exists():
+        # Check if this product is actually a variation that should be grouped
+        # by looking for products with the same name pattern
+        base_name = (
+            product.name.split(" - ")[0]
+            if " - " in product.name
+            else product.name.split(" (")[0] if " (" in product.name else product.name
+        )
+
+        potential_variations = Product.objects.filter(
+            name__icontains=base_name,
+            category=product.category,
+            is_active=True,
+            parent__isnull=True,  # Only look at parent products
+        ).exclude(id=product.id)
+
+        if potential_variations.exists():
+            # Include the current product and potential variations
+            all_variations = [product] + list(potential_variations)
+            product_variations = all_variations
+        else:
+            product_variations = []
+    else:
+        # Add the parent product to the variations list
+        product_variations = [product] + list(product_variations)
+
+    # Get truly related products (same category, different product family)
     related_products = Product.objects.filter(
-        category=product.category, is_active=True
-    ).exclude(id=product.id)[:4]
+        category=product.category,
+        is_active=True,
+        parent__isnull=True,  # Only parent products
+    ).exclude(id=product.id)
+
+    # If we have variations, exclude them from related products
+    if product_variations:
+        variation_ids = [v.id for v in product_variations if hasattr(v, "id")]
+        related_products = related_products.exclude(id__in=variation_ids)
+
+    related_products = related_products[:4]
 
     return render(
         request,
         "products/product_detail.html",
         {
             "product": product,
+            "product_variations": product_variations,
             "related_products": related_products,
+            "has_variations": len(product_variations) > 1,
         },
     )
 
