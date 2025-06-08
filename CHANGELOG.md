@@ -5,6 +5,37 @@ All notable changes to the GroceryGo project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.1] - 2025-06-08
+
+### Fixed
+
+1. **Codebase Cleanup and Optimization**
+   - Removed 11 temporary files and SQL scripts left from development process
+   - Fixed template field references (apartment_address → apartment_unit) for consistency
+   - Enhanced test infrastructure documentation for better developer experience
+   - Created comprehensive migration analysis and backup strategies
+   - Applied all pending migrations successfully
+
+2. **Code Consolidation Completion**
+   - Completed Phases 1 & 2 of comprehensive codebase refactoring
+   - Removed temporary development files and scripts
+   - Streamlined project structure for better maintainability
+   - Documented Phase 3 migration optimization strategy for future implementation
+
+### Technical Improvements
+
+1. **Migration Management**
+   - Applied migrations 0016-0018 to resolve database schema consistency
+   - Created comprehensive migration analysis documentation
+   - Established stable foundation for future migration optimizations
+   - Prepared Phase 3 migration squashing as optional future enhancement
+
+2. **Development Experience**
+   - Enhanced test infrastructure documentation
+   - Improved project organization and file structure
+   - Created clear roadmap for future optimization opportunities
+   - Established stable codebase ready for production deployment
+
 ## [0.3.0] - 2025-06-08
 
 ### Added
