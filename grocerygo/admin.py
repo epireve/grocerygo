@@ -12,7 +12,7 @@ import os
 import shutil
 from datetime import datetime, timedelta
 
-from orders.models import Order
+from orders.models import Checkout
 from products.models import Product
 
 
@@ -32,14 +32,14 @@ class CustomAdminSite(admin.AdminSite):
             )
 
             # Total counts
-            total_orders = Order.objects.count()
+            total_orders = Checkout.objects.count()
             total_products = Product.objects.filter(is_active=True).count()
             total_users = User.objects.filter(is_active=True).count()
 
             # Monthly revenue calculation
-            monthly_revenue = Order.objects.filter(
+            monthly_revenue = Checkout.objects.filter(
                 created_at__gte=current_month_start,
-                order_status__in=[
+                status__in=[
                     "processing",
                     "shipped",
                     "delivered",
@@ -47,7 +47,7 @@ class CustomAdminSite(admin.AdminSite):
             ).aggregate(total=Sum("total"))["total"] or Decimal("0.00")
 
             # Recent orders (last 10)
-            recent_orders = Order.objects.select_related("user").order_by(
+            recent_orders = Checkout.objects.select_related("user").order_by(
                 "-created_at"
             )[:10]
 
@@ -225,10 +225,10 @@ class CustomAdminSite(admin.AdminSite):
             day_start = start_date + timedelta(days=i)
             day_end = day_start + timedelta(days=1)
 
-            daily_sales = Order.objects.filter(
+            daily_sales = Checkout.objects.filter(
                 created_at__gte=day_start,
                 created_at__lt=day_end,
-                order_status__in=["processing", "shipped", "delivered"],
+                status__in=["processing", "shipped", "delivered"],
             ).aggregate(total_sales=Sum("total"), order_count=Count("id"))
 
             orders_by_day.append(
@@ -254,9 +254,9 @@ class CustomAdminSite(admin.AdminSite):
         from django.db.models import Count
 
         status_counts = (
-            Order.objects.values("order_status")
+            Checkout.objects.values("status")
             .annotate(count=Count("id"))
-            .order_by("order_status")
+            .order_by("status")
         )
 
         status_labels = []
@@ -270,7 +270,7 @@ class CustomAdminSite(admin.AdminSite):
         }
 
         for item in status_counts:
-            status_labels.append(item["order_status"].title())
+            status_labels.append(item["status"].title())
             status_data.append(item["count"])
 
         return JsonResponse(
@@ -279,7 +279,7 @@ class CustomAdminSite(admin.AdminSite):
                 "data": status_data,
                 "colors": [
                     status_colors.get(status.lower(), "#6b7280")
-                    for status in [item["order_status"] for item in status_counts]
+                    for status in [item["status"] for item in status_counts]
                 ],
             }
         )
@@ -288,13 +288,14 @@ class CustomAdminSite(admin.AdminSite):
         """API endpoint for top selling products"""
         from django.http import JsonResponse
         from django.db.models import Sum, Count
-        from orders.models import OrderItem
+        from orders.models import CheckoutItem
 
         # Get top selling products by quantity
         top_products = (
-            OrderItem.objects.values("product__name")
+            CheckoutItem.objects.values("product__name")
             .annotate(
-                total_sold=Sum("quantity"), order_count=Count("order_id", distinct=True)
+                total_sold=Sum("quantity"),
+                order_count=Count("checkout_id", distinct=True),
             )
             .order_by("-total_sold")[:10]
         )
@@ -355,35 +356,26 @@ admin_site = CustomAdminSite(name="admin")
 from django.contrib.auth.models import User, Group
 from django.contrib.auth.admin import UserAdmin, GroupAdmin
 from orders.admin import (
-    OrderAdmin,
-    OrderItemAdmin,
     AddressAdmin,
     OrderStatusHistoryAdmin,
     CheckoutAdmin,
     CheckoutItemAdmin,
-    ShippingAddressAdmin,
 )
 from products.admin import CategoryAdmin, ProductAdmin
 from orders.models import (
-    Order,
-    OrderItem,
     Address,
     OrderStatusHistory,
     Checkout,
     CheckoutItem,
-    ShippingAddress,
 )
 from products.models import Category, Product
 
 # Register models with custom admin site
 admin_site.register(User, UserAdmin)
 admin_site.register(Group, GroupAdmin)
-admin_site.register(Order, OrderAdmin)
-admin_site.register(OrderItem, OrderItemAdmin)
 admin_site.register(Address, AddressAdmin)
 admin_site.register(OrderStatusHistory, OrderStatusHistoryAdmin)
 admin_site.register(Checkout, CheckoutAdmin)
 admin_site.register(CheckoutItem, CheckoutItemAdmin)
-admin_site.register(ShippingAddress, ShippingAddressAdmin)
 admin_site.register(Category, CategoryAdmin)
 admin_site.register(Product, ProductAdmin)
