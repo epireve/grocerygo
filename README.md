@@ -16,6 +16,11 @@ A simple Django web application for online grocery shopping, allowing customers 
   - Top products performance tracking
   - Low stock alerts and inventory monitoring
   - Real-time dashboard data via custom API endpoints
+- **Consolidated Database Architecture** with improved data integrity:
+  - Streamlined model structure with deprecated models fully removed
+  - Enhanced Address management system replacing legacy ShippingAddress
+  - Comprehensive OrderStatusHistory tracking
+  - Advanced migration management with conflict resolution
 - Admin interface for product, order, and user management
 
 ## Technology Stack
@@ -25,6 +30,8 @@ A simple Django web application for online grocery shopping, allowing customers 
 - Frontend: Tailwind CSS with Shadcn/ui components
 - Data Visualization: Chart.js
 - Theme Management: CSS Custom Properties with LocalStorage persistence
+- Testing: Custom Django test runner with migration-aware test infrastructure
+- Database Management: Advanced migration tools and recovery utilities
 
 ## Setup Instructions
 
@@ -199,9 +206,12 @@ The project follows Django's MVT (Model-View-Template) architecture:
 - `docs/` - Project documentation
   - `models.md` - Complete database models documentation
   - `cart_debugging.md` - Solutions to common cart-related issues
+  - `consolidation_plan.md` - Model consolidation implementation and lessons learned
+  - `admin_management_guide.md` - Comprehensive admin interface documentation
 
 For comprehensive documentation on all database models, see [docs/models.md](docs/models.md).
 For information about cart implementation and troubleshooting, see [docs/cart_debugging.md](docs/cart_debugging.md).
+For details on the model consolidation project and database architecture improvements, see [docs/consolidation_plan.md](docs/consolidation_plan.md).
 
 ## Available Pages and Routes
 
@@ -244,6 +254,30 @@ For information about cart implementation and troubleshooting, see [docs/cart_de
 
 ## Testing
 
+### Django Unit Testing
+The project includes a comprehensive Django test suite with advanced testing infrastructure:
+
+```bash
+# Run all Django tests with the custom test runner
+python manage.py test
+
+# Run tests for a specific app
+python manage.py test orders
+
+# Run tests with more verbose output
+python manage.py test --verbosity=2
+
+# Run specific test cases
+python manage.py test orders.tests.AddressModelTest
+```
+
+#### Advanced Testing Features
+- **Custom Test Runner**: `FixedSchemaTestRunner` handles database schema fixes during testing
+- **Migration-Aware Testing**: `FixedSchemaTestCase` base class for tests that need proper database schema
+- **Comprehensive Model Testing**: Full test coverage for Address, Checkout, and OrderStatusHistory models
+- **Deprecation Verification**: Tests to ensure deprecated models are completely removed
+- **Database Recovery Testing**: Test utilities for schema verification and data recovery scenarios
+
 ### Browser Testing
 The project includes Selenium-based browser testing for automated UI verification:
 
@@ -256,6 +290,20 @@ The project includes Selenium-based browser testing for automated UI verificatio
 
 # Run with screenshots enabled
 ./scripts/run_browser_test.py --screenshots
+```
+
+### Database Testing and Recovery
+Development utilities for testing database operations:
+
+```bash
+# Test database schema fixes
+python fix_test_database.py
+
+# Run simple connectivity tests
+python orders/simple_test.py
+
+# Test deprecated model removal
+python orders/test_deprecated.py
 ```
 
 ## Scripts
@@ -277,6 +325,21 @@ The project includes several utility scripts:
 
 3. **Testing Scripts**
    - `run_browser_test.py` - Run browser-based UI tests
+   - `orders/simple_test.py` - Simple database connectivity tests
+   - `orders/test_deprecated.py` - Verify deprecated models are removed
+   - `test_admin_fixes.py` - Test admin interface functionality
+
+4. **Database Management Scripts**
+   - `fix_test_database.py` - Fix database schema issues during development
+   - `fix_test_db_during_tests.py` - Handle schema fixes during test execution
+   - `orders/test_utils.py` - Database testing utilities and helpers
+   - `orders/test_runner.py` - Custom Django test runner with schema fixing
+
+5. **SQL Scripts for Manual Database Operations**
+   - `fix_database.sql` - Manual database schema fixes
+   - `fix_address_table.sql` - Address table specific fixes
+   - `create_orderstatushistory.sql` - OrderStatusHistory table creation
+   - `insert_remaining_migrations.sql` - Manual migration record insertion
 
 ## License
 
