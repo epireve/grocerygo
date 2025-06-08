@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, Http404
 from django.urls import reverse
 from django.views.decorators.http import require_POST
-from .models import Order, OrderItem, Address, Checkout, CheckoutItem
+from .models import Address, Checkout, CheckoutItem
 from cart.models import Cart, CartItem
 from products.models import Product
 from decimal import Decimal
@@ -153,7 +153,7 @@ def checkout_view(request):
                                 street_address=sanitize_user_input(
                                     form_data.get("street_address")
                                 ),
-                                apartment_address=sanitize_user_input(
+                                apartment_unit=sanitize_user_input(
                                     form_data.get("apartment_unit", "")
                                 ),
                                 city=sanitize_user_input(form_data.get("city")),

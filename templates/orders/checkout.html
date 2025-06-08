@@ -65,8 +65,8 @@
                                                         <label for="address-{{ address.id }}" class="font-medium text-gray-700">{{ address.full_name }}</label>
                                                         <div class="text-gray-500">
                                                             <p>{{ address.street_address }}</p>
-                                                            {% if address.apartment_address %}
-                                                                <p>{{ address.apartment_address }}</p>
+                                                            {% if address.apartment_unit %}
+                                                                <p>{{ address.apartment_unit }}</p>
                                                             {% endif %}
                                                             <p>{{ address.city }}, {{ address.state }} {{ address.postal_code }}</p>
                                                             <p>{{ address.country }}</p>
@@ -99,8 +99,8 @@
                                 </div>
 
                                 <div class="col-span-2">
-                                    <label for="apartment_address" class="block text-sm font-medium text-gray-700">Apartment, suite, etc. (optional)</label>
-                                    <input type="text" name="apartment_address" id="apartment_address" class="mt-1 focus:ring-green-500 focus:border-green-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md h-10 px-3">
+                                    <label for="apartment_unit" class="block text-sm font-medium text-gray-700">Apartment, suite, etc. (optional)</label>
+                                    <input type="text" name="apartment_unit" id="apartment_unit" class="mt-1 focus:ring-green-500 focus:border-green-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md h-10 px-3">
                                 </div>
 
                                 <div>
@@ -216,8 +216,8 @@
                                 <div class="bg-gray-50 p-4 rounded-md">
                                     <p class="font-medium">{{ shipping_address.full_name }}</p>
                                     <p>{{ shipping_address.street_address }}</p>
-                                    {% if shipping_address.apartment_address %}
-                                        <p>{{ shipping_address.apartment_address }}</p>
+                                    {% if shipping_address.apartment_unit %}
+                                        <p>{{ shipping_address.apartment_unit }}</p>
                                     {% endif %}
                                     <p>{{ shipping_address.city }}, {{ shipping_address.state }} {{ shipping_address.postal_code }}</p>
                                     <p>{{ shipping_address.country }}</p>

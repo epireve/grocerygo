@@ -43,8 +43,8 @@
                     <div class="bg-gray-50 p-4 rounded">
                         <p>{{ order.shipping_address.full_name }}</p>
                         <p>{{ order.shipping_address.street_address }}</p>
-                        {% if order.shipping_address.apartment_address %}
-                            <p>{{ order.shipping_address.apartment_address }}</p>
+                        {% if order.shipping_address.apartment_unit %}
+                            <p>{{ order.shipping_address.apartment_unit }}</p>
                         {% endif %}
                         <p>{{ order.shipping_address.city }}, {{ order.shipping_address.state }} {{ order.shipping_address.postal_code }}</p>
                         <p>{{ order.shipping_address.country }}</p>

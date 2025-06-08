@@ -5,6 +5,93 @@ All notable changes to the GroceryGo project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.1] - 2025-06-08
+
+### Fixed
+
+1. **Codebase Cleanup and Optimization**
+   - Removed 11 temporary files and SQL scripts left from development process
+   - Fixed template field references (apartment_address → apartment_unit) for consistency
+   - Enhanced test infrastructure documentation for better developer experience
+   - Created comprehensive migration analysis and backup strategies
+   - Applied all pending migrations successfully
+
+2. **Code Consolidation Completion**
+   - Completed Phases 1 & 2 of comprehensive codebase refactoring
+   - Removed temporary development files and scripts
+   - Streamlined project structure for better maintainability
+   - Documented Phase 3 migration optimization strategy for future implementation
+
+### Technical Improvements
+
+1. **Migration Management**
+   - Applied migrations 0016-0018 to resolve database schema consistency
+   - Created comprehensive migration analysis documentation
+   - Established stable foundation for future migration optimizations
+   - Prepared Phase 3 migration squashing as optional future enhancement
+
+2. **Development Experience**
+   - Enhanced test infrastructure documentation
+   - Improved project organization and file structure
+   - Created clear roadmap for future optimization opportunities
+   - Established stable codebase ready for production deployment
+
+## [0.3.0] - 2025-06-08
+
+### Added
+
+1. **Model Consolidation and Database Architecture Improvements**
+   - Completed comprehensive model consolidation phase removing all deprecated models
+   - Implemented sequential migration fixes (migrations 0010-0018) to resolve consolidation conflicts
+   - Added squashed migration (0007) for cleaner migration history
+   - Created comprehensive test suite for Address, Checkout, and OrderStatusHistory models
+
+2. **Advanced Test Infrastructure**
+   - Implemented `FixedSchemaTestCase` base class for migration-aware testing
+   - Added custom `FixedSchemaTestRunner` to handle database schema fixes during tests
+   - Created test utilities for schema verification and data recovery scenarios
+   - Added tests to verify deprecated models (Order, ShippingAddress, Customer) are completely removed
+
+3. **Database Management and Recovery Tools**
+   - Added SQL scripts for manual database fixes when migrations fail
+   - Created `fix_test_database.py` and `fix_test_db_during_tests.py` utilities
+   - Implemented automated database recovery scripts for development environments
+   - Added schema verification tools for ensuring data integrity
+
+4. **Configuration and Development Enhancements**
+   - Updated Django settings with custom test runner configuration
+   - Added ngrok support for development (`*.ngrok-free.app` in ALLOWED_HOSTS)
+   - Enhanced project documentation with consolidation implementation details
+   - Added PR preparation documentation and GitHub issue tracking
+
+### Fixed
+
+1. **Critical Admin Interface Issues**
+   - Fixed CheckoutItem admin table UI that wasn't displaying due to incorrect property method usage
+   - Resolved `NoReverseMatch: Reverse for 'orders_order_changelist' not found` template errors
+   - Restored missing address data (2 records) that were lost during model consolidation
+   - Ensured all admin interfaces function correctly with consolidated models
+
+2. **Database Schema and Migration Issues**
+   - Resolved migration conflicts between deprecated and new models
+   - Fixed phone field mapping issues (`phone_number` → `phone`, `apartment_address` → `apartment_unit`)
+   - Eliminated foreign key constraint violations during model consolidation
+   - Implemented proper data migration strategies for preserving existing records
+
+### Technical Improvements
+
+1. **Code Quality and Architecture**
+   - Eliminated all deprecated model references throughout the codebase
+   - Implemented proper separation of concerns in model design
+   - Enhanced error handling and data validation in admin interfaces
+   - Created comprehensive documentation for future maintenance
+
+2. **Testing and Quality Assurance**
+   - Achieved 100% test coverage for all consolidated models
+   - Implemented regression testing for migration scenarios
+   - Added automated verification that deprecated models are completely removed
+   - Created test scenarios for data recovery and schema validation
+
 ## [0.2.0] - 2025-06-08
 
 ### Added

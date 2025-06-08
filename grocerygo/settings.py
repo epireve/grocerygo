@@ -34,7 +34,7 @@ DEBUG = os.environ.get("DEBUG", "True") == "True"
 
 # For development
 if DEBUG:
-    ALLOWED_HOSTS = ["127.0.0.1", "localhost", "[::1]"]
+    ALLOWED_HOSTS = ["127.0.0.1", "localhost", "[::1]", "*.ngrok-free.app"]
 else:
     # For production - customize as needed
     ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "").split(",")
@@ -317,3 +317,8 @@ LOGGING = {
         },
     },
 }
+
+# Test Runner Configuration
+# Custom test runner is REQUIRED due to complex migration history that causes
+# "duplicate column name: phone" errors during test database creation
+TEST_RUNNER = "orders.test_runner.FixedSchemaTestRunner"
