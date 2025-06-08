@@ -60,3 +60,13 @@ def deals(request):
         "total_count": featured_products.count(),
     }
     return render(request, "core/deals.html", context)
+
+
+def about(request):
+    """
+    View for the about page - displays company information, values, and philosophy
+    """
+    context = {
+        "page_title": "About Us",
+    }
+    return render(request, "core/about.html", context)
