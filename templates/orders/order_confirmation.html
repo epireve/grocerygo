@@ -124,6 +124,12 @@
                     <span class="text-gray-600">Shipping:</span>
                     <span class="font-medium">RM{{ order.shipping_cost }}</span>
                 </div>
+                {% if order.coupon %}
+                <div class="flex justify-between py-2 text-green-600">
+                    <span class="text-green-600">Discount ({{ order.coupon.code }}):</span>
+                    <span class="font-medium">- RM{{ order.coupon_discount|floatformat:2 }}</span>
+                </div>
+                {% endif %}
                 <div class="flex justify-between py-2">
                     <span class="text-gray-600">Tax:</span>
                     <span class="font-medium">RM{{ order.tax }}</span>

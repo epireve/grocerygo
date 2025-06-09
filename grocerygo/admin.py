@@ -369,6 +369,8 @@ from orders.models import (
     CheckoutItem,
 )
 from products.models import Category, Product
+from cart.models import Cart, CartItem, Coupon
+from cart.admin import CartAdmin, CartItemAdmin, CouponAdmin
 
 # Register models with custom admin site
 admin_site.register(User, UserAdmin)
@@ -379,3 +381,6 @@ admin_site.register(Checkout, CheckoutAdmin)
 admin_site.register(CheckoutItem, CheckoutItemAdmin)
 admin_site.register(Category, CategoryAdmin)
 admin_site.register(Product, ProductAdmin)
+admin_site.register(Cart, CartAdmin)
+admin_site.register(CartItem, CartItemAdmin)
+admin_site.register(Coupon, CouponAdmin)
